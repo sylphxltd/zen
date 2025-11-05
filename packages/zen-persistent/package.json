@@ -1,5 +1,5 @@
 {
-  "name": "@zen/persistent",
+  "name": "@sylphx/zen-persistent",
   "version": "0.0.0",
   "description": "Persistent store for Zen state manager (localStorage/sessionStorage sync)",
   "type": "module",
@@ -17,14 +17,13 @@
   "sideEffects": false,
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsup",
+    "build": "bun build src/index.ts --outdir dist --target node --minify --sourcemap && bun build src/index.ts --outdir dist --target node --minify --sourcemap --format cjs --outfile dist/index.cjs && tsc --emitDeclarationOnly --outDir dist",
     "validate": "pnpm run check-format && pnpm run lint && pnpm run typecheck && pnpm run test"
   },
   "peerDependencies": {
-    "@sylphlab/zen-core": "workspace:*"
+    "@sylphx/zen": "workspace:*"
   },
   "devDependencies": {
-    "tsup": "^8.2.3",
     "typescript": "^5.5.3"
   },
   "repository": {

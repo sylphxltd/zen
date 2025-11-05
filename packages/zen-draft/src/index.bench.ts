@@ -1,5 +1,5 @@
 // Import zen atom factory
-import { zen } from '@sylphlab/zen-core';
+import { zen } from '@sylphx/zen';
 // Import immer for comparison
 import { produce as immerProduce } from 'immer';
 import { bench, describe, vi } from 'vitest'; // Import vi for potential mocking if needed

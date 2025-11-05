@@ -1,4 +1,4 @@
-import { get } from '@sylphlab/zen-core';
+import { get } from '@sylphx/zen';
 import { describe, expect, it } from 'vitest';
 
 // Import core exports

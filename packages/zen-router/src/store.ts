@@ -1,4 +1,4 @@
-import type { Unsubscribe } from '@sylph/core'; // Adjusted import path
+import type { Unsubscribe } from '@sylphx/zen';
 
 /** Router interface with generic state type */
 export type Router<S> = {

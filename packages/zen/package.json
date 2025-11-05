@@ -1,7 +1,7 @@
 {
-  "name": "@sylphlab/zen-core",
+  "name": "@sylphx/zen",
   "version": "0.1.1",
-  "description": "Core package for the zen state management library.",
+  "description": "Zen state management library - extreme minimalism, extreme speed.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -15,7 +15,7 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
+    "build": "bun build src/index.ts --outdir dist --target node --minify --sourcemap && bun build src/index.ts --outdir dist --target node --minify --sourcemap --format cjs --outfile dist/index.cjs && tsc --emitDeclarationOnly --outDir dist",
     "size": "size-limit",
     "lint": "echo 'Lint script not implemented yet'"
   },
@@ -47,17 +47,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sylphlab/zen.git"
+    "url": "git+https://github.com/sylphx/zen.git"
   },
-  "homepage": "https://github.com/sylphlab/zen#readme",
+  "homepage": "https://github.com/sylphx/zen#readme",
   "bugs": {
-    "url": "https://github.com/sylphlab/zen/issues"
+    "url": "https://github.com/sylphx/zen/issues"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "tsup": "^8.4.0",
     "typescript": "^5.8.3"
   }
 }

@@ -1,4 +1,4 @@
-import { get, set } from '@sylphlab/zen-core';
+import { get, set } from '@sylphx/zen';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { persistentZen } from './index';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@sylphlab/zen-draft",
+  "name": "@sylphx/zen-draft",
   "version": "0.0.0",
   "description": "Immer-like produce function with patch generation for zen",
   "type": "module",
@@ -21,17 +21,16 @@
   },
   "files": ["dist", "README.md"],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "bun build src/index.ts --outdir dist --target node --minify --sourcemap && bun build src/index.ts --outdir dist --target node --minify --sourcemap --format cjs --outfile dist/index.cjs && tsc --emitDeclarationOnly --outDir dist",
+    "dev": "bun build src/index.ts --outdir dist --target node --sourcemap --watch",
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@sylphlab/zen-core": "workspace:*"
+    "@sylphx/zen": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
     "immer": "^10.1.1",
-    "tsup": "^8.0.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   },

@@ -1,13 +1,13 @@
 // Import get/subscribe normally - they will be mocked by vi.mock below
-import { type MapAtom, type Unsubscribe, get, map, subscribe } from '@sylphlab/zen-core';
-import { $router, type RouterState } from '@sylphlab/zen-router'; // Import real $router
+import { type MapZen, type Unsubscribe, get, map, subscribe } from '@sylphx/zen';
+import { $router, type RouterState } from '@sylphx/zen-router'; // Import real $router
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRouter } from './index'; // Import the hook
 
 // Mock the core get/subscribe functions
-vi.mock('@sylphlab/zen-core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@sylphlab/zen-core')>();
+vi.mock('@sylphx/zen', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@sylphx/zen')>();
   return {
     ...actual,
     get: vi.fn(),
@@ -16,8 +16,8 @@ vi.mock('@sylphlab/zen-core', async (importOriginal) => {
 });
 
 // Mock the router store itself (optional, could use real one if preferred)
-// vi.mock('@sylphlab/zen-router', async (importOriginal) => {
-//     const actual = await importOriginal<typeof import('@sylphlab/zen-router')>();
+// vi.mock('@sylphx/zen-router', async (importOriginal) => {
+//     const actual = await importOriginal<typeof import('@sylphx/zen-router')>();
 //     const mockMap = map<RouterState>({ path: '/', search: {}, params: {} });
 //     return {
 //         ...actual,
@@ -44,7 +44,7 @@ describe('useRouter', () => {
     mockUnsubscribe = vi.fn();
 
     // Setup mock implementations
-    mockGet.mockImplementation((_store: MapAtom<RouterState>) => {
+    mockGet.mockImplementation((_store: MapZen<RouterState>) => {
       // Assume $router is passed correctly due to module execution order
       // if (store === $router) { // This check might be unreliable depending on mock strategy
       return currentState;
@@ -53,7 +53,7 @@ describe('useRouter', () => {
     });
 
     mockSubscribe.mockImplementation(
-      (_store: MapAtom<RouterState>, listener: (state: RouterState) => void): Unsubscribe => {
+      (_store: MapZen<RouterState>, listener: (state: RouterState) => void): Unsubscribe => {
         // Assume $router is passed correctly
         // if (store === $router) {
         listeners.add(listener);

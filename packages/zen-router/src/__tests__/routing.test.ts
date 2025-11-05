@@ -1,4 +1,4 @@
-import { set } from '@sylphlab/zen-core'; // Import the functional set
+import { set } from '@sylphx/zen'; // Import the functional set
 import { beforeEach, describe, expect, it } from 'vitest';
 import { $router } from '../index';
 import { matchRoutes } from '../matcher'; // Assuming matchRoutes is exported or made available for testing

@@ -1,5 +1,5 @@
-import { get, set } from '@sylphlab/zen-core';
-import type { Zen } from '@sylphlab/zen-core';
+import { get, set } from '@sylphx/zen';
+import type { Zen } from '@sylphx/zen';
 import { produce } from './produce';
 import type { Patch, ProduceOptions } from './types';
 import { deepEqual } from './utils'; // Import deepEqual

@@ -1,5 +1,5 @@
-import { get, subscribe } from '@sylphlab/zen-core';
-import { $router, type RouterState } from '@sylphlab/zen-router';
+import { get, subscribe } from '@sylphx/zen';
+import { $router, type RouterState } from '@sylphx/zen-router';
 import { useEffect, useState } from 'react';
 
 /**
@@ -36,4 +36,4 @@ export function useRouter(): RouterState {
 }
 
 // Re-export core types for convenience if needed
-export type { RouterState, Params, Search } from '@sylphlab/zen-router';
+export type { RouterState, Params, Search } from '@sylphx/zen-router';

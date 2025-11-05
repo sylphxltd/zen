@@ -1,7 +1,5 @@
-import type { BatchedZen } from './batched'; // Import BatchedZen
-// Remove duplicate import line
+import type { BatchedZen } from './batched';
 import type { ComputedZen } from './computed';
-// Functional zen implementation
 import type {
   AnyZen,
   DeepMapZen,
@@ -12,18 +10,15 @@ import type {
   Unsubscribe,
   ZenValue,
   ZenWithValue,
-} from './types'; // Add MapZen, TaskZen, TaskState back
-// Removed import { isComputedZen } from './typeGuards';
-// Removed TaskZen import from './task'
-// Removed import from internalUtils
+} from './types';
 
-// --- Batching Internals (moved from batch.ts) ---
+// Batching Internals
 /** Tracks the nesting depth of batch calls. @internal */
-export let batchDepth = 0; // Export for map/deepMap
+export let batchDepth = 0;
 /** Stores zens that have changed within the current batch, along with their original value. */
-const batchQueue = new Map<Zen<unknown>, unknown>(); // Use unknown for both key and value
+const batchQueue = new Map<Zen<unknown>, unknown>();
 
-// --- Internal notifyListeners function (moved from internalUtils.ts) ---
+// Internal notifyListeners function
 /**
  * Notifies all listeners of an zen about a value change.
  * @internal - Exported for use by other modules like computed, deepMap.

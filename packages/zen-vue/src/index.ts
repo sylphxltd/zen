@@ -1,4 +1,4 @@
-import { type Zen, get, subscribe } from '@sylphlab/zen-core';
+import { type Zen, get, subscribe } from '@sylphx/zen';
 import { type Ref, onMounted, onUnmounted, ref } from 'vue';
 
 /**

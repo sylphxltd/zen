@@ -1,4 +1,4 @@
-// Combined imports from @sylphlab/zen-core
+// Combined imports from @sylphx/zen
 import {
   type MapZen,
   type Unsubscribe, // Added missing import
@@ -9,7 +9,7 @@ import {
   set,
   subscribe,
   zen, // Change zen to zen
-} from '@sylphlab/zen-core';
+} from '@sylphx/zen';
 
 // --- Types ---
 

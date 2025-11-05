@@ -1,7 +1,7 @@
-# @sylph/zen: Extreme Minimalism, Extreme Speed 🚀
+# @sylphx/zen: Extreme Minimalism, Extreme Speed 🚀
 
-[![npm version](https://badge.fury.io/js/@sylph/zen.svg)](https://badge.fury.io/js/@sylph/zen) <!-- Placeholder: Update link if package name differs -->
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@sylph/zen)](https://bundlephobia.com/package/@sylph/zen) <!-- Placeholder: Update link if package name differs -->
+[![npm version](https://badge.fury.io/js/@sylphx/zen.svg)](https://badge.fury.io/js/@sylphx/zen)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@sylphx/zen)](https://bundlephobia.com/package/@sylphx/zen)
 [![Tests](https://github.com/your-repo/zen/actions/workflows/test.yml/badge.svg)](https://github.com/your-repo/zen/actions/workflows/test.yml) <!-- Placeholder: Update link -->
 
 **Embrace simplicity. Achieve speed. Meet Zen – the state management library designed around extreme minimalism for unparalleled performance and efficiency.**
@@ -43,11 +43,11 @@ By focusing relentlessly on a highly optimized, simple core and only the essenti
 ## Installation 📦
 
 ```bash
-npm install @sylph/zen
+npm install @sylphx/zen
 # or
-yarn add @sylph/zen
+yarn add @sylphx/zen
 # or
-pnpm add @sylph/zen
+pnpm add @sylphx/zen
 ```
 
 ---
@@ -59,7 +59,7 @@ pnpm add @sylph/zen
 The fundamental building block for reactive state.
 
 ```typescript
-import { atom, get, set, subscribe } from '@sylph/zen';
+import { atom, get, set, subscribe } from '@sylphx/zen';
 
 const counter = atom(0);
 
@@ -85,7 +85,7 @@ set(counter, 2); // No output, unsubscribed
 Create derived state based on one or more atoms.
 
 ```typescript
-import { atom, computed, get, set, subscribe } from '@sylph/zen';
+import { atom, computed, get, set, subscribe } from '@sylphx/zen';
 
 const count = atom(10);
 const message = atom(' apples');
@@ -122,7 +122,7 @@ unsubMsg();
 Optimized for object state where you often update/listen to individual keys.
 
 ```typescript
-import { map, get, subscribe, setMapKey, setMapValue, listenMapKeys } from '@sylph/zen';
+import { map, get, subscribe, setMapKey, setMapValue, listenMapKeys } from '@sylphx/zen';
 
 const profile = map({ name: 'John', age: 30, city: 'New York' });
 
@@ -155,7 +155,7 @@ unsubAge();
 Efficiently manage and subscribe to changes within nested objects/arrays.
 
 ```typescript
-import { deepMap, get, subscribe, setDeepMapPath, setDeepMapValue, listenDeepMapPaths } from '@sylph/zen';
+import { deepMap, get, subscribe, setDeepMapPath, setDeepMapValue, listenDeepMapPaths } from '@sylphx/zen';
 
 const settings = deepMap({
   user: { name: 'Anon', preferences: { theme: 'light', notifications: true } },
@@ -201,7 +201,7 @@ unsubData();
 Handle async operations gracefully.
 
 ```typescript
-import { task, computed, get, subscribe, runTask, getTaskState } from '@sylph/zen';
+import { task, computed, get, subscribe, runTask, getTaskState } from '@sylphx/zen';
 
 const fetchData = async (userId: number): Promise<{ id: number; name: string }> => {
   // Simulate API call
@@ -256,7 +256,7 @@ console.log(getTaskState(userTask)); // Output: { loading: false, error: Error: 
 Listen to internal atom events using `onStart`, `onStop`, `onSet`, `onNotify`, `onMount`.
 
 ```typescript
-import { atom, set, subscribe, onStart, onStop, onSet, onNotify } from '@sylph/zen';
+import { atom, set, subscribe, onStart, onStop, onSet, onNotify } from '@sylphx/zen';
 
 const myAtom = atom(0);
 

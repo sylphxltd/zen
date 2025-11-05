@@ -1,4 +1,4 @@
-import { get, map, setKey } from '@sylphlab/zen-core';
+import { get, map, setKey } from '@sylphx/zen';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   handleLinkClick,
@@ -12,7 +12,7 @@ import * as matcher from './matcher'; // To mock matchRoutes
 import * as routes from './routes'; // To mock getRoutes
 import * as utils from './utils'; // To mock parseQuery
 
-import * as core from '@sylphlab/zen-core'; // Import actual core functions
+import * as core from '@sylphx/zen'; // Import actual core functions
 
 // Define mockRouterStore *before* vi.mock uses it
 const _mockRouterStore = core.map<RouterState>({ path: '', search: {}, params: {} }); // Keep for type reference if needed, but don't mock export

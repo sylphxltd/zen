@@ -1,4 +1,4 @@
-import { zen as atom, get, subscribe } from '@sylphlab/zen-core';
+import { zen as atom, get, subscribe } from '@sylphx/zen';
 import { describe, expect, it, vi } from 'vitest';
 import type { Patch } from './types';
 import { produceZen } from './zen';

@@ -1,11 +1,11 @@
-import { type Atom, set, zen } from '@sylphlab/zen-core';
+import { type Zen, set, zen } from '@sylphx/zen';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { defineComponent, nextTick } from 'vue';
 import { useStore } from './index';
 
 describe('useStore', () => {
-  let testAtom: Atom<number>;
+  let testAtom: Zen<number>;
 
   beforeEach(() => {
     // Reset atom before each test

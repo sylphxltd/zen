@@ -1,4 +1,4 @@
-import { get, setKey } from '@sylphlab/zen-core';
+import { get, setKey } from '@sylphx/zen';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   handleLinkClick,

@@ -1,4 +1,4 @@
-import type { Unsubscribe } from '@sylphlab/zen-core'; // Import from core
+import type { Unsubscribe } from '@sylphx/zen'; // Import from core
 import { vi } from 'vitest';
 import type { RouterState } from '../src/index'; // Import real types from actual source
 

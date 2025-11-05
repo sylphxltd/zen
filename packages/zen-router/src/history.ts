@@ -1,4 +1,4 @@
-import { get, setKey } from '@sylphlab/zen-core'; // Import get and setKey
+import { get, setKey } from '@sylphx/zen'; // Import get and setKey
 import { $router } from './index'; // Removed unused RouterState
 import { matchRoutes } from './matcher'; // Import matcher, removed unused RouteConfig
 import { getRoutes } from './routes'; // Import route getter

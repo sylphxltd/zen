@@ -1,5 +1,5 @@
 {
-  "name": "@sylphlab/zen-router",
+  "name": "@sylphx/zen-router",
   "version": "0.1.1",
   "description": "Tiny URL router for zen state management.",
   "type": "module",
@@ -15,7 +15,7 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup"
+    "build": "bun build src/index.ts --outdir dist --target node --minify --sourcemap && bun build src/index.ts --outdir dist --target node --minify --sourcemap --format cjs --outfile dist/index.cjs && tsc --emitDeclarationOnly --outDir dist"
   },
   "keywords": ["zen", "router", "routing", "state management", "minimal", "tiny"],
   "author": "Sylph Lab <hi@sylphlab.com>",
@@ -36,6 +36,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@sylphlab/zen-core": "workspace:*"
+    "@sylphx/zen": "workspace:*"
   }
 }

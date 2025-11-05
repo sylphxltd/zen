@@ -1,5 +1,5 @@
 {
-  "name": "@zen/vue",
+  "name": "@sylphx/zen-vue",
   "version": "0.0.0",
   "description": "Vue integration for Zen state manager",
   "type": "module",
@@ -16,18 +16,15 @@
   "files": ["dist"],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup"
+    "build": "bun build src/index.ts --outdir dist --target node --minify --sourcemap && bun build src/index.ts --outdir dist --target node --minify --sourcemap --format cjs --outfile dist/index.cjs && tsc --emitDeclarationOnly --outDir dist"
   },
   "peerDependencies": {
-    "@sylphlab/zen-core": "workspace:*",
+    "@sylphx/zen": "workspace:*",
     "vue": "^3.0.0"
   },
   "devDependencies": {
     "@vue/test-utils": "^2.4.6",
-
     "jsdom": "^26.1.0",
-
-    "tsup": "^8.2.3",
     "typescript": "^5.5.3",
     "vue": "^3.4.34"
   },
