@@ -1,5 +1,6 @@
 import type { BatchedZen } from './batched';
 import type { ComputedZen } from './computed';
+import type { SelectZen } from './types';
 import type {
   AnyZen,
   DeepMapZen,
@@ -72,6 +73,7 @@ export type Zen<T = unknown> = ZenWithValue<T> & {
 // Overloads remain largely the same, relying on specific zen types
 export function get<T>(zen: Zen<T>): T;
 export function get<T>(zen: ComputedZen<T>): T | null;
+export function get<T>(zen: SelectZen<T>): T | null; // Add SelectZen overload
 export function get<T extends object>(zen: MapZen<T>): T; // Add MapZen overload back
 export function get<T extends object>(zen: DeepMapZen<T>): T;
 export function get<T>(zen: KarmaZen<T>): KarmaState<T>; // Add KarmaZen overload back
@@ -98,6 +100,14 @@ export function get<A extends AnyZen>(zen: A): ZenValue<A> | null {
       // Computed value can be null initially
       return computed._value as ZenValue<A> | null;
       // No break needed here as return exits the function
+    }
+    case 'select': {
+      // Handle select zen (lightweight single-source selector)
+      const select = zen as SelectZen<ZenValue<A>>;
+      if (select._dirty || select._value === null) {
+        select._update();
+      }
+      return select._value as ZenValue<A> | null;
     }
     // Add case for batched, although get() shouldn't trigger its update
     case 'batched': {
@@ -200,11 +210,21 @@ function _handleFirstSubscription<A extends AnyZen>(
     }
   }
 
-  // If it's a computed or batched zen, trigger its source subscription logic
-  if (zen._kind === 'computed' || zen._kind === 'batched') {
-    const dependentZen = zen as ComputedZen<ZenValue<A>> | BatchedZen<ZenValue<A>>;
-    if (typeof dependentZen._subscribeToSources === 'function') {
-      dependentZen._subscribeToSources();
+  // If it's a computed, select, or batched zen, trigger its source subscription logic
+  if (zen._kind === 'computed' || zen._kind === 'select' || zen._kind === 'batched') {
+    const dependentZen = zen as
+      | ComputedZen<ZenValue<A>>
+      | SelectZen<ZenValue<A>>
+      | BatchedZen<ZenValue<A>>;
+    if (
+      typeof dependentZen._subscribeToSources === 'function' ||
+      typeof (dependentZen as SelectZen<ZenValue<A>>)._subscribeToSource === 'function'
+    ) {
+      if ('_subscribeToSources' in dependentZen) {
+        dependentZen._subscribeToSources();
+      } else if ('_subscribeToSource' in dependentZen) {
+        (dependentZen as SelectZen<ZenValue<A>>)._subscribeToSource();
+      }
     }
   }
 }
@@ -239,11 +259,21 @@ function _handleLastUnsubscribe<A extends AnyZen>(
     baseZen._mountCleanups = undefined; // Clear the map after running cleanups
   }
 
-  // If it's a computed or batched zen, trigger its source unsubscription logic
-  if (zen._kind === 'computed' || zen._kind === 'batched') {
-    const dependentZen = zen as ComputedZen<ZenValue<A>> | BatchedZen<ZenValue<A>>;
-    if (typeof dependentZen._unsubscribeFromSources === 'function') {
-      dependentZen._unsubscribeFromSources();
+  // If it's a computed, select, or batched zen, trigger its source unsubscription logic
+  if (zen._kind === 'computed' || zen._kind === 'select' || zen._kind === 'batched') {
+    const dependentZen = zen as
+      | ComputedZen<ZenValue<A>>
+      | SelectZen<ZenValue<A>>
+      | BatchedZen<ZenValue<A>>;
+    if (
+      typeof dependentZen._unsubscribeFromSources === 'function' ||
+      typeof (dependentZen as SelectZen<ZenValue<A>>)._unsubscribeFromSource === 'function'
+    ) {
+      if ('_unsubscribeFromSources' in dependentZen) {
+        dependentZen._unsubscribeFromSources();
+      } else if ('_unsubscribeFromSource' in dependentZen) {
+        (dependentZen as SelectZen<ZenValue<A>>)._unsubscribeFromSource();
+      }
     }
   }
 }

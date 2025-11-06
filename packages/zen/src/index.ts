@@ -9,6 +9,7 @@ export type Zen<T = unknown> = _Zen<T>;
 
 // Other Types
 export type { ReadonlyZen, ComputedZen } from './computed';
+export type { ReadonlySelectZen, SelectZen } from './types';
 export type { Path } from './deepMap';
 export type { LifecycleListener, KeyListener, PathListener } from './events';
 
@@ -17,6 +18,7 @@ import { zen as _zen } from './zen';
 export const zen = _zen;
 export { map } from './map';
 export { computed } from './computed';
+export { select } from './select';
 export { deepMap } from './deepMap';
 export { karma } from './karma';
 export { mapCreator } from './mapCreator';

@@ -14,7 +14,7 @@ export type Unsubscribe = () => void;
 /** Base structure for zens that directly hold value and listeners. */
 export type ZenWithValue<T> = {
   /** Distinguishes zen types for faster checks */
-  _kind: 'zen' | 'computed' | 'map' | 'deepMap' | 'karma' | 'batched'; // Add 'batched'
+  _kind: 'zen' | 'computed' | 'select' | 'map' | 'deepMap' | 'karma' | 'batched'; // Add 'select' and 'batched'
   /** Current value */
   _value: T; // Value type enforced by generic, no null default
   /** Value listeners (Set for efficient add/delete/has) */
@@ -68,6 +68,25 @@ export type KarmaZen<T = void, Args extends unknown[] = unknown[]> = ZenWithValu
   _asyncFn: (...args: Args) => Promise<T>;
 };
 
+/** Represents a Select Zen (lightweight single-source selector). */
+export type SelectZen<T = unknown, S = unknown> = {
+  _kind: 'select';
+  _value: T | null; // Can be null initially
+  _dirty: boolean;
+  readonly _source: AnyZen; // Single source
+  readonly _selector: (value: S) => T;
+  readonly _equalityFn: (a: T, b: T) => boolean;
+  _unsubscriber?: Unsubscribe;
+  _listeners?: Set<Listener<T>>;
+  // Internal methods
+  _update: () => boolean;
+  _subscribeToSource: () => void;
+  _unsubscribeFromSource: () => void;
+};
+
+/** Alias for SelectZen, representing the read-only nature. */
+export type ReadonlySelectZen<T = unknown> = SelectZen<T>;
+
 /** Utility type to extract the value type from any zen type. */
 export type ZenValue<A extends AnyZen> = A extends ZenWithValue<infer V> ? V : never;
 
@@ -78,9 +97,11 @@ export type AnyZen =
   | Zen<any>
   // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
   | ComputedZen<any>
+  // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
+  | SelectZen<any, any>
   | MapZen<object>
   | DeepMapZen<object>
   // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
   | KarmaZen<any, any>
   // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
-  | BatchedZen<any>; // Add BatchedZen<any>
+  | BatchedZen<any>; // Add SelectZen<any, any> and BatchedZen<any>
