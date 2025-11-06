@@ -51,6 +51,6 @@
     "zustand": "^5.0.8"
   },
   "dependencies": {
-    "@sylphx/craft": "^1.1.0"
+    "@sylphx/craft": "^1.2.0"
   }
 }

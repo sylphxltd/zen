@@ -1,14 +1,10 @@
-import { craft } from '@sylphx/craft';
+import { craft, produceWithPatches } from '@sylphx/craft';
 import type { ProduceOptions, ProduceResult } from './types';
 import { isDraftable } from './utils';
 
-// Note: Patch generation is not currently supported by @sylphx/craft
-// This implementation provides basic produce functionality without patches
-// Patches will always be empty arrays
-
 export function produce<T>(
   baseState: T,
-  recipe: (draft: T) => undefined | undefined,
+  recipe: (draft: T) => undefined | void,
   options?: ProduceOptions,
 ): ProduceResult<T> {
   // Handle non-draftable state directly (no patches)
@@ -17,14 +13,16 @@ export function produce<T>(
     return [baseState as T, [], []];
   }
 
-  // Use craft for the actual immutable update
-  const finalState = craft(baseState, recipe as (draft: T) => T | undefined);
-
-  // Note: Patch generation is not supported yet
-  // If patches are requested, we return empty arrays
-  // Future: Implement patch generation or use a plugin
+  // Use produceWithPatches if patches are requested
   if (options?.patches || options?.inversePatches) {
+    const [finalState, patches, inversePatches] = produceWithPatches(
+      baseState,
+      recipe as (draft: T) => T | void,
+    );
+    return [finalState as T, patches, inversePatches];
   }
 
+  // Otherwise use craft for basic immutable update (faster)
+  const finalState = craft(baseState, recipe as (draft: T) => T | void);
   return [finalState as T, [], []];
 }

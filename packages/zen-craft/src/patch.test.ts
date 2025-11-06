@@ -322,8 +322,7 @@ describe('applyPatches', () => {
     });
   });
 
-  // Skip Map/Set tests - craft has limited Map/Set change detection
-  describe.skip('Map/Set Operations', () => {
+  describe('Map/Set Operations', () => {
     it('should apply patches to Maps', () => {
       const baseState: MapState = { map: new Map<string, number>([['a', 1]]) };
       const patches: Patch[] = [

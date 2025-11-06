@@ -277,8 +277,7 @@ describe('produce', () => {
     });
   });
 
-  // Skip patch generation tests - craft doesn't support patches yet
-  describe.skip('Patch Generation', () => {
+  describe('Patch Generation', () => {
     it('should generate patches for object mutations', () => {
       const baseState = { a: 1, b: { c: 2 } };
       const [, patches] = produce(
@@ -291,10 +290,10 @@ describe('produce', () => {
         },
         { patches: true },
       );
-      // Adjust order based on Immer's observed output
+      // Craft generates patches in different order than immer
       expect(patches).toEqual([
-        { op: 'replace', path: ['b', 'c'], value: 20 },
         { op: 'replace', path: ['a'], value: 10 },
+        { op: 'replace', path: ['b', 'c'], value: 20 },
         { op: 'add', path: ['d'], value: 30 },
       ]);
     });
@@ -330,7 +329,7 @@ describe('produce', () => {
         baseState,
         (draft) => {
           draft.a = 100; // replace
-          (draft.b as Partial<typeof draft.b>).c = undefined; // remove
+          (draft.b as any).c = nothing; // remove using craft's nothing symbol
           (draft as any).d = 200; // add
           draft.arr.push(20); // add to array
           return undefined;
@@ -338,8 +337,8 @@ describe('produce', () => {
         { inversePatches: true },
       );
       expect(inversePatches).toContainEqual({ op: 'replace', path: ['a'], value: 1 });
-      // Immer generates 'replace' with old value for delete via undefined assignment
-      expect(inversePatches).toContainEqual({ op: 'replace', path: ['b', 'c'], value: 2 }); // Corrected expectation
+      // Craft generates 'add' operation for removed property in inverse patch
+      expect(inversePatches).toContainEqual({ op: 'add', path: ['b', 'c'], value: 2 });
       expect(inversePatches).toContainEqual({ op: 'remove', path: ['d'] });
       expect(inversePatches).toContainEqual({ op: 'remove', path: ['arr', 1] });
       expect(inversePatches.length).toBe(4);
@@ -362,8 +361,7 @@ describe('produce', () => {
     });
   });
 
-  // Skip Map/Set mutation tests - craft has limited Map/Set change detection
-  describe.skip('Map/Set Mutations', () => {
+  describe('Map/Set Mutations', () => {
     it('should handle Map mutations and generate patches', () => {
       const baseState: MapState = { map: new Map<string, number>([['a', 1]]) };
       // Use single generic
@@ -381,11 +379,10 @@ describe('produce', () => {
       expect(nextState).not.toBe(baseState);
       expect(nextState.map).toEqual(new Map([['b', 2]]));
       expect(baseState.map).toEqual(new Map([['a', 1]]));
-      // Adjust expectation based on Immer's optimization (set+delete -> remove)
+      // Craft generates patches in execution order
       expect(patches).toEqual([
-        { op: 'add', path: ['map', 'b'], value: 2 },
-        // { op: 'replace', path: ['map', 'a'], value: 10 }, // Immer optimizes this away
         { op: 'remove', path: ['map', 'a'] },
+        { op: 'add', path: ['map', 'b'], value: 2 },
       ]);
     });
 
@@ -406,10 +403,10 @@ describe('produce', () => {
       expect(nextState).not.toBe(baseState);
       expect(nextState.set).toEqual(new Set([1, 3]));
       expect(baseState.set).toEqual(new Set([1, 2]));
-      // Adjust order to match Immer's observed output
+      // Craft uses array-like patches for Sets (remove index, add index)
       expect(patches).toEqual([
-        { op: 'set_delete', path: ['set'], value: 2 },
-        { op: 'set_add', path: ['set'], value: 3 },
+        { op: 'remove', path: ['set', 1], value: 2 },
+        { op: 'add', path: ['set', 1], value: 3 },
       ]);
     });
 
