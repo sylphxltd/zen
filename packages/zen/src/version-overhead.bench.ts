@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { zen, set, subscribe } from './zen';
+import { set, subscribe, zen } from './zen';
 
 describe('Version Tracking Overhead', () => {
   bench('baseline: set with no subscribers (measures pure version overhead)', () => {

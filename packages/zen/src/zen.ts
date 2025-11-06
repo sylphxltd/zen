@@ -46,20 +46,31 @@ export function notifyListeners<A extends AnyZen>(
   // Operate directly on the zen, casting to the base structure with the correct value type
   const baseZen = zen as ZenWithValue<ZenValue<A>>;
 
-  // ✅ PHASE 1 OPTIMIZATION: Array + No try-catch
+  // ✅ PHASE 3 OPTIMIZATION: Cache length and fast path for common cases
   // Notify regular value listeners
   const ls = baseZen._listeners;
-  if (ls?.length) {
-    for (let i = 0; i < ls.length; i++) {
-      ls[i](value, oldValue);
+  if (ls) {
+    const len = ls.length;
+    // Fast path: most common case is 1 listener
+    if (len === 1) {
+      ls[0](value, oldValue);
+    } else if (len > 1) {
+      for (let i = 0; i < len; i++) {
+        ls[i](value, oldValue);
+      }
     }
   }
 
   // Notify onNotify listeners AFTER value listeners
   const notifyLs = baseZen._notifyListeners;
-  if (notifyLs?.length) {
-    for (let i = 0; i < notifyLs.length; i++) {
-      notifyLs[i](value);
+  if (notifyLs) {
+    const len = notifyLs.length;
+    if (len === 1) {
+      notifyLs[0](value);
+    } else if (len > 1) {
+      for (let i = 0; i < len; i++) {
+        notifyLs[i](value);
+      }
     }
   }
 }
@@ -164,16 +175,33 @@ export function set<T>(zen: Zen<T>, value: T, force = false): void {
 
   const oldValue = zen._value;
   if (force || !Object.is(value, oldValue)) {
-    // Handle onSet listeners
-    _handleZenOnSet(zen, value);
+    // ✅ PHASE 3 OPTIMIZATION: Inline hot path for better performance
+    // Handle onSet listeners (inlined)
+    if (batchDepth <= 0) {
+      const setLs = zen._setListeners;
+      if (setLs) {
+        const len = setLs.length;
+        if (len === 1) {
+          setLs[0](value);
+        } else if (len > 1) {
+          for (let i = 0; i < len; i++) {
+            setLs[i](value);
+          }
+        }
+      }
+    }
 
     // Update value
     zen._value = value;
     // ✅ PHASE 2 OPTIMIZATION: Increment global version on every update
     zen._version = incrementVersion();
 
-    // Handle batching or immediate notification
-    _handleZenNotification(zen, oldValue, value);
+    // Handle batching or immediate notification (inlined)
+    if (batchDepth > 0) {
+      queueZenForBatch(zen, oldValue);
+    } else {
+      notifyListeners(zen as AnyZen, value, oldValue);
+    }
   }
 }
 
