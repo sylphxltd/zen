@@ -22,17 +22,32 @@ import { notifyListeners, subscribe as subscribeToCoreZen } from './zen'; // Imp
 // WeakMap to associate KarmaZen instances with their currently running promise.
 const runningPromises = new WeakMap<KarmaZen<unknown>, Promise<unknown>>(); // Use unknown
 
+// WeakMap to store cached results based on arguments
+const resultCache = new WeakMap<KarmaZen<unknown>, Map<string, unknown>>();
+
+// --- Karma Options ---
+export interface KarmaOptions<Args extends unknown[] = unknown[]> {
+  /** Enable caching based on arguments. Defaults to false. */
+  cache?: boolean;
+  /** Custom function to generate cache key from arguments. Defaults to JSON.stringify. */
+  cacheKey?: (...args: Args) => string;
+  /** Maximum number of cached results. Uses LRU eviction. Defaults to 100. */
+  maxCacheSize?: number;
+}
+
 /**
  * Creates a Karma Zen to manage the state of an asynchronous operation.
  *
  * @template T The type of the data returned by the async function.
  * @param asyncFn The asynchronous function to execute when `runKarma` is called.
+ * @param options Optional configuration for caching behavior.
  * @returns A KarmaZen instance.
  */
 // Add Args generic parameter matching KarmaZen type
 export function karma<T = void, Args extends unknown[] = unknown[]>(
   // Use unknown[] for Args
   asyncFn: (...args: Args) => Promise<T>,
+  options?: KarmaOptions<Args>,
 ): KarmaZen<T, Args> {
   // Return KarmaZen with Args
   // Create the merged KarmaZen object directly
@@ -41,8 +56,17 @@ export function karma<T = void, Args extends unknown[] = unknown[]>(
     _kind: 'karma',
     _value: { loading: false }, // Initial KarmaState
     _asyncFn: asyncFn,
+    _cacheEnabled: options?.cache ?? false,
+    _cacheKeyFn: options?.cacheKey,
+    _maxCacheSize: options?.maxCacheSize ?? 100,
     // Listener properties (_listeners, etc.) are initially undefined
   };
+
+  // Initialize cache if enabled
+  if (karmaZen._cacheEnabled) {
+    resultCache.set(karmaZen as KarmaZen<unknown>, new Map<string, unknown>());
+  }
+
   // No need for STORE_MAP_KEY_SET marker for karma zens
   return karmaZen;
 }
@@ -52,6 +76,7 @@ export function karma<T = void, Args extends unknown[] = unknown[]>(
 /**
  * Runs the asynchronous function associated with the task.
  * If the task is already running, returns the existing promise.
+ * If caching is enabled and a cached result exists for the arguments, returns the cached result.
  * Updates the task's state zen based on the outcome.
  * @param karmaZen The karma zen to run.
  * @param args Arguments to pass to the asynchronous function.
@@ -65,6 +90,33 @@ export function runKarma<T, Args extends unknown[]>(
   // Use unknown[] for Args
   // Operate directly on karmaZen
   // const stateZen = karmaZen._stateZen; // Removed
+
+  // Check cache if enabled
+  if (karmaZen._cacheEnabled) {
+    const cache = resultCache.get(karmaZen as KarmaZen<unknown>);
+    if (cache) {
+      // Generate cache key
+      const cacheKey = karmaZen._cacheKeyFn
+        ? karmaZen._cacheKeyFn(...args)
+        : JSON.stringify(args);
+
+      // Check if cached result exists
+      if (cache.has(cacheKey)) {
+        const cachedResult = cache.get(cacheKey) as T;
+
+        // Update state with cached data (synchronous)
+        const oldState = karmaZen._value;
+        karmaZen._value = { loading: false, data: cachedResult, error: undefined };
+        // Only notify if state actually changed
+        if (oldState.loading || oldState.error || oldState.data !== cachedResult) {
+          notifyListeners(karmaZen as AnyZen, karmaZen._value, oldState);
+        }
+
+        // Return resolved promise with cached data
+        return Promise.resolve(cachedResult);
+      }
+    }
+  }
 
   // Check if a promise is already running for this task using the WeakMap.
   // Cast karmaZen for WeakMap key compatibility
@@ -98,6 +150,30 @@ export function runKarma<T, Args extends unknown[]>(
       if (runningPromises.get(karmaZen as KarmaZen<unknown>) === promise) {
         // Cast to unknown
         // console.log('Task succeeded, updating state.'); // Optional debug log
+
+        // Store result in cache if enabled
+        if (karmaZen._cacheEnabled) {
+          const cache = resultCache.get(karmaZen as KarmaZen<unknown>);
+          if (cache) {
+            const cacheKey = karmaZen._cacheKeyFn
+              ? karmaZen._cacheKeyFn(...args)
+              : JSON.stringify(args);
+
+            // Implement LRU eviction if cache is full
+            const maxSize = karmaZen._maxCacheSize ?? 100;
+            if (cache.size >= maxSize) {
+              // Remove oldest entry (first key in Map)
+              const firstKey = cache.keys().next().value;
+              if (firstKey !== undefined) {
+                cache.delete(firstKey);
+              }
+            }
+
+            // Store the result
+            cache.set(cacheKey, result);
+          }
+        }
+
         const oldStateSuccess = karmaZen._value;
         karmaZen._value = { loading: false, data: result, error: undefined };
         // Notify listeners directly attached to KarmaZen, cast to AnyZen.

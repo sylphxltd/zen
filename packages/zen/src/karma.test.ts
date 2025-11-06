@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getKarmaState, karma, runKarma, subscribeToKarma } from './karma';
-import { subscribe } from './zen';
+import { subscribe, zen, set } from './zen';
 
 // Helper to wait for promises/microtasks
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -189,5 +189,231 @@ describe('task', () => {
     runKarma(taskAtom, 'after');
     await tick();
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  // --- Caching Tests ---
+
+  describe('caching', () => {
+    it('should not cache by default', async () => {
+      let execCount = 0;
+      const taskAtom = karma(async (id: number) => {
+        execCount++;
+        await tick();
+        return `Result: ${id}`;
+      });
+
+      await runKarma(taskAtom, 1);
+      expect(execCount).toBe(1);
+
+      await runKarma(taskAtom, 1); // Same args
+      expect(execCount).toBe(2); // Should execute again (no caching)
+
+      await runKarma(taskAtom, 2);
+      expect(execCount).toBe(3);
+    });
+
+    it('should cache results when cache option is enabled', async () => {
+      let execCount = 0;
+      const taskAtom = karma(
+        async (id: number) => {
+          execCount++;
+          await tick();
+          return `Result: ${id}`;
+        },
+        { cache: true },
+      );
+
+      const result1 = await runKarma(taskAtom, 1);
+      expect(execCount).toBe(1);
+      expect(result1).toBe('Result: 1');
+
+      const result2 = await runKarma(taskAtom, 1); // Same args
+      expect(execCount).toBe(1); // Should NOT execute again (cached)
+      expect(result2).toBe('Result: 1');
+
+      const result3 = await runKarma(taskAtom, 2); // Different args
+      expect(execCount).toBe(2); // Should execute
+      expect(result3).toBe('Result: 2');
+
+      const result4 = await runKarma(taskAtom, 1); // Back to first args
+      expect(execCount).toBe(2); // Should use cache
+      expect(result4).toBe('Result: 1');
+    });
+
+    it('should use custom cache key function', async () => {
+      let execCount = 0;
+      const taskAtom = karma(
+        async (user: { id: number; name: string }) => {
+          execCount++;
+          await tick();
+          return `User: ${user.name}`;
+        },
+        {
+          cache: true,
+          cacheKey: (user) => String(user.id), // Only cache by ID, ignore name
+        },
+      );
+
+      await runKarma(taskAtom, { id: 1, name: 'Alice' });
+      expect(execCount).toBe(1);
+
+      await runKarma(taskAtom, { id: 1, name: 'Bob' }); // Same ID, different name
+      expect(execCount).toBe(1); // Should use cache (same ID)
+
+      await runKarma(taskAtom, { id: 2, name: 'Alice' });
+      expect(execCount).toBe(2); // Different ID
+    });
+
+    it('should update state synchronously when using cached result', async () => {
+      const taskAtom = karma(
+        async (id: number) => {
+          await tick();
+          return `Result: ${id}`;
+        },
+        { cache: true },
+      );
+
+      const listener = vi.fn();
+      const unsubscribe = subscribeToKarma(taskAtom, listener);
+      listener.mockClear();
+
+      // First run - async execution
+      const promise1 = runKarma(taskAtom, 1);
+      expect(getKarmaState(taskAtom).loading).toBe(true);
+      expect(listener).toHaveBeenCalledTimes(1); // Loading state
+
+      await promise1;
+      expect(getKarmaState(taskAtom).data).toBe('Result: 1');
+      expect(listener).toHaveBeenCalledTimes(2); // Success state
+
+      listener.mockClear();
+
+      // Second run - cached (synchronous)
+      const promise2 = runKarma(taskAtom, 1);
+      expect(getKarmaState(taskAtom).data).toBe('Result: 1');
+      expect(getKarmaState(taskAtom).loading).toBe(false);
+      expect(listener).toHaveBeenCalledTimes(0); // No notification if state unchanged
+
+      await promise2;
+      expect(listener).toHaveBeenCalledTimes(0);
+
+      unsubscribe();
+    });
+
+    it('should implement LRU eviction when cache is full', async () => {
+      let execCount = 0;
+      const taskAtom = karma(
+        async (id: number) => {
+          execCount++;
+          await tick();
+          return `Result: ${id}`;
+        },
+        {
+          cache: true,
+          maxCacheSize: 2, // Only cache 2 results
+        },
+      );
+
+      await runKarma(taskAtom, 1);
+      await runKarma(taskAtom, 2);
+      expect(execCount).toBe(2);
+
+      // Cache should have [1, 2]
+      await runKarma(taskAtom, 1);
+      await runKarma(taskAtom, 2);
+      expect(execCount).toBe(2); // Both cached
+
+      // Add third item - should evict first (1)
+      await runKarma(taskAtom, 3);
+      expect(execCount).toBe(3);
+
+      // Cache should now have [2, 3]
+      await runKarma(taskAtom, 2);
+      await runKarma(taskAtom, 3);
+      expect(execCount).toBe(3); // Both still cached
+
+      // Request 1 again - should execute (was evicted)
+      await runKarma(taskAtom, 1);
+      expect(execCount).toBe(4);
+    });
+
+    it('should work correctly with effect pattern', async () => {
+      let execCount = 0;
+      const taskAtom = karma(
+        async (id: number) => {
+          execCount++;
+          await tick();
+          return `User: ${id}`;
+        },
+        { cache: true },
+      );
+
+      const userId = zen(1);
+      const { effect } = await import('./effect');
+
+      const cleanup = effect([userId], (id) => {
+        runKarma(taskAtom, id);
+      });
+
+      await tick();
+      expect(execCount).toBe(1);
+
+      set(userId, 2);
+      await tick();
+      expect(execCount).toBe(2);
+
+      set(userId, 1); // Back to 1 - should use cache
+      await tick();
+      expect(execCount).toBe(2); // Should NOT execute again
+
+      set(userId, 2); // Back to 2 - should use cache
+      await tick();
+      expect(execCount).toBe(2); // Should NOT execute again
+
+      set(userId, 3); // New value
+      await tick();
+      expect(execCount).toBe(3);
+
+      cleanup();
+    });
+
+    it('should handle errors without caching them', async () => {
+      let execCount = 0;
+      const taskAtom = karma(
+        async (shouldFail: boolean) => {
+          execCount++;
+          await tick();
+          if (shouldFail) {
+            throw new Error('Test error');
+          }
+          return 'Success';
+        },
+        { cache: true },
+      );
+
+      // First call - error
+      try {
+        await runKarma(taskAtom, true);
+      } catch (e) {
+        expect((e as Error).message).toBe('Test error');
+      }
+      expect(execCount).toBe(1);
+
+      // Second call with same args - should execute again (errors not cached)
+      try {
+        await runKarma(taskAtom, true);
+      } catch (e) {
+        expect((e as Error).message).toBe('Test error');
+      }
+      expect(execCount).toBe(2);
+
+      // Call with success args
+      await runKarma(taskAtom, false);
+      expect(execCount).toBe(3);
+
+      // Call again - should use cache
+      await runKarma(taskAtom, false);
+      expect(execCount).toBe(3);
+    });
   });
 });

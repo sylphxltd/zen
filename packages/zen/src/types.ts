@@ -66,6 +66,9 @@ export type DeepMapZen<T extends object = object> = ZenWithValue<T> & {
 export type KarmaZen<T = void, Args extends unknown[] = unknown[]> = ZenWithValue<KarmaState<T>> & {
   _kind: 'karma';
   _asyncFn: (...args: Args) => Promise<T>;
+  _cacheEnabled?: boolean;
+  _cacheKeyFn?: (...args: Args) => string;
+  _maxCacheSize?: number;
 };
 
 /** Represents a Select Zen (lightweight single-source selector). */

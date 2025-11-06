@@ -12,6 +12,7 @@ export type { ReadonlyZen, ComputedZen } from './computed';
 export type { ReadonlySelectZen, SelectZen } from './types';
 export type { Path } from './deepMap';
 export type { LifecycleListener, KeyListener, PathListener } from './events';
+export type { KarmaOptions } from './karma';
 
 // Core Factories
 import { zen as _zen } from './zen';
