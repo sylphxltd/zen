@@ -17,6 +17,8 @@ export type ZenWithValue<T> = {
   _kind: 'zen' | 'computed' | 'select' | 'map' | 'deepMap' | 'karma' | 'batched';
   /** Current value */
   _value: T;
+  /** ✅ PHASE 2 OPTIMIZATION: Version tracking for fast staleness checks */
+  _version?: number;
   /** ✅ PHASE 1 OPTIMIZATION: Array-based listeners for better performance */
   _listeners?: Listener<T>[];
   // biome-ignore lint/suspicious/noExplicitAny: Listener arrays use any for simplicity
@@ -71,6 +73,8 @@ export type SelectZen<T = unknown, S = unknown> = {
   _kind: 'select';
   _value: T | null;
   _dirty: boolean;
+  /** ✅ PHASE 2 OPTIMIZATION: Version tracking for fast staleness checks */
+  _version?: number;
   readonly _source: AnyZen;
   readonly _selector: (value: S) => T;
   readonly _equalityFn: (a: T, b: T) => boolean;

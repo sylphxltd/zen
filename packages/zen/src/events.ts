@@ -74,7 +74,7 @@ function _unsubscribe<A extends AnyZen>(
 ): void {
   const baseZen = a as ZenWithValue<ZenValue<A>>;
   const ls = baseZen[listenerSetProp];
-  if (ls && ls.length) {
+  if (ls?.length) {
     const idx = ls.indexOf(fn);
     if (idx !== -1) {
       // Swap-remove for O(1) deletion

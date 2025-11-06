@@ -19,6 +19,15 @@ export let batchDepth = 0;
 /** Stores zens that have changed within the current batch, along with their original value. */
 const batchQueue = new Map<Zen<unknown>, unknown>();
 
+// ✅ PHASE 2 OPTIMIZATION: Global version counter for fast staleness checks
+/** Global version counter, incremented on every zen update. @internal */
+let globalVersion = 0;
+
+/** Helper function to increment and return the next global version. @internal */
+export function _incrementVersion(): number {
+  return ++globalVersion;
+}
+
 // Internal notifyListeners function
 /**
  * Notifies all listeners of an zen about a value change.
@@ -36,7 +45,7 @@ export function notifyListeners<A extends AnyZen>(
   // ✅ PHASE 1 OPTIMIZATION: Array + No try-catch
   // Notify regular value listeners
   const ls = baseZen._listeners;
-  if (ls && ls.length) {
+  if (ls?.length) {
     for (let i = 0; i < ls.length; i++) {
       ls[i](value, oldValue);
     }
@@ -44,7 +53,7 @@ export function notifyListeners<A extends AnyZen>(
 
   // Notify onNotify listeners AFTER value listeners
   const notifyLs = baseZen._notifyListeners;
-  if (notifyLs && notifyLs.length) {
+  if (notifyLs?.length) {
     for (let i = 0; i < notifyLs.length; i++) {
       notifyLs[i](value);
     }
@@ -122,7 +131,7 @@ export function get<A extends AnyZen>(zen: A): ZenValue<A> | null {
 function _handleZenOnSet<T>(zen: Zen<T>, value: T): void {
   if (batchDepth <= 0) {
     const setLs = zen._setListeners;
-    if (setLs && setLs.length) {
+    if (setLs?.length) {
       for (let i = 0; i < setLs.length; i++) {
         setLs[i](value);
       }
@@ -156,6 +165,8 @@ export function set<T>(zen: Zen<T>, value: T, force = false): void {
 
     // Update value
     zen._value = value;
+    // ✅ PHASE 2 OPTIMIZATION: Increment global version on every update
+    zen._version = _incrementVersion();
 
     // Handle batching or immediate notification
     _handleZenNotification(zen, oldValue, value);
@@ -177,7 +188,7 @@ function _handleFirstSubscription<A extends AnyZen>(
 ): void {
   // Trigger onMount listeners
   const mountLs = baseZen._mountListeners;
-  if (mountLs && mountLs.length) {
+  if (mountLs?.length) {
     baseZen._mountCleanups ??= new Map();
     for (let i = 0; i < mountLs.length; i++) {
       const cleanup = mountLs[i]();
@@ -191,7 +202,7 @@ function _handleFirstSubscription<A extends AnyZen>(
 
   // Trigger onStart listeners
   const startLs = baseZen._startListeners;
-  if (startLs && startLs.length) {
+  if (startLs?.length) {
     // biome-ignore lint/suspicious/noExplicitAny: TS struggles with generic overload resolution here
     const currentValue = get(zen as any);
     for (let i = 0; i < startLs.length; i++) {
@@ -227,7 +238,7 @@ function _handleLastUnsubscribe<A extends AnyZen>(
 
   // Trigger onStop listeners if this was the last value listener
   const stopLs = baseZen._stopListeners;
-  if (stopLs && stopLs.length) {
+  if (stopLs?.length) {
     for (let i = 0; i < stopLs.length; i++) {
       stopLs[i]();
     }

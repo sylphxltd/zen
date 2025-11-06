@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { zen, set, subscribe } from './zen';
+import { set, subscribe, zen } from './zen';
 
 // Benchmark to test the notifyListeners optimization
 // Testing impact of removing array spread in notification loop

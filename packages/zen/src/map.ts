@@ -5,7 +5,7 @@ import type { AnyZen, MapZen, Unsubscribe } from './types'; // Ensure AnyZen is 
 // Functional Map zen implementation.
 import type { Zen } from './zen';
 // Removed import { STORE_MAP_KEY_SET } from './keys';
-import { batchDepth, notifyListeners, queueZenForBatch } from './zen'; // Import batch helpers and notifyListeners from './zen'
+import { _incrementVersion, batchDepth, notifyListeners, queueZenForBatch } from './zen'; // Import version helper and batch helpers
 // Removed import { notifyListeners } from './zen'; // Import notifyListeners from './zen'
 
 // MapZen type is now defined in types.ts
@@ -35,7 +35,7 @@ export function map<T extends object>(initialValue: T): MapZen<T> {
 function _handleMapOnSet<T extends object>(mapZen: MapZen<T>, nextValue: T): void {
   if (batchDepth <= 0) {
     const setLs = mapZen._setListeners;
-    if (setLs && setLs.length) {
+    if (setLs?.length) {
       for (let i = 0; i < setLs.length; i++) {
         setLs[i](nextValue);
       }
@@ -53,7 +53,7 @@ function _handleMapKeyNotification<T extends object, K extends keyof T>(
   if (batchDepth > 0) {
     queueZenForBatch(mapZen as Zen<T>, oldValue);
   } else {
-    const hasListeners = (mapZen._listeners && mapZen._listeners.length) || (mapZen._notifyListeners && mapZen._notifyListeners.length);
+    const hasListeners = mapZen._listeners?.length || mapZen._notifyListeners?.length;
     if (hasListeners) {
       notifyListeners(mapZen as AnyZen, nextValue, oldValue);
     }
@@ -83,6 +83,8 @@ export function setKey<T extends object, K extends keyof T>(
 
     // 2. Update value DIRECTLY
     mapZen._value = nextValue;
+    // ✅ PHASE 2 OPTIMIZATION: Increment version on map updates
+    mapZen._version = _incrementVersion();
 
     // 3. Handle Batching or Immediate Notification
     _handleMapKeyNotification(mapZen, oldValue, nextValue, key);
@@ -97,9 +99,7 @@ function _calculateChangedMapKeys<T extends object>(
   const changedKeys: (keyof T)[] = [];
   // Add null check for safety
   if (oldValue && nextValue) {
-    const allKeys = new Set([...Object.keys(oldValue), ...Object.keys(nextValue)]) as Set<
-      keyof T
-    >;
+    const allKeys = new Set([...Object.keys(oldValue), ...Object.keys(nextValue)]) as Set<keyof T>;
     for (const k of allKeys) {
       if (!Object.is(oldValue[k], nextValue[k])) {
         changedKeys.push(k);
@@ -130,6 +130,8 @@ function _handleMapSetUpdateAndNotify<T extends object>(
 
     // Set the mapZen's value (shallow copy)
     mapZen._value = { ...nextValue };
+    // ✅ PHASE 2 OPTIMIZATION: Increment version on map updates
+    mapZen._version = _incrementVersion();
 
     // Handle batching or immediate notification
     if (batchDepth > 0) {
