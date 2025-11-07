@@ -411,6 +411,278 @@ describe('karma (Full Reactive)', () => {
     });
   });
 
+  describe('Concurrent requests (same args)', () => {
+    it('should prevent concurrent execution for same args', async () => {
+      let execCount = 0;
+      let resolveAsync: ((value: string) => void) | undefined;
+
+      const fetchUser = karma(async (id: number) => {
+        execCount++;
+        // First call should wait for manual resolution
+        await new Promise<string>((resolve) => {
+          resolveAsync = resolve;
+        });
+        return { id, name: `User ${id}` };
+      });
+
+      // Start two concurrent requests with same args
+      const promise1 = runKarma(fetchUser, 1);
+      const promise2 = runKarma(fetchUser, 1);
+
+      // Should only execute once
+      expect(execCount).toBe(1);
+
+      // Resolve the async operation
+      resolveAsync!('done');
+      const [result1, result2] = await Promise.all([promise1, promise2]);
+
+      // Both should get the same result
+      expect(result1).toEqual({ id: 1, name: 'User 1' });
+      expect(result2).toEqual({ id: 1, name: 'User 1' });
+      expect(execCount).toBe(1); // Still only executed once
+    });
+
+    it('should allow concurrent execution for different args', async () => {
+      let execCount = 0;
+      const fetchUser = karma(async (id: number) => {
+        execCount++;
+        await tick();
+        return { id };
+      });
+
+      // Start two concurrent requests with different args
+      const promise1 = runKarma(fetchUser, 1);
+      const promise2 = runKarma(fetchUser, 2);
+
+      await Promise.all([promise1, promise2]);
+
+      // Both should execute
+      expect(execCount).toBe(2);
+    });
+
+    it('should notify all listeners only once during concurrent requests', async () => {
+      let resolveAsync: ((value: { id: number }) => void) | undefined;
+
+      const fetchUser = karma(async (id: number) => {
+        await new Promise<{ id: number }>((resolve) => {
+          resolveAsync = resolve;
+        });
+        return { id };
+      });
+
+      const states1: any[] = [];
+      const states2: any[] = [];
+
+      const unsub1 = subscribeToKarma(fetchUser, [1], (state) => {
+        states1.push({ ...state });
+      });
+
+      const unsub2 = subscribeToKarma(fetchUser, [1], (state) => {
+        states2.push({ ...state });
+      });
+
+      await tick();
+
+      // Both should have initial loading state
+      expect(states1[states1.length - 1].loading).toBe(true);
+      expect(states2[states2.length - 1].loading).toBe(true);
+
+      // Start concurrent requests (should use same underlying promise)
+      const promise1 = runKarma(fetchUser, 1);
+      const promise2 = runKarma(fetchUser, 1);
+
+      // Resolve
+      resolveAsync!({ id: 1 });
+      await Promise.all([promise1, promise2]);
+      await tick();
+
+      // Both listeners should receive success notification
+      expect(states1[states1.length - 1]).toMatchObject({ loading: false, data: { id: 1 } });
+      expect(states2[states2.length - 1]).toMatchObject({ loading: false, data: { id: 1 } });
+
+      unsub1();
+      unsub2();
+    });
+  });
+
+  describe('Effect integration', () => {
+    it('should work correctly with effect pattern', async () => {
+      let execCount = 0;
+      const fetchUser = karma(async (id: number) => {
+        execCount++;
+        await tick();
+        return `User: ${id}`;
+      });
+
+      const { zen, set } = await import('./zen');
+      const { effect } = await import('./effect');
+      const userId = zen(1);
+
+      const cleanup = effect([userId], (id) => {
+        runKarma(fetchUser, id);
+      });
+
+      await tick();
+      await tick();
+      expect(execCount).toBe(1);
+
+      // Change to different value
+      set(userId, 2);
+      await tick();
+      await tick();
+      expect(execCount).toBe(2);
+
+      // Back to 1 - should use cache
+      set(userId, 1);
+      await tick();
+      await tick();
+      expect(execCount).toBe(2); // Should NOT execute again
+
+      // Back to 2 - should use cache
+      set(userId, 2);
+      await tick();
+      await tick();
+      expect(execCount).toBe(2); // Should NOT execute again
+
+      // New value
+      set(userId, 3);
+      await tick();
+      await tick();
+      expect(execCount).toBe(3);
+
+      cleanup();
+    });
+
+    it('should reactively update when used with effect and subscribeToKarma', async () => {
+      const fetchUser = karma(async (id: number) => {
+        await tick();
+        return { id, name: `User ${id}` };
+      });
+
+      const { zen, set } = await import('./zen');
+      const { effect } = await import('./effect');
+      const userId = zen(1);
+
+      const userData: any[] = [];
+      let unsub: (() => void) | undefined;
+
+      const cleanup = effect([userId], (id) => {
+        // Unsubscribe from previous
+        if (unsub) unsub();
+        // Subscribe to new
+        unsub = subscribeToKarma(fetchUser, [id], (state) => {
+          if (state.data) userData.push(state.data);
+        });
+      });
+
+      await tick();
+      await tick();
+
+      expect(userData[userData.length - 1]).toEqual({ id: 1, name: 'User 1' });
+
+      // Change user ID
+      set(userId, 2);
+      await tick();
+      await tick();
+
+      expect(userData[userData.length - 1]).toEqual({ id: 2, name: 'User 2' });
+
+      cleanup();
+      if (unsub) unsub();
+    });
+  });
+
+  describe('Error re-fetch behavior', () => {
+    it('should cache error state but allow retry on next runKarma', async () => {
+      let shouldFail = true;
+      let execCount = 0;
+
+      const fetchUser = karma(async (id: number) => {
+        execCount++;
+        await tick();
+        if (shouldFail) throw new Error('Failed');
+        return { id };
+      });
+
+      // First call - should fail
+      try {
+        await runKarma(fetchUser, 1);
+      } catch (e) {
+        expect((e as Error).message).toBe('Failed');
+      }
+
+      expect(execCount).toBe(1);
+
+      // Error should be cached
+      const state1 = karmaCache.get(fetchUser, 1);
+      expect(state1?.error).toBeDefined();
+
+      // Second call with same args - should execute again (retry)
+      try {
+        await runKarma(fetchUser, 1);
+      } catch (e) {
+        expect((e as Error).message).toBe('Failed');
+      }
+
+      expect(execCount).toBe(2); // Executed again (no caching of errors)
+
+      // Fix the error
+      shouldFail = false;
+
+      // Third call - should succeed
+      const result = await runKarma(fetchUser, 1);
+      expect(result).toEqual({ id: 1 });
+      expect(execCount).toBe(3);
+
+      // Fourth call - should use cache now
+      await runKarma(fetchUser, 1);
+      expect(execCount).toBe(3); // Not executed again
+    });
+
+    it('should notify error to subscribers then allow retry', async () => {
+      let shouldFail = true;
+      let execCount = 0;
+
+      const fetchUser = karma(async (id: number) => {
+        execCount++;
+        await tick();
+        if (shouldFail) throw new Error('API Error');
+        return { id, name: `User ${id}` };
+      });
+
+      const states: any[] = [];
+      const unsub = subscribeToKarma(fetchUser, [1], (state) => {
+        states.push({ ...state });
+      });
+
+      await tick();
+      await tick();
+
+      // Should have error state
+      expect(states[states.length - 1]).toMatchObject({
+        loading: false,
+        error: expect.objectContaining({ message: 'API Error' }),
+      });
+      expect(execCount).toBe(1);
+
+      // Fix error and invalidate to trigger retry
+      shouldFail = false;
+      karmaCache.invalidate(fetchUser, 1);
+
+      await tick();
+      await tick();
+
+      // Should have success state now
+      expect(states[states.length - 1]).toMatchObject({
+        loading: false,
+        data: { id: 1, name: 'User 1' },
+      });
+      expect(execCount).toBe(2);
+
+      unsub();
+    });
+  });
+
   describe('getKarmaState', () => {
     it('should return current state for args', async () => {
       const fetchUser = karma(async (id: number) => {
