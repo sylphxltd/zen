@@ -20,17 +20,8 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "keywords": [
-    "zen",
-    "router",
-    "preact",
-    "hooks",
-    "state management"
-  ],
+  "files": ["dist", "README.md"],
+  "keywords": ["zen", "router", "preact", "hooks", "state management"],
   "homepage": "https://github.com/sylphx/zen/tree/main/packages/zen-router-preact#readme",
   "bugs": {
     "url": "https://github.com/sylphx/zen/issues"
@@ -40,8 +31,8 @@
     "clean": "bun rimraf dist .turbo"
   },
   "dependencies": {
-    "@sylphx/zen": "workspace:*",
-    "@sylphx/zen-router": "workspace:*"
+    "@sylphx/zen": "^1.2.1",
+    "@sylphx/zen-router": "^1.0.1"
   },
   "peerDependencies": {
     "preact": "^10.0.0"

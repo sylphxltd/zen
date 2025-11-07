@@ -19,10 +19,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node",
     "dev": "bun build src/index.ts --outdir dist --target node --sourcemap --watch",
@@ -31,7 +28,7 @@
     "clean": "bun rimraf dist"
   },
   "dependencies": {
-    "@sylphx/zen": "workspace:*",
+    "@sylphx/zen": "^1.2.1",
     "@sylphx/craft": "^1.0.0"
   },
   "devDependencies": {

@@ -13,9 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "sideEffects": false,
   "scripts": {
     "typecheck": "bun tsc --noEmit",
@@ -23,10 +21,10 @@
     "validate": "bun run check-format && bun run lint && bun run typecheck && bun run test"
   },
   "dependencies": {
-    "@sylphx/zen": "workspace:*"
+    "@sylphx/zen": "^1.2.1"
   },
   "peerDependencies": {
-    "@sylphx/zen": "workspace:*"
+    "@sylphx/zen": "^1.2.1"
   },
   "devDependencies": {
     "bunup": "^0.15.13",
@@ -37,13 +35,7 @@
     "url": "https://github.com/sylphx/zen.git",
     "directory": "packages/zen-persistent"
   },
-  "keywords": [
-    "zen",
-    "state manager",
-    "persistent",
-    "localstorage",
-    "sessionstorage"
-  ],
+  "keywords": ["zen", "state manager", "persistent", "localstorage", "sessionstorage"],
   "author": "SylphLab",
   "license": "MIT",
   "publishConfig": {

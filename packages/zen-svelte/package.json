@@ -13,16 +13,13 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "sideEffects": false,
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node --minify"
   },
   "dependencies": {
-    "@sylphx/zen": "workspace:*"
+    "@sylphx/zen": "^1.2.1"
   },
   "peerDependencies": {
     "svelte": "^3.0.0 || ^4.0.0 || ^5.0.0"
@@ -37,12 +34,7 @@
     "url": "https://github.com/sylphx/zen.git",
     "directory": "packages/zen-svelte"
   },
-  "keywords": [
-    "zen",
-    "state manager",
-    "svelte",
-    "stores"
-  ],
+  "keywords": ["zen", "state manager", "svelte", "stores"],
   "author": "SylphLab",
   "license": "MIT",
   "publishConfig": {
