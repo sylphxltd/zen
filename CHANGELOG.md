@@ -5,6 +5,67 @@ All notable changes to Zen will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-11-07
+
+### Fixed
+
+**Performance Regression Fix**
+- Fixed 2-3.5% performance regression in simple operations (Simple Increment, Loading State Toggle, Batch Updates)
+- **Root cause**: Phase 1 advanced features (lifecycle, untracked, dispose) were forcibly loaded even for basic usage
+- **Solution**: Moved advanced features to opt-in subpath export `@sylphx/zen/advanced`
+
+### Changed
+
+**Breaking Changes (Migration Required):**
+```typescript
+// v1.2.0 (no longer supported)
+import { dispose, onMount, untracked } from '@sylphx/zen';
+
+// v1.2.1 (new way)
+import { dispose, onMount, untracked } from '@sylphx/zen/advanced';
+```
+
+**Advanced APIs moved to subpath export:**
+- `dispose(computed)` → `import from '@sylphx/zen/advanced'`
+- `onStart`, `onStop`, `onMount`, `cleanup` → `import from '@sylphx/zen/advanced'`
+- `untracked`, `tracked`, `isTracking` → `import from '@sylphx/zen/advanced'`
+- `CleanupFn`, `LifecycleCallback` types → `import from '@sylphx/zen/advanced'`
+
+### Performance
+
+**Bundle Size Improvements:**
+- Core bundle: **4.26 KB** gzipped (was 5.94 KB in v1.2.0) - **28% reduction!** 🎉
+- Advanced bundle: **557 B** gzipped (opt-in only)
+- Total when using advanced: 4.82 KB gzipped (19% smaller than v1.2.0)
+
+**Benchmark Results (vs v1.1.1 baseline):**
+- Simple Increment: **33.1M ops/sec** (restored from -3.5% regression)
+- Loading State Toggle: **19.3M ops/sec** (restored from -2.8% regression)
+- Batch Updates: **13.2M ops/sec** (restored from -3.3% regression)
+- Reactive Async: **4.6M ops/sec** (+1.1% improvement maintained)
+
+### Added
+
+**New Entry Points:**
+- `@sylphx/zen/advanced` - Opt-in advanced features with full TypeScript support
+- Multi-entry build configuration via `bunup.config.ts`
+
+### Documentation
+
+**Migration Guide:**
+If you're using any advanced features from v1.2.0:
+1. Update imports to use `@sylphx/zen/advanced`
+2. Core features (`zen`, `computed`, `get`, `set`, etc.) remain unchanged
+3. 99% of users won't need to change anything
+
+**Benefits:**
+- ✅ Zero bundle cost for basic usage
+- ✅ Perfect tree-shaking
+- ✅ Opt-in complexity
+- ✅ Performance restored to v1.1.1 levels
+
+---
+
 ## [1.2.0] - 2025-11-07
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Zen state management library - extreme minimalism, extreme speed.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -11,6 +11,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./advanced": {
+      "types": "./dist/advanced.d.ts",
+      "import": "./dist/advanced.js",
+      "require": "./dist/advanced.cjs"
     }
   },
   "files": ["dist"],

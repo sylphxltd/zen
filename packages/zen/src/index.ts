@@ -47,12 +47,6 @@ export { effect } from './effect';
 // Event Functions
 export { onSet, onNotify, listenPaths } from './events';
 
-// ✅ PHASE 1 OPTIMIZATION: Enhanced lifecycle functions with cleanup support
-export { onStart, onStop, onMount, cleanup } from './lifecycle';
-export type { CleanupFn, LifecycleCallback } from './lifecycle';
-
-// ✅ PHASE 1 OPTIMIZATION: Untracked execution utilities
-export { untracked, tracked, isTracking } from './untracked';
-
-// ✅ PHASE 1 OPTIMIZATION: Computed disposal for resource cleanup
-export { dispose } from './computed';
+// ✅ PHASE 1 OPTIMIZATION: Advanced features moved to '@sylphx/zen/advanced'
+// Import from '@sylphx/zen/advanced' for: dispose, onStart, onStop, onMount, cleanup, untracked, tracked, isTracking
+// See: https://github.com/sylphxltd/zen/blob/main/packages/zen/README.md#advanced-apis
