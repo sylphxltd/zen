@@ -17,21 +17,12 @@ import type {
 /** Tracks the nesting depth of batch calls. @internal */
 export let batchDepth = 0;
 /** Stores zens that have changed within the current batch, along with their original value. */
-const batchQueue = new Map<Zen<unknown>, unknown>();
+const batchQueue = new Map<ZenOptimized<unknown>, unknown>();
 
-// ✅ PHASE 6 OPTIMIZATION: Version tracking removed
-// Graph coloring (color states: 0=clean, 1=green, 2=red) completely replaces version tracking
-
-// ============================================================================
-// ✅ PHASE 6 OPTIMIZATION: Graph Coloring Algorithm
-// ============================================================================
+// ✅ BIND OPTIMIZATION: Graph Coloring Algorithm (inherited from Phase 6)
 
 /**
  * Phase 1 (Down): Mark node as RED and dependents as GREEN
- *
- * Called when a value changes. Propagates "potentially affected" state
- * to all dependent nodes without immediately recomputing them.
- *
  * @internal
  */
 export function markDirty<A extends AnyZen>(zen: A): void {
@@ -41,12 +32,9 @@ export function markDirty<A extends AnyZen>(zen: A): void {
   const listeners = baseZen._listeners;
   if (!listeners) return;
 
-  // Fast path for single listener
   const len = listeners.length;
   if (len === 1) {
     const listener = listeners[0] as any;
-    // ✅ PHASE 6: Check if listener is a zen with _color (computed/select)
-    // Regular callback functions won't have _color
     const listenerZen = listener._computedZen || listener;
     if (listenerZen._color !== undefined && listenerZen._color === 0) {
       listenerZen._color = 1; // GREEN - potentially affected
@@ -64,12 +52,6 @@ export function markDirty<A extends AnyZen>(zen: A): void {
 
 /**
  * Phase 2 (Up): Check if update is actually needed
- *
- * Called when accessing a value. Walks up the dependency graph
- * to find actual changes, enabling lazy evaluation.
- *
- * Returns true if value changed after update.
- *
  * @internal
  */
 export function updateIfNecessary<A extends AnyZen>(zen: A): boolean {
@@ -82,7 +64,6 @@ export function updateIfNecessary<A extends AnyZen>(zen: A): boolean {
 
   // For computed/select nodes, delegate to their _update method
   if ((zen._kind === 'computed' || zen._kind === 'select') && '_update' in zen) {
-    // The _update method will handle color management
     return (zen as any)._update();
   }
 
@@ -93,7 +74,7 @@ export function updateIfNecessary<A extends AnyZen>(zen: A): boolean {
 
 // Internal notifyListeners function
 /**
- * Notifies all listeners of an zen about a value change.
+ * Notifies all listeners of a zen about a value change.
  * @internal - Exported for use by other modules like computed, deepMap.
  */
 export function notifyListeners<A extends AnyZen>(
@@ -101,16 +82,12 @@ export function notifyListeners<A extends AnyZen>(
   value: ZenValue<A>,
   oldValue?: ZenValue<A>,
 ): void {
-  // Add export
-  // Operate directly on the zen, casting to the base structure with the correct value type
   const baseZen = zen as ZenWithValue<ZenValue<A>>;
 
-  // ✅ PHASE 3 OPTIMIZATION: Cache length and fast path for common cases
   // Notify regular value listeners
   const ls = baseZen._listeners;
   if (ls) {
     const len = ls.length;
-    // Fast path: most common case is 1 listener
     if (len === 1) {
       ls[0](value, oldValue);
     } else if (len > 1) {
@@ -134,93 +111,122 @@ export function notifyListeners<A extends AnyZen>(
   }
 }
 
-// --- Type Definition ---
-/** Represents a writable zen (functional style). */
-export type Zen<T = unknown> = ZenWithValue<T> & {
-  // Default to unknown // TODO: Rename Zen type? Maybe ZenZen?
-  _value: T; // Regular zens always have an initial value
+/** Represents a writable zen (optimized with bind). */
+export type ZenOptimized<T = unknown> = ZenWithValue<T> & {
+  _value: T;
 };
 
-// --- Core Functional API ---
+// ============================================================================
+// ✅ BIND-BASED OPTIMIZED API
+// ============================================================================
 
 /**
- * Gets the current value of an zen. Provides specific return types based on zen kind.
+ * Getter function bound to zen data context
+ * @internal
+ */
+function getter<T>(this: { _value: T }): T {
+  return this._value;
+}
+
+/**
+ * Setter function bound to zen data context
+ * @internal
+ */
+function setter<T>(this: ZenOptimized<T>, value: T, force = false): void {
+  const oldValue = this._value;
+  if (force || !Object.is(value, oldValue)) {
+    // Handle onSet listeners
+    if (batchDepth <= 0) {
+      const setLs = this._setListeners;
+      if (setLs) {
+        const len = setLs.length;
+        if (len === 1) {
+          setLs[0](value);
+        } else if (len > 1) {
+          for (let i = 0; i < len; i++) {
+            setLs[i](value);
+          }
+        }
+      }
+    }
+
+    // Update value
+    this._value = value;
+    // Mark as RED and propagate GREEN to dependents
+    markDirty(this as AnyZen);
+
+    // Handle batching or immediate notification
+    if (batchDepth > 0) {
+      queueZenForBatch(this, oldValue);
+    } else {
+      notifyListeners(this as AnyZen, value, oldValue);
+    }
+  }
+}
+
+/**
+ * Creates a new writable zen instance with optimized bind-based API.
+ * @param initialValue The initial value of the zen instance.
+ * @returns An object with bound get() and set() methods.
+ */
+export function zen<T>(initialValue: T): {
+  get: () => T;
+  set: (value: T, force?: boolean) => void;
+  _zenData: ZenOptimized<T>;
+} {
+  const zenData: ZenOptimized<T> = {
+    _kind: 'zen',
+    _value: initialValue,
+  };
+
+  return {
+    get: getter.bind(zenData),
+    set: setter.bind(zenData),
+    _zenData: zenData, // Expose internal data for advanced use (subscribe, etc.)
+  };
+}
+
+// ============================================================================
+// Backward Compatibility: Functional API
+// ============================================================================
+
+/**
+ * Gets the current value of a zen. Provides specific return types based on zen kind.
  * @param zen The zen to read from.
  * @returns The current value.
- * @deprecated Consider using the new bind-based API from zen-optimized.ts for better performance
  */
-// Overloads remain largely the same, relying on specific zen types
-export function get<T>(zen: Zen<T>): T;
+export function get<T>(zen: ZenOptimized<T>): T;
 export function get<T>(zen: ComputedZen<T>): T | null;
-export function get<T>(zen: SelectZen<T>): T | null; // Add SelectZen overload
-export function get<T extends object>(zen: MapZen<T>): T; // Add MapZen overload back
+export function get<T>(zen: SelectZen<T>): T | null;
+export function get<T extends object>(zen: MapZen<T>): T;
 export function get<T extends object>(zen: DeepMapZen<T>): T;
-export function get<T>(zen: KarmaZen<T>): KarmaState<T>; // Add KarmaZen overload back
-// General implementation signature using ZenValue
+export function get<T>(zen: KarmaZen<T>): KarmaState<T>;
 export function get<A extends AnyZen>(zen: A): ZenValue<A> | null {
-  // ✅ PHASE 6 OPTIMIZATION: Pull-based lazy evaluation
-  // Check if update is needed before reading value
   updateIfNecessary(zen);
 
-  // Return includes null for computed initial state
-  // Use switch for type narrowing and direct value access
   switch (zen._kind) {
     case 'zen':
-    case 'map': // Add 'map' case back
+    case 'map':
     case 'deepMap':
     case 'zenAsync':
-    case 'karma': // Backward compatibility
-      // For these types, _value directly matches ZenValue<A>
-      // Cast needed as TS struggles with inference within generic function.
+    case 'karma':
       return zen._value as ZenValue<A>;
-    // No break needed here as return exits the function
-    // Removed 'task' case
     case 'computed': {
-      // Explicit cast needed for computed-specific logic
-      const computed = zen as ComputedZen<ZenValue<A>>; // Value type is ZenValue<A>
-      // updateIfNecessary already called above
-      // Computed value can be null initially
+      const computed = zen as ComputedZen<ZenValue<A>>;
       return computed._value as ZenValue<A> | null;
-      // No break needed here as return exits the function
     }
     case 'select': {
-      // Handle select zen (lightweight single-source selector)
       const select = zen as SelectZen<ZenValue<A>>;
-      // updateIfNecessary already called above
       return select._value as ZenValue<A> | null;
     }
-    // Add case for batched, although get() shouldn't trigger its update
     case 'batched': {
       const batched = zen as BatchedZen<ZenValue<A>>;
-      // Batched zens update via microtask, just return current value
       return batched._value as ZenValue<A> | null;
     }
     default: {
-      // Explicit cast to never to satisfy exhaustiveness check
       const _exhaustiveCheck: never = zen as never;
-      return null; // Fallback return
+      return null;
     }
-  }
-}
-
-/** @internal */
-function _handleZenOnSet<T>(zen: Zen<T>, value: T): void {
-  if (batchDepth <= 0) {
-    const setLs = zen._setListeners;
-    if (setLs?.length) {
-      for (let i = 0; i < setLs.length; i++) {
-        setLs[i](value);
-      }
-    }
-  }
-}
-
-/** @internal */
-function _handleZenNotification<T>(zen: Zen<T>, oldValue: T, value: T): void {
-  if (batchDepth > 0) {
-    queueZenForBatch(zen, oldValue);
-  } else {
-    notifyListeners(zen as AnyZen, value, oldValue); // Notify immediately
   }
 }
 
@@ -229,16 +235,10 @@ function _handleZenNotification<T>(zen: Zen<T>, oldValue: T, value: T): void {
  * @param zen The zen to write to.
  * @param value The new value.
  * @param force If true, notify listeners even if the value is the same.
- * @deprecated Consider using the new bind-based API from zen-optimized.ts for better performance
  */
-export function set<T>(zen: Zen<T>, value: T, force = false): void {
-  // Assuming the caller passes a valid Zen<T> due to TypeScript typing.
-  // Runtime checks were removed for performance/simplicity after $$type removal.
-
+export function set<T>(zen: ZenOptimized<T>, value: T, force = false): void {
   const oldValue = zen._value;
   if (force || !Object.is(value, oldValue)) {
-    // ✅ PHASE 3 OPTIMIZATION: Inline hot path for better performance
-    // Handle onSet listeners (inlined)
     if (batchDepth <= 0) {
       const setLs = zen._setListeners;
       if (setLs) {
@@ -253,12 +253,9 @@ export function set<T>(zen: Zen<T>, value: T, force = false): void {
       }
     }
 
-    // Update value
     zen._value = value;
-    // ✅ PHASE 6 OPTIMIZATION: Mark as RED and propagate GREEN to dependents
     markDirty(zen as AnyZen);
 
-    // Handle batching or immediate notification (inlined)
     if (batchDepth > 0) {
       queueZenForBatch(zen, oldValue);
     } else {
@@ -268,7 +265,7 @@ export function set<T>(zen: Zen<T>, value: T, force = false): void {
 }
 
 /**
- * Subscribes a listener function to an zen's changes.
+ * Subscribes a listener function to a zen's changes.
  * Calls the listener immediately with the current value.
  * Returns an unsubscribe function.
  * @param zen The zen to subscribe to.
@@ -280,7 +277,6 @@ function _handleFirstSubscription<A extends AnyZen>(
   zen: A,
   baseZen: ZenWithValue<ZenValue<A>>,
 ): void {
-  // Trigger onMount listeners
   const mountLs = baseZen._mountListeners;
   if (mountLs?.length) {
     baseZen._mountCleanups ??= new Map();
@@ -294,17 +290,14 @@ function _handleFirstSubscription<A extends AnyZen>(
     }
   }
 
-  // Trigger onStart listeners
   const startLs = baseZen._startListeners;
   if (startLs?.length) {
-    // biome-ignore lint/suspicious/noExplicitAny: TS struggles with generic overload resolution here
     const currentValue = get(zen as any);
     for (let i = 0; i < startLs.length; i++) {
       startLs[i](currentValue);
     }
   }
 
-  // If it's a computed, select, or batched zen, trigger its source subscription logic
   if (zen._kind === 'computed' || zen._kind === 'select' || zen._kind === 'batched') {
     const dependentZen = zen as
       | ComputedZen<ZenValue<A>>
@@ -330,7 +323,6 @@ function _handleLastUnsubscribe<A extends AnyZen>(
 ): void {
   baseZen._listeners = undefined;
 
-  // Trigger onStop listeners if this was the last value listener
   const stopLs = baseZen._stopListeners;
   if (stopLs?.length) {
     for (let i = 0; i < stopLs.length; i++) {
@@ -338,7 +330,6 @@ function _handleLastUnsubscribe<A extends AnyZen>(
     }
   }
 
-  // Trigger onMount cleanups if this was the last listener
   const cleanups = baseZen._mountCleanups;
   if (cleanups?.size) {
     for (const cleanupFn of cleanups.values()) {
@@ -349,7 +340,6 @@ function _handleLastUnsubscribe<A extends AnyZen>(
     baseZen._mountCleanups = undefined;
   }
 
-  // If it's a computed, select, or batched zen, trigger its source unsubscription logic
   if (zen._kind === 'computed' || zen._kind === 'select' || zen._kind === 'batched') {
     const dependentZen = zen as
       | ComputedZen<ZenValue<A>>
@@ -368,13 +358,10 @@ function _handleLastUnsubscribe<A extends AnyZen>(
   }
 }
 
-// General implementation signature using ZenValue
 export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<A>>): Unsubscribe {
-  // ✅ PHASE 1 OPTIMIZATION: Array-based listeners
   const baseZen = zen as ZenWithValue<ZenValue<A>>;
   const isFirstListener = !baseZen._listeners || baseZen._listeners.length === 0;
 
-  // Initialize listeners Array if needed
   baseZen._listeners ??= [];
   baseZen._listeners.push(listener);
 
@@ -382,10 +369,7 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
     _handleFirstSubscription(zen, baseZen);
   }
 
-  // Call listener immediately with the current value
-  // biome-ignore lint/suspicious/noExplicitAny: TS struggles with generic overload resolution here
   const initialValue = get(zen as any);
-  // biome-ignore lint/suspicious/noExplicitAny: Listener type requires any here due to complex generic
   (listener as Listener<any>)(initialValue, undefined);
 
   return function unsubscribe() {
@@ -394,11 +378,9 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
 
     if (!listeners || listeners.length === 0) return;
 
-    // ✅ OPTIMIZATION: Swap-remove for O(1) unsubscribe
     const idx = listeners.indexOf(listener);
     if (idx === -1) return;
 
-    // Swap with last element and pop
     const lastIdx = listeners.length - 1;
     if (idx !== lastIdx) {
       listeners[idx] = listeners[lastIdx];
@@ -411,56 +393,31 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
   };
 }
 
-// --- Zen Factory (Functional Style) ---
-
-/**
- * Creates a new writable zen instance (functional style).
- * @param initialValue The initial value of the zen instance.
- * @returns An Zen instance. // Keep return type as Zen for now
- */
-export function zen<T>(initialValue: T): Zen<T> {
-  // Optimize: Only initialize essential properties. Listeners added on demand.
-  const newZen: Zen<T> = {
-    _kind: 'zen', // Set kind
-    _value: initialValue,
-    // Listener properties (e.g., _listeners, _startListeners) are omitted
-    // and will be added dynamically by subscribe/event functions if needed.
-  };
-  // onMount logic removed
-
-  return newZen;
-}
-
-// --- Batching Functions (moved from batch.ts) ---
+// --- Batching Functions ---
 
 /**
  * Checks if the code is currently executing within a `batch()` call.
  * @internal
  */
 export function isInBatch(): boolean {
-  // Export for potential external use? Keep internal for now.
   return batchDepth > 0;
 }
 
 /**
- * Queues an zen for notification at the end of the batch.
- * Stores the original value before the batch started if it's the first change for this zen in the batch.
+ * Queues a zen for notification at the end of the batch.
  * @internal
  */
-// Export for map/deepMap
-export function queueZenForBatch<T>(zen: Zen<T>, originalValue: T): void {
-  // Only store the original value the *first* time an zen is queued in a batch.
-  if (!batchQueue.has(zen as Zen<unknown>)) {
-    // Cast to unknown
-    batchQueue.set(zen as Zen<unknown>, originalValue); // Cast to unknown
+export function queueZenForBatch<T>(zen: ZenOptimized<T>, originalValue: T): void {
+  if (!batchQueue.has(zen as ZenOptimized<unknown>)) {
+    batchQueue.set(zen as ZenOptimized<unknown>, originalValue);
   }
 }
 
 /** @internal */
 function _processBatchQueue(
   errorOccurred: boolean,
-): { zen: Zen<unknown>; value: unknown; oldValue: unknown }[] {
-  const changesToNotify: { zen: Zen<unknown>; value: unknown; oldValue: unknown }[] = [];
+): { zen: ZenOptimized<unknown>; value: unknown; oldValue: unknown }[] {
+  const changesToNotify: { zen: ZenOptimized<unknown>; value: unknown; oldValue: unknown }[] = [];
   if (!errorOccurred && batchQueue.size > 0) {
     try {
       for (const [zen, originalValueBeforeBatch] of batchQueue.entries()) {
@@ -474,11 +431,9 @@ function _processBatchQueue(
         }
       }
     } finally {
-      // Ensure queue is cleared even if comparison/push fails (though unlikely)
       batchQueue.clear();
     }
   } else {
-    // Clear queue if an error occurred or if it was empty
     batchQueue.clear();
   }
   return changesToNotify;
@@ -486,7 +441,7 @@ function _processBatchQueue(
 
 /** @internal */
 function _notifyBatchedChanges(
-  changesToNotify: { zen: Zen<unknown>; value: unknown; oldValue: unknown }[],
+  changesToNotify: { zen: ZenOptimized<unknown>; value: unknown; oldValue: unknown }[],
 ): void {
   for (let i = 0; i < changesToNotify.length; i++) {
     notifyListeners(changesToNotify[i].zen, changesToNotify[i].value, changesToNotify[i].oldValue);
@@ -500,39 +455,28 @@ function _notifyBatchedChanges(
  * @returns The return value of the executed function.
  */
 export function batch<T>(fn: () => T): T {
-  // Export batch
   batchDepth++;
 
   let errorOccurred = false;
   let result: T;
-  // Stores details of zens that actually changed value for final notification.
-  const changesToNotify: { zen: Zen<unknown>; value: unknown; oldValue: unknown }[] = []; // Use unknown for zen type
+  const changesToNotify: { zen: ZenOptimized<unknown>; value: unknown; oldValue: unknown }[] = [];
 
   try {
-    result = fn(); // Execute the provided function
+    result = fn();
   } catch (e) {
     errorOccurred = true;
-    throw e; // Re-throw the error after cleanup (in finally)
+    throw e;
   } finally {
     batchDepth--;
-    // Process queue and clear it *only* if this is the outermost batch call
     if (batchDepth === 0) {
-      // _processBatchQueue now handles iterating, checking changes,
-      // collecting notifications, AND clearing the queue robustly.
       const changes = _processBatchQueue(errorOccurred);
-      // Store changes locally in the finally block's scope
       changesToNotify.push(...changes);
     }
-    // NOTE: Queue is guaranteed to be clear here by _processBatchQueue
   }
 
-  // Perform notifications outside the finally block,
-  // only if it was the outermost call and no error occurred.
   if (batchDepth === 0 && !errorOccurred && changesToNotify.length > 0) {
     _notifyBatchedChanges(changesToNotify);
   }
 
-  // Return the result of the batch function.
-  // Non-null assertion is safe because errors are re-thrown.
-  return result; // Remove non-null assertion, TS should infer T
+  return result;
 }

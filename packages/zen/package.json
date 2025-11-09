@@ -16,7 +16,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node --minify",
-    "build:optimized": "bunup src/zen-optimized-api.ts --format esm,cjs --dts --target node --minify --out-dir dist/optimized",
+    "build:optimized": "bunup src/zen-optimized.ts --format esm,cjs --dts --target node --minify --out-dir dist/optimized",
     "size": "bun size-limit",
     "lint": "echo 'Lint script not implemented yet'"
   },
