@@ -1,5 +1,6 @@
 import type { BatchedZen } from './batched'; // Import BatchedZen
 import type { ComputedZen } from './computed'; // Only import ComputedZen
+import type { ComputedAsyncZen } from './computedAsync'; // Import ComputedAsyncZen
 // Base type definitions shared across the library.
 // import type { LifecycleListener, KeyListener, PathListener } from './events'; // Remove unused imports
 import type { Zen } from './zen';
@@ -22,7 +23,7 @@ export type NodeColor = 0 | 1 | 2;
 /** Base structure for zens that directly hold value and listeners. */
 export type ZenWithValue<T> = {
   /** Distinguishes zen types for faster checks */
-  _kind: 'zen' | 'computed' | 'select' | 'map' | 'deepMap' | 'zenAsync' | 'batched' | 'karma';
+  _kind: 'zen' | 'computed' | 'computedAsync' | 'select' | 'map' | 'deepMap' | 'batched';
   /** Current value */
   _value: T;
   /** ✅ PHASE 6 OPTIMIZATION: Graph coloring for lazy pull-based evaluation (0=clean, 1=check, 2=dirty) */
@@ -47,15 +48,12 @@ export type ZenWithValue<T> = {
   _mountCleanups?: Map<any, (() => void) | undefined>;
 };
 
-/** Represents the possible states of a ZenAsync. */
+/** Represents the possible states of async computed. */
 export type ZenAsyncState<T = unknown> =
   | { loading: true; error?: undefined; data?: undefined }
   | { loading: false; error: Error; data?: undefined }
   | { loading: false; error?: undefined; data: T }
   | { loading: false; error?: undefined; data?: undefined }; // Initial state
-
-/** @deprecated Use ZenAsyncState instead */
-export type KarmaState<T = unknown> = ZenAsyncState<T>;
 
 // --- Merged Zen Type Definitions ---
 
@@ -73,20 +71,6 @@ export type DeepMapZen<T extends object = object> = ZenWithValue<T> & {
   // No extra properties needed, structure matches ZenWithValue<Object>
 };
 
-/** Represents a ZenAsync atom holding state and the async function. */
-export type ZenAsync<T = void, Args extends unknown[] = unknown[]> = ZenWithValue<
-  ZenAsyncState<T>
-> & {
-  _kind: 'zenAsync';
-  _asyncFn: (...args: Args) => Promise<T>;
-  _cacheKeyFn?: (...args: Args) => readonly unknown[]; // QueryKey format
-  _keepAlive?: boolean;
-  _cacheTime?: number;
-  _staleTime?: number;
-};
-
-/** @deprecated Use ZenAsync instead */
-export type KarmaZen<T = void, Args extends unknown[] = unknown[]> = ZenAsync<T, Args>;
 
 /** Represents a Select Zen (lightweight single-source selector). */
 export type SelectZen<T = unknown, S = unknown> = {
@@ -121,10 +105,10 @@ export type AnyZen =
   // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
   | ComputedZen<any>
   // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
+  | ComputedAsyncZen<any>
+  // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
   | SelectZen<any, any>
   | MapZen<object>
   | DeepMapZen<object>
-  // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
-  | ZenAsync<any, any>
   // biome-ignore lint/suspicious/noExplicitAny: Base union type requires any
   | BatchedZen<any>;

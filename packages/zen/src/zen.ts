@@ -11,15 +11,15 @@
 
 import type { BatchedZen } from './batched';
 import type { ComputedZen } from './computed';
+import type { ComputedAsyncZen } from './computedAsync';
 import type { SelectZen } from './types';
 import type {
   AnyZen,
   DeepMapZen,
-  KarmaState,
-  KarmaZen,
   Listener,
   MapZen,
   Unsubscribe,
+  ZenAsyncState,
   ZenValue,
   ZenWithValue,
 } from './types';
@@ -91,7 +91,7 @@ export function updateIfNecessary<A extends AnyZen>(zen: A): boolean {
     return false;
   }
 
-  if ((zen._kind === 'computed' || zen._kind === 'select') && '_update' in zen) {
+  if ((zen._kind === 'computed' || zen._kind === 'computedAsync' || zen._kind === 'select') && '_update' in zen) {
     return (zen as any)._update();
   }
 
@@ -236,10 +236,10 @@ export function zen<T>(initialValue: T): {
 
 export function get<T>(zen: ZenOptimizedGetter<T>): T;
 export function get<T>(zen: ComputedZen<T>): T | null;
+export function get<T>(zen: ComputedAsyncZen<T>): ZenAsyncState<T>;
 export function get<T>(zen: SelectZen<T>): T | null;
 export function get<T extends object>(zen: MapZen<T>): T;
 export function get<T extends object>(zen: DeepMapZen<T>): T;
-export function get<T>(zen: KarmaZen<T>): KarmaState<T>;
 export function get<A extends AnyZen>(zen: A): ZenValue<A> | null {
   updateIfNecessary(zen);
 
@@ -247,12 +247,14 @@ export function get<A extends AnyZen>(zen: A): ZenValue<A> | null {
     case 'zen':
     case 'map':
     case 'deepMap':
-    case 'zenAsync':
-    case 'karma':
       return zen._value as ZenValue<A>;
     case 'computed': {
       const computed = zen as ComputedZen<ZenValue<A>>;
       return computed._value as ZenValue<A> | null;
+    }
+    case 'computedAsync': {
+      const computedAsync = zen as ComputedAsyncZen<any>;
+      return computedAsync._value as ZenValue<A>;
     }
     case 'select': {
       const select = zen as SelectZen<ZenValue<A>>;
@@ -276,8 +278,8 @@ export function set<T>(zen: ZenOptimizedGetter<T>, value: T, force = false): voi
 // ============================================================================
 
 function _handleFirstSubscription(zen: AnyZen, baseZen: ZenWithValue<any>): void {
-  if (zen._kind === 'computed' || zen._kind === 'select') {
-    const computedZen = zen as ComputedZen<any>;
+  if (zen._kind === 'computed' || zen._kind === 'computedAsync' || zen._kind === 'select') {
+    const computedZen = zen as ComputedZen<any> | ComputedAsyncZen<any>;
     if (
       '_subscribeToSources' in computedZen &&
       typeof computedZen._subscribeToSources === 'function'
@@ -345,8 +347,8 @@ function _handleLastUnsubscribe(zen: AnyZen, baseZen: ZenWithValue<any>): void {
   }
 
   // Unsubscribe from sources
-  if (zen._kind === 'computed' || zen._kind === 'select') {
-    const computedZen = zen as ComputedZen<any>;
+  if (zen._kind === 'computed' || zen._kind === 'computedAsync' || zen._kind === 'select') {
+    const computedZen = zen as ComputedZen<any> | ComputedAsyncZen<any>;
     if (
       '_unsubscribeFromSources' in computedZen &&
       typeof computedZen._unsubscribeFromSources === 'function'
@@ -374,6 +376,16 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
     initialValue = baseZen._value;
   } else {
     initialValue = get(zen as any);
+  }
+
+  // For computedAsync, trigger initial execution if not loaded
+  if (kind === 'computedAsync') {
+    const computedAsync = zen as ComputedAsyncZen<any>;
+    if (!computedAsync._value.loading && computedAsync._value.data === undefined && !computedAsync._runningPromise) {
+      computedAsync._executeAsync().catch(() => {
+        // Error already handled
+      });
+    }
   }
 
   (listener as Listener<any>)(initialValue, undefined);
