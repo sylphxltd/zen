@@ -99,18 +99,17 @@ async function executeAsyncCalculation<T>(zen: ComputedAsyncZen<T>): Promise<voi
     return;
   }
 
-  // Update to loading state
+  // ✅ OPTIMIZATION: Update to loading state
   const oldState = zen._value;
   const wasLoading = oldState.loading;
 
-  zen._value = {
-    loading: true,
-    data: oldState.data, // Keep previous data during loading
-    error: undefined,
-  };
-
-  // Notify listeners of loading state (if changed)
+  // Only create new state object if transitioning to loading
   if (!wasLoading) {
+    zen._value = {
+      loading: true,
+      data: oldState.data, // Keep previous data during loading
+      error: undefined,
+    };
     notifyListeners(zen as AnyZen, zen._value, oldState);
   }
 

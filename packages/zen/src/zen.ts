@@ -43,41 +43,41 @@ export function markDirty<A extends AnyZen>(zen: A): void {
   if (len === 1) {
     const listener = listeners[0] as any;
     const listenerZen = listener._computedZen || listener;
-    if (listenerZen._color !== undefined && listenerZen._color === 0) {
+    if (listenerZen._color === 0) {
       listenerZen._color = 1;
     }
   } else if (len === 2) {
     let listener = listeners[0] as any;
     let listenerZen = listener._computedZen || listener;
-    if (listenerZen._color !== undefined && listenerZen._color === 0) {
+    if (listenerZen._color === 0) {
       listenerZen._color = 1;
     }
     listener = listeners[1] as any;
     listenerZen = listener._computedZen || listener;
-    if (listenerZen._color !== undefined && listenerZen._color === 0) {
+    if (listenerZen._color === 0) {
       listenerZen._color = 1;
     }
   } else if (len === 3) {
     let listener = listeners[0] as any;
     let listenerZen = listener._computedZen || listener;
-    if (listenerZen._color !== undefined && listenerZen._color === 0) {
+    if (listenerZen._color === 0) {
       listenerZen._color = 1;
     }
     listener = listeners[1] as any;
     listenerZen = listener._computedZen || listener;
-    if (listenerZen._color !== undefined && listenerZen._color === 0) {
+    if (listenerZen._color === 0) {
       listenerZen._color = 1;
     }
     listener = listeners[2] as any;
     listenerZen = listener._computedZen || listener;
-    if (listenerZen._color !== undefined && listenerZen._color === 0) {
+    if (listenerZen._color === 0) {
       listenerZen._color = 1;
     }
   } else {
     for (let i = 0; i < len; i++) {
       const listener = listeners[i] as any;
       const listenerZen = listener._computedZen || listener;
-      if (listenerZen._color !== undefined && listenerZen._color === 0) {
+      if (listenerZen._color === 0) {
         listenerZen._color = 1;
       }
     }
@@ -87,15 +87,15 @@ export function markDirty<A extends AnyZen>(zen: A): void {
 export function updateIfNecessary<A extends AnyZen>(zen: A): boolean {
   const baseZen = zen as ZenWithValue<ZenValue<A>>;
 
+  // ✅ OPTIMIZATION: Early return for clean nodes
   if (baseZen._color === 0) {
     return false;
   }
 
-  if (
-    (zen._kind === 'computed' || zen._kind === 'computedAsync' || zen._kind === 'select') &&
-    '_update' in zen
-  ) {
-    return (zen as any)._update();
+  // ✅ OPTIMIZATION: Direct _update check (avoid kind string comparison)
+  const zenWithUpdate = zen as any;
+  if (zenWithUpdate._update) {
+    return zenWithUpdate._update();
   }
 
   baseZen._color = 0;
@@ -169,17 +169,15 @@ export type Zen<T = unknown> = ZenOptimizedGetter<T>;
 function _setImpl<T>(zenData: ZenOptimizedGetter<T>, value: T, force: boolean): void {
   const oldValue = zenData._value;
   if (force || !Object.is(value, oldValue)) {
-    // Handle onSet listeners
-    if (batchDepth <= 0) {
-      const setLs = zenData._setListeners;
-      if (setLs) {
-        const len = setLs.length;
-        if (len === 1) {
-          setLs[0](value);
-        } else if (len > 1) {
-          for (let i = 0; i < len; i++) {
-            setLs[i](value);
-          }
+    // Handle onSet listeners (non-batch mode only)
+    const setLs = zenData._setListeners;
+    if (setLs && batchDepth <= 0) {
+      const len = setLs.length;
+      if (len === 1) {
+        setLs[0](value);
+      } else if (len > 1) {
+        for (let i = 0; i < len; i++) {
+          setLs[i](value);
         }
       }
     }
@@ -187,6 +185,7 @@ function _setImpl<T>(zenData: ZenOptimizedGetter<T>, value: T, force: boolean): 
     zenData._value = value;
     markDirty(zenData as AnyZen);
 
+    // ✅ OPTIMIZATION: Batch mode check - most common case is non-batched
     if (batchDepth > 0) {
       queueZenForBatch(zenData, oldValue);
     } else {
@@ -381,14 +380,12 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
     initialValue = get(zen as any);
   }
 
-  // For computedAsync, trigger initial execution if not loaded
+  // ✅ OPTIMIZATION: For computedAsync, trigger initial execution if not loaded
   if (kind === 'computedAsync') {
     const computedAsync = zen as ComputedAsyncZen<any>;
-    if (
-      !computedAsync._value.loading &&
-      computedAsync._value.data === undefined &&
-      !computedAsync._runningPromise
-    ) {
+    const state = computedAsync._value;
+    // Fast-fail checks: most common case is already loaded or loading
+    if (!computedAsync._runningPromise && !state.loading && state.data === undefined) {
       computedAsync._executeAsync().catch(() => {
         // Error already handled
       });
