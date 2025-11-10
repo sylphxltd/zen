@@ -128,3 +128,7 @@ dist/
 *_BENCHMARKS.txt
 AFTER_OPT*.txt
 *_BENCH_RESULTS.txt
+
+# VitePress cache
+docs/.vitepress/cache/
+docs/.vitepress/dist/
