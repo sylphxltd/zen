@@ -1,12 +1,12 @@
 # Batching Updates
 
-Batching allows you to group multiple store updates together, triggering subscribers only once after all updates are complete.
+Batching allows you to group multiple store updates together, notifying subscribers only once after all updates are complete.
 
 ## Why Batching?
 
 ### Without Batching
 
-Each update triggers subscribers immediately:
+Each update notifies subscribers immediately:
 
 ```typescript
 import { zen, subscribe } from '@sylphx/zen';

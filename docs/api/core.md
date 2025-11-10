@@ -106,7 +106,7 @@ batch(() => {
 
 ---
 
-## Zen<T>
+## Zen\<T\>
 
 The reactive store interface.
 
@@ -164,7 +164,7 @@ Callback function for subscriptions.
 
 ### ✅ Create stores outside components
 
-```typescript
+```tsx
 // ✅ Good - store persists across renders
 const count = zen(0);
 
