@@ -4,16 +4,115 @@
 
 ### Major Changes
 
-- # v2.0.0 - Fully Reactive State Management with computedAsync
+- # v2.0.0 - Major Release with Breaking Changes
 
-  Zen is now a **fully reactive state management library** with complete support for reactive async computations!
+  Zen v2.0.0 is a major version upgrade delivering **44% average performance improvement** through a new property-based API, reactive async capabilities, and significant optimizations.
 
-  ## 🚀 New Feature: computedAsync
+  ## 💥 BREAKING CHANGE #1: New zen.value API
 
-  Introducing `computedAsync` - reactive async computed values that automatically re-execute when dependencies change (just like Jotai's async atoms!).
+  The biggest change in v2.0.0 is the new property-based API that **replaces** the old `get()`/`set()` functions.
+
+  ### Before (v1.x - REMOVED)
 
   ```typescript
-  import { zen, computedAsync, subscribe, set } from "@sylphx/zen";
+  import { zen, get, set } from "@sylphx/zen";
+
+  const count = zen(0);
+  const value = get(count); // ❌ NO LONGER WORKS
+  set(count, 1); // ❌ NO LONGER WORKS
+  ```
+
+  ### After (v2.0 - REQUIRED)
+
+  ```typescript
+  import { zen } from "@sylphx/zen";
+
+  const count = zen(0);
+  const value = count.value; // ✅ 73% faster reads!
+  count.value = 1; // ✅ 56% faster writes!
+  count.value++; // ✅ Increment works too!
+  ```
+
+  ### Why This Change?
+
+  - **73% faster reads** (285M ops/s vs 165M ops/s)
+  - **56% faster writes** (105M ops/s vs 67M ops/s)
+  - More intuitive and natural JavaScript syntax
+  - Better TypeScript inference
+  - Aligns with modern JavaScript property patterns
+
+  ### Migration Steps
+
+  1. Replace all `get(zenInstance)` with `zenInstance.value`
+  2. Replace all `set(zenInstance, value)` with `zenInstance.value = value`
+  3. Test your application thoroughly
+
+  **Migration Example:**
+
+  ```typescript
+  // ❌ Old (v1.x)
+  const count = zen(0);
+  subscribe(count, () => console.log(get(count)));
+  set(count, get(count) + 1);
+
+  // ✅ New (v2.0)
+  const count = zen(0);
+  subscribe(count, () => console.log(count.value));
+  count.value = count.value + 1;
+  // or simply:
+  count.value++;
+  ```
+
+  ## 💥 BREAKING CHANGE #2: Removed karma/zenAsync
+
+  The `karma` and `zenAsync` APIs have been completely removed in favor of the new `computedAsync` which provides true reactive async computation.
+
+  ### Before (v1.x - REMOVED)
+
+  ```typescript
+  import { zen, karma, runKarma } from "@sylphx/zen";
+
+  const fetchUser = karma(async (id: number) => fetchUserAPI(id));
+
+  // Manual execution required
+  await runKarma(fetchUser, userId.value);
+
+  // When userId changes, must manually re-run
+  userId.value = 2;
+  await runKarma(fetchUser, userId.value); // ❌ Manual!
+  ```
+
+  ### After (v2.0 - REQUIRED)
+
+  ```typescript
+  import { zen, computedAsync, subscribe } from "@sylphx/zen";
+
+  const userId = zen(1);
+  const user = computedAsync([userId], async (id) => fetchUserAPI(id));
+
+  subscribe(user, (state) => {
+    if (state.loading) console.log("Loading...");
+    if (state.data) console.log("User:", state.data);
+    if (state.error) console.log("Error:", state.error);
+  });
+
+  // Automatic re-execution!
+  userId.value = 2; // ✅ Automatically refetches!
+  ```
+
+  ### Why the Change?
+
+  1. **True Reactivity**: `computedAsync` is fully reactive - dependencies are tracked automatically
+  2. **Simpler API**: No need for manual `runKarma` calls
+  3. **Better DX**: Loading/error states built-in
+  4. **Smaller Bundle**: Saves significant bytes
+
+  ## ✨ NEW FEATURE: computedAsync
+
+  Reactive async computed values that automatically re-execute when dependencies change.
+
+  ```typescript
+  import { zen, computedAsync } from "@sylphx/zen";
 
   const userId = zen(1);
 
@@ -28,8 +127,8 @@
     if (state.error) console.log("Error:", state.error);
   });
 
-  // When dependency changes, automatically refetches!
-  set(userId, 2); // ✅ Triggers automatic refetch
+  // Automatically refetches when dependency changes!
+  userId.value = 2; // ✅ Triggers automatic refetch
   ```
 
   ### Features
@@ -37,7 +136,7 @@
   - ✅ **Automatic dependency tracking** - Changes propagate automatically
   - ✅ **Loading/Error states** - Built-in state management
   - ✅ **Race condition protection** - Stale promises automatically ignored
-  - ✅ **Multiple dependencies** - Track any number of signals
+  - ✅ **Multiple dependencies** - Track any number of zen instances
   - ✅ **Nested computeds** - Mix sync and async computations
   - ✅ **Lazy evaluation** - Only executes when subscribed
 
@@ -56,82 +155,49 @@
   });
   ```
 
-  ## 💥 BREAKING CHANGES
+  ## 🚀 Performance Improvements
 
-  ### Removed: karma/zenAsync
+  v2.0.0 delivers massive performance improvements across the board:
 
-  The `karma` and `zenAsync` APIs have been removed in favor of the new `computedAsync` which provides true reactive async computation.
+  ### Overall
 
-  **Migration Guide:**
+  - **+44% average performance** (with new zen.value API)
+  - **12 out of 13 benchmarks faster** (92% success rate)
 
-  #### Before (v1.x - karma/zenAsync)
+  ### Top Performance Gains
 
-  ```typescript
-  import { zen, karma, runKarma, get } from "@sylphx/zen";
+  - **zen.value read**: +73% (285M vs 165M ops/s) 🔥
+  - **Subscribe/Unsubscribe**: +61% (17.7M vs 11.0M ops/s) 🔥
+  - **Computed creation**: +59% (14.9M vs 9.4M ops/s) 🔥
+  - **Computed updates**: +58% (17.9M vs 11.4M ops/s) 🔥
+  - **zen.value write**: +56% (105M vs 67M ops/s) 🔥
+  - **Batch updates**: +49% (8.6M vs 5.8M ops/s)
+  - **Map updates**: +45% (42.1M vs 29.1M ops/s)
+  - **Map creation**: +37% (14.4M vs 10.5M ops/s)
+  - **Computed reads**: +34% (153M vs 114M ops/s)
+  - **Zen creation**: +33% (114M vs 85.5M ops/s)
+  - **Complex reactive graphs**: +19% (5.3M vs 4.5M ops/s)
 
-  const fetchUser = karma(async (id: number) => fetchUserAPI(id));
+  ### Performance by Category
 
-  // Manual execution required
-  await runKarma(fetchUser, get(userId));
+  | Category            | Avg Improvement | Range                 |
+  | ------------------- | --------------- | --------------------- |
+  | **Basic Zen**       | +54.20%         | +33.12% to +73.35%    |
+  | **Computed**        | +50.30%         | +34.04% to +59.04%    |
+  | **Batch**           | +48.53%         | +48.53%               |
+  | **Maps**            | +40.86%         | +36.96% to +44.76%    |
+  | **Subscriptions**   | +37.93%         | +14.99% to +60.86%    |
+  | **Complex Graphs**  | +18.92%         | +18.92%               |
+  | **Stress Test**     | +1.13%          | +1.13%                |
 
-  // When userId changes, must manually re-run
-  set(userId, 2);
-  await runKarma(fetchUser, get(userId)); // ❌ Manual!
-  ```
+  See `VERSION_COMPARISON_REPORT.md` for detailed benchmark results.
 
-  #### After (v2.x - computedAsync)
+  ## 📦 Bundle Size
 
-  ```typescript
-  import { zen, computedAsync, set, subscribe } from "@sylphx/zen";
+  **Smaller bundle despite adding features!**
 
-  const userId = zen(1);
-  const user = computedAsync([userId], async (id) => fetchUserAPI(id));
-
-  subscribe(user, (state) => {
-    // Receives updates automatically
-  });
-
-  // Automatic re-execution!
-  set(userId, 2); // ✅ Automatically refetches!
-  ```
-
-  ### Why the Change?
-
-  1. **True Reactivity**: `computedAsync` is fully reactive - dependencies are tracked automatically
-  2. **Simpler API**: No need for manual `runKarma` calls
-  3. **Better DX**: Loading/error states built-in
-  4. **Smaller Bundle**: Removed 460 bytes (-3.8%)
-
-  ### What if I need manual control?
-
-  If you need manual async execution without reactivity, use standard async/await with `effect`:
-
-  ```typescript
-  import { zen, effect, set } from "@sylphx/zen";
-
-  const userId = zen(1);
-  const userData = zen(null);
-
-  effect([userId], async (id) => {
-    const data = await fetchUser(id);
-    set(userData, data);
-  });
-  ```
-
-  ## 📦 Package Size
-
-  - **ESM**: 5.78 KB gzip (was 6.01 KB, -3.8%)
-  - **CJS**: 6.02 KB gzip (was 6.25 KB, -3.7%)
-  - **Total reduction**: 460 bytes
-
-  ## 🚀 Performance
-
-  Performance remains excellent:
-
-  - **Basic signals**: 142M ops/sec
-  - **Computed chains**: 74M ops/sec
-  - **Batched updates**: 2M batches/sec
-  - **Reactive async**: ✅ Working perfectly
+  - **ESM (gzip)**: 5.76 KB (was 6.01 KB, **-4.2%**)
+  - **CJS (gzip)**: 5.99 KB (was 6.25 KB, **-4.2%**)
 
   ## 🎯 Complete Reactive System
 
@@ -139,28 +205,67 @@
 
   - ✅ Reactive sync computed (`computed`)
   - ✅ Reactive async computed (`computedAsync`) - **NEW!**
+  - ✅ Property-based API (`zen.value`) - **NEW!**
   - ✅ Reactive effects (`effect`)
   - ✅ Reactive maps (`map`, `deepMap`)
   - ✅ Reactive selectors (`select`)
   - ✅ Batching (`batch`)
   - ✅ Lifecycle hooks (`onMount`, `onStart`, `onStop`)
 
+  ## 🔧 Technical Optimizations
+
+  v2.0.0 includes numerous micro-optimizations:
+
+  1. **Prototype Chain**: Zero closure overhead for getter/setter
+  2. **Simplified markDirty()**: Removed redundant undefined checks
+  3. **Optimized \_setImpl()**: Better code generation, fewer branches
+  4. **Subscribe Fast-Path**: Cached properties, early exit conditions
+  5. **updateIfNecessary()**: Direct method check vs string comparison
+  6. **computedAsync**: Reduced object creation, less GC pressure
+
   ## 📚 Documentation
 
-  Full documentation and examples available in:
+  - `VERSION_COMPARISON_REPORT.md` - Complete performance comparison vs v1.2.1
+  - `COMPUTED_ASYNC_IMPLEMENTATION.md` - Implementation details
+  - `REACTIVE_ASYNC_ANALYSIS.md` - Feature comparison
 
-  - `COMPUTED_ASYNC_IMPLEMENTATION.md` - Complete implementation details
-  - `REACTIVE_ASYNC_ANALYSIS.md` - Feature comparison with Jotai
+  ## 🚨 Migration Guide
 
-  ## 🙏 Upgrade Path
+  This is a **major version** with **required migration** for all projects:
 
-  This is a major version bump due to the removal of `karma`/`zenAsync`. Most users can upgrade by:
+  ### Step 1: Update zen.value API (REQUIRED)
 
-  1. Replace `karma`/`zenAsync` with `computedAsync`
-  2. Update manual `runKarma` calls to reactive dependencies
-  3. Enjoy automatic reactivity! 🎉
+  ```typescript
+  // Find and replace:
+  get(x) → x.value
+  set(x, v) → x.value = v
+  ```
 
-  For users who don't use `karma`/`zenAsync`, this is a non-breaking upgrade with better performance and smaller bundle size.
+  ### Step 2: Migrate karma/zenAsync (if used)
+
+  ```typescript
+  // Replace karma with computedAsync
+  // See examples above
+  ```
+
+  ### Step 3: Test Thoroughly
+
+  - Run your test suite
+  - Check for any TypeScript errors
+  - Test reactive behavior in your app
+
+  ## 🎉 Summary
+
+  v2.0.0 is a major upgrade with breaking changes:
+
+  - 💥 **BREAKING**: `get()`/`set()` replaced with `zen.value` API
+  - 💥 **BREAKING**: `karma`/`zenAsync` removed, use `computedAsync`
+  - ✨ **NEW**: `zen.value` property API (73% faster reads, 56% faster writes)
+  - ✨ **NEW**: `computedAsync` for reactive async patterns
+  - 🚀 **44% average performance improvement**
+  - 📦 **4.2% smaller bundle size**
+
+  **Migration is required** for all projects. See migration guide above.
 
 ## 1.3.0
 
