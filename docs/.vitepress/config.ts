@@ -4,9 +4,7 @@ export default defineConfig({
   title: 'Zen',
   description: 'Tiny, fast, and elegant reactive state management',
   base: '/zen/',
-  head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/zen/favicon.svg' }],
-  ],
+  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/zen/favicon.svg' }]],
 
   themeConfig: {
     logo: '/logo.svg',
