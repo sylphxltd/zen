@@ -20,8 +20,16 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Sylphx",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SylphxAI/zen.git"
+  },
+  "homepage": "https://github.com/SylphxAI/zen#readme",
+  "bugs": {
+    "url": "https://github.com/SylphxAI/zen/issues"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@changesets/cli": "^2.29.7",
