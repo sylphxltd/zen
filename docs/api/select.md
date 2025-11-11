@@ -71,7 +71,7 @@ const state = zen({ count: 0, name: 'test' });
 const count1 = select(state, s => s.count);
 
 // 🔶 Slightly slower - more flexible
-const count2 = computed([state], s => s.count);
+const count2 = computed(() => state.value.count);
 ```
 
 **Benchmark results:**
