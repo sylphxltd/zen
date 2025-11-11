@@ -576,6 +576,18 @@ Yes! Zen:
 
 ---
 
+## Migration from v2
+
+Upgrading from Zen v2? See the complete [Migration Guide](./MIGRATION.md) for step-by-step instructions.
+
+**Quick summary:**
+- Replace `get(signal)` with `signal.value`
+- Replace `set(signal, v)` with `signal.value = v`
+- Update `computed([deps], fn)` to `computed(() => fn())`
+- Auto-tracking now handles dependencies automatically!
+
+---
+
 ## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](../../CONTRIBUTING.md) for details.
