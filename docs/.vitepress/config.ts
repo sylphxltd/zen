@@ -5,7 +5,24 @@ export default defineConfig({
   description: 'Tiny, fast, and elegant reactive state management',
   base: '/',
   cleanUrls: true,
-  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }]],
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'Zen - Tiny, fast, and elegant' }],
+    [
+      'meta',
+      { property: 'og:description', content: 'Reactive state management for modern web apps' },
+    ],
+    ['meta', { property: 'og:image', content: 'https://zen-sylphx.vercel.app/og-image.svg' }],
+    ['meta', { property: 'og:url', content: 'https://zen-sylphx.vercel.app/' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:title', content: 'Zen - Tiny, fast, and elegant' }],
+    [
+      'meta',
+      { name: 'twitter:description', content: 'Reactive state management for modern web apps' },
+    ],
+    ['meta', { name: 'twitter:image', content: 'https://zen-sylphx.vercel.app/og-image.svg' }],
+  ],
 
   themeConfig: {
     logo: '/logo.svg',

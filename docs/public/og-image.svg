@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="zenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="150" cy="150" r="100" fill="none" stroke="url(#zenGradient)" stroke-width="2" opacity="0.2"/>
+  <circle cx="1050" cy="480" r="120" fill="none" stroke="url(#zenGradient)" stroke-width="2" opacity="0.2"/>
+
+  <!-- Zen Logo -->
+  <g transform="translate(500, 200)">
+    <circle cx="0" cy="0" r="60" fill="none" stroke="url(#zenGradient)" stroke-width="3" opacity="0.3"/>
+    <path d="M -30 -20 L 30 -20 L -30 20 L 30 20"
+          fill="none" stroke="url(#zenGradient)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="0" cy="-35" r="4" fill="url(#zenGradient)"/>
+    <circle cx="0" cy="35" r="4" fill="url(#zenGradient)"/>
+  </g>
+
+  <!-- Text: Zen -->
+  <text x="600" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="120" font-weight="700" fill="url(#zenGradient)" text-anchor="middle">Zen</text>
+
+  <!-- Tagline -->
+  <text x="600" y="430" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#94a3b8" text-anchor="middle">Tiny, fast, and elegant</text>
+  <text x="600" y="475" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#64748b" text-anchor="middle">Reactive state management</text>
+
+  <!-- Version badge -->
+  <g transform="translate(600, 540)">
+    <rect x="-50" y="-18" width="100" height="36" rx="18" fill="#1e293b" stroke="url(#zenGradient)" stroke-width="2"/>
+    <text x="0" y="8" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="600" fill="url(#zenGradient)" text-anchor="middle">v2.0.0</text>
+  </g>
+</svg>
