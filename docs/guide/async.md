@@ -1,10 +1,48 @@
 # Async Operations
 
-Zen provides patterns for handling asynchronous operations like API calls, data fetching, and background tasks.
+Zen provides two approaches for handling asynchronous operations:
 
-## Basic Async Pattern
+1. **`computedAsync()`** - Reactive async computed values (recommended for most cases)
+2. **Manual stores** - Separate stores for data, loading, and error states
 
-Use separate stores for data, loading, and error states:
+## computedAsync() - Reactive Async (Recommended)
+
+The simplest way to handle async operations is with `computedAsync()`, which automatically re-executes when dependencies change:
+
+```typescript
+import { zen, computedAsync, subscribe } from '@sylphx/zen';
+
+const userId = zen(1);
+
+// Automatically refetches when userId changes!
+const user = computedAsync([userId], async (id) => {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
+});
+
+subscribe(user, (state) => {
+  if (state.loading) console.log('Loading...');
+  if (state.data) console.log('User:', state.data);
+  if (state.error) console.log('Error:', state.error);
+});
+
+// Change dependency triggers automatic refetch
+userId.value = 2;
+```
+
+**Benefits:**
+- ✅ Automatic refetching when dependencies change
+- ✅ Built-in loading/error states
+- ✅ Race condition protection
+- ✅ Lazy execution (only runs when subscribed)
+
+See [Async Computed API](/api/computed-async) for full documentation.
+
+---
+
+## Manual Async Pattern
+
+For more control, use separate stores for data, loading, and error states:
 
 ```typescript
 import { zen } from '@sylphx/zen';

@@ -248,29 +248,32 @@ temperature.value = 35;
 console.log(weatherStatus.value); // "Hot"
 ```
 
-## Async Computed (Not Recommended)
+## Async Computed Values
 
-Computed values should be synchronous. For async operations, use separate stores:
+For async operations, use `computedAsync()` instead of regular `computed()`:
 
 ```typescript
-// ❌ Don't do this
-const asyncComputed = computed([input], async (val) => {
-  const result = await fetch(`/api/${val}`);
-  return result.json();
+import { zen, computedAsync } from '@sylphx/zen';
+
+// ✅ Use computedAsync for async operations
+const userId = zen(1);
+const user = computedAsync([userId], async (id) => {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
 });
 
-// ✅ Do this instead
-const input = zen('');
-const result = zen(null);
-const loading = zen(false);
-
-subscribe(input, async (val) => {
-  loading.value = true;
-  const response = await fetch(`/api/${val}`);
-  result.value = await response.json();
-  loading.value = false;
+// Subscribe to get loading/data/error states
+subscribe(user, (state) => {
+  if (state.loading) console.log('Loading...');
+  if (state.data) console.log('User:', state.data);
+  if (state.error) console.log('Error:', state.error);
 });
+
+// Automatically refetches when dependency changes!
+userId.value = 2;
 ```
+
+See [Async Computed API](/api/computed-async) for full documentation.
 
 ## Performance Optimization
 

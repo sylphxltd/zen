@@ -92,6 +92,7 @@ export default defineConfig({
           items: [
             { text: 'Core', link: '/api/core' },
             { text: 'Computed', link: '/api/computed' },
+            { text: 'Async Computed', link: '/api/computed-async' },
             { text: 'Map Store', link: '/api/map' },
             { text: 'Utilities', link: '/api/utilities' },
           ],
