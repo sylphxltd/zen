@@ -9,9 +9,9 @@ Comparison between Standard and Optimized builds of @sylphx/zen
 | Build     | Raw      | Minified | Gzipped  | Reduction |
 |-----------|----------|----------|----------|-----------|
 | Standard  | 19.63 KB | 19.63 KB | 5.75 KB  | -         |
-| Optimized | 11.12 KB | 11.12 KB | 3.23 KB  | **43.9%** |
+| Optimized | 11.07 KB | 11.07 KB | 3.21 KB  | **44.3%** |
 
-**Savings:** 8.51 KB raw, 2.53 KB gzipped
+**Savings:** 8.56 KB raw, 2.54 KB gzipped
 
 ---
 
@@ -31,7 +31,7 @@ Each test runs 100,000 iterations (10,000 for complex scenarios)
 | map operations        | 22.93ms   | 21.54ms   | **-6.0%**  |
 | Todo list (realistic) | 6.05ms    | 5.58ms    | **-7.7%**  |
 
-**Average Performance:** Optimized build is **8.3% faster**
+**Average Performance:** Optimized build is **equivalent** (within 3% margin)
 
 ---
 
@@ -49,7 +49,8 @@ Each test runs 100,000 iterations (10,000 for complex scenarios)
 ### Optimized Build
 
 ✅ Core: zen, computed, computedAsync, select, map
-✅ Functions: batch, subscribe, get, set, setKey
+✅ Functions: batch, subscribe, setKey
+❌ get/set (use .value property instead)
 ❌ deepMap (use map + nested structure)
 ❌ effect (use subscribe)
 ❌ batched/batchedUpdate (use batch)

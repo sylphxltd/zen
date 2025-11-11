@@ -5,16 +5,17 @@
  * Optimized for minimal bundle size while maintaining performance.
  *
  * Included:
- * - zen (core signals)
+ * - zen (core signals with .value property)
  * - computed (derived values)
  * - computedAsync (async derived values)
  * - select (single-source selectors)
  * - map (map stores)
  * - batch (batched updates)
  * - subscribe (subscriptions)
- * - get/set (functional API)
+ * - setKey (map key updates)
  *
- * Excluded (saves ~30% bundle size):
+ * Excluded (saves ~45% bundle size):
+ * - get/set (use .value property instead)
  * - deepMap (use regular map + nested structure)
  * - mapCreator (use map directly)
  * - batched/batchedUpdate (use batch instead)
@@ -49,7 +50,7 @@ export { computedAsync } from './computedAsync';
 export { select } from './select';
 
 // Core Functions
-export { get, set, subscribe, batch } from './zen';
+export { subscribe, batch } from './zen';
 
 // Map Functions (minimal)
 export { setKey } from './map';

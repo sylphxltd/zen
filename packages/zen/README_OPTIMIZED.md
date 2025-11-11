@@ -6,11 +6,11 @@ Streamlined version with **43.9% smaller bundle** and **8.3% faster performance*
 
 ## Quick Comparison
 
-| Metric      | Standard | Optimized | Difference |
-|-------------|----------|-----------|------------|
-| Bundle Size | 5.75 KB  | 3.23 KB   | **-43.9%** |
-| Performance | Baseline | Faster    | **+8.3%**  |
-| Features    | All      | Core      | See below  |
+| Metric      | Standard | Optimized | Difference  |
+|-------------|----------|-----------|-------------|
+| Bundle Size | 5.75 KB  | 3.21 KB   | **-44.3%**  |
+| Performance | Baseline | Equal     | **~0%**     |
+| Features    | All      | Core      | See below   |
 
 ---
 
@@ -18,20 +18,20 @@ Streamlined version with **43.9% smaller bundle** and **8.3% faster performance*
 
 ### ✅ Core Features (Optimized)
 
-- `zen()` - Create reactive signals
+- `zen()` - Create reactive signals (use `.value` property)
 - `computed()` - Derived values with multiple dependencies
 - `computedAsync()` - Async derived values
 - `select()` - Single-source selectors (optimized)
 - `map()` - Reactive object stores
 - `batch()` - Batch multiple updates
 - `subscribe()` - Subscribe to changes
-- `get()` / `set()` - Functional API
 - `setKey()` - Update map keys
 
 ### ❌ Excluded Features
 
 These features are **not included** in the optimized build to reduce bundle size:
 
+- `get()` / `set()` - Use `.value` property instead
 - `deepMap()` - Use `map()` with nested structure instead
 - `effect()` - Use `subscribe()` instead
 - `batched()` / `batchedUpdate()` - Use `batch()` instead

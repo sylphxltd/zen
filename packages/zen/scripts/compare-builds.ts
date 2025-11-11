@@ -112,7 +112,8 @@ async function main() {
   console.log();
   console.log('Optimized Build includes:');
   console.log('  ✅ zen, computed, computedAsync, select, map');
-  console.log('  ✅ batch, subscribe, get, set, setKey');
+  console.log('  ✅ batch, subscribe, setKey');
+  console.log('  ❌ get/set (use .value property)');
   console.log('  ❌ deepMap (use map + nested structure)');
   console.log('  ❌ effect (use subscribe)');
   console.log('  ❌ batched/batchedUpdate (use batch)');

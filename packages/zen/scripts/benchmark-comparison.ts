@@ -217,8 +217,8 @@ runBench(
       '2': { name: 'Bob', age: 25 },
     });
     OptimizedZen.setKey(users, '3', { name: 'Charlie', age: 35 });
-    const value = OptimizedZen.get(users);
-    const _ = value['3'];
+    // Optimized: use _value property instead of get()
+    const _ = users._value['3'];
   },
 );
 
