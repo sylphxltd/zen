@@ -120,7 +120,11 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/sylphxltd/zen' }],
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/sylphxltd/zen' },
+      { icon: 'npm', link: 'https://www.npmjs.com/package/@sylphx/zen' },
+      { icon: 'x', link: 'https://x.com/SylphxAI' },
+    ],
 
     footer: {
       message: 'Released under the MIT License.',
