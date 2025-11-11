@@ -120,7 +120,6 @@ dist
 
 # Dist folder
 dist/
-!docs/dist/
 
 # Turbo cache
 .turbo/

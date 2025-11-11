@@ -5,7 +5,6 @@ export default defineConfig({
   description: 'Tiny, fast, and elegant reactive state management',
   base: '/',
   cleanUrls: true,
-  outDir: '../dist',
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }]],
 
   themeConfig: {
