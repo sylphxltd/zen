@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-react",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "React integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -36,7 +36,7 @@
     "directory": "packages/zen-react"
   },
   "keywords": ["zen", "state manager", "react", "hooks"],
-  "author": "SylphLab",
+  "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public"

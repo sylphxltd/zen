@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-persistent",
-  "version": "4.0.0",
+  "version": "3.0.0",
   "description": "Persistent store for Zen state manager (localStorage/sessionStorage sync)",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -36,7 +36,7 @@
     "directory": "packages/zen-persistent"
   },
   "keywords": ["zen", "state manager", "persistent", "localstorage", "sessionstorage"],
-  "author": "SylphLab",
+  "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public"

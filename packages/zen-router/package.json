@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-router",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Tiny URL router for zen state management.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -18,7 +18,7 @@
     "build": "bunup --format esm,cjs --dts --target node --minify"
   },
   "keywords": ["zen", "router", "routing", "state management", "minimal", "tiny"],
-  "author": "Sylph Lab <hi@sylphlab.com>",
+  "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
     "type": "git",

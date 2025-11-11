@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-craft",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Craft immutable state updates with JSON Patches for Zen",
   "type": "module",
   "source": "./src/index.ts",
@@ -50,6 +50,6 @@
     "immutable",
     "time-travel"
   ],
-  "author": "Sylph",
+  "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT"
 }

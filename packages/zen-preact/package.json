@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-preact",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Preact integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -35,7 +35,7 @@
     "directory": "packages/zen-preact"
   },
   "keywords": ["zen", "state manager", "preact", "hooks"],
-  "author": "SylphLab",
+  "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public"

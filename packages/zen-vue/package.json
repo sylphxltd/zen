@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-vue",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Vue integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -37,7 +37,7 @@
     "directory": "packages/zen-vue"
   },
   "keywords": ["zen", "state manager", "vue"],
-  "author": "SylphLab",
+  "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
