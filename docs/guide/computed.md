@@ -269,10 +269,10 @@ console.log(weatherStatus.value); // "Hot"
 
 ## Async Computed Values
 
-For async operations, use `computedAsync()`:
+For async operations, use `effect()` with manual state management:
 
 ```typescript
-import { zen, computedAsync } from '@sylphx/zen';
+import { zen, effect } from '@sylphx/zen';
 
 const userId = zen(1);
 

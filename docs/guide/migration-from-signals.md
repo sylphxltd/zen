@@ -398,7 +398,7 @@ effect(() => {
 
 ```typescript
 // Zen (built-in)
-import { zen, computedAsync } from '@sylphx/zen';
+import { zen, effect } from '@sylphx/zen';
 
 const userId = zen(1);
 

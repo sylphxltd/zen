@@ -1,5 +1,77 @@
 # @sylphx/zen
 
+## 3.1.0
+
+### Minor Changes
+
+#### ✨ Effect API
+
+New `effect()` function for side effects with auto-tracking:
+
+```typescript
+import { zen, effect } from '@sylphx/zen';
+
+const count = zen(0);
+
+// Auto-tracks dependencies
+const dispose = effect(() => {
+  console.log('Count:', count.value);
+
+  // Optional cleanup
+  return () => console.log('Cleanup');
+});
+
+dispose(); // Stop effect
+```
+
+**Features:**
+- **Auto-tracking**: Automatically tracks accessed signals
+- **Cleanup support**: Return cleanup function for resource management
+- **Batching**: Effects run after all updates complete
+- **Explicit deps**: Optional dependency array for hot paths
+
+#### 🗑️ Removed: computedAsync
+
+Removed `computedAsync` API as it was rarely used and not part of core reactive patterns. For async operations, use `effect()` with manual state management:
+
+```typescript
+// Before (computedAsync)
+const data = computedAsync(async () => {
+  return await fetch('/api/data');
+});
+
+// After (effect + zen)
+const data = zen(null);
+const loading = zen(true);
+
+effect(() => {
+  loading.value = true;
+  fetch('/api/data')
+    .then(res => res.json())
+    .then(result => {
+      data.value = result;
+      loading.value = false;
+    });
+});
+```
+
+#### 📦 Bundle Size
+
+- **Smaller core**: 2.96 KB raw (1.13 KB gzipped)
+- **Effect API included**: Complete reactivity in minimal size
+- Still the smallest reactive library with full features
+
+#### ⚡ Performance
+
+- **Signal operations**: Maintained excellent performance (~45M ops/s)
+- **Computed values**: Optimized performance (~15M ops/s create, ~50M ops/s read)
+- **Effect batching**: Efficient batch processing with minimal overhead
+
+### Breaking Changes
+
+- **Removed**: `computedAsync()` - Use `effect()` with manual state management instead
+- No other breaking changes to existing APIs
+
 ## 3.0.0
 
 ### Major Changes

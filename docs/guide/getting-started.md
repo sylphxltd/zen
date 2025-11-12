@@ -108,27 +108,31 @@ count.value = 2; // Logs: "Count changed from 1 to 2"
 unsubscribe();
 ```
 
-## Async Operations
+## Side Effects
 
-Handle async data with built-in loading states:
+Handle side effects with the `effect()` API:
 
 ```typescript
-import { zen, computedAsync } from '@sylphx/zen';
+import { zen, effect } from '@sylphx/zen';
 
 const userId = zen(1);
+const user = zen(null);
+const loading = zen(false);
 
 // Auto-tracks userId and refetches when it changes
-const user = computedAsync(async () => {
-  const id = userId.value; // Dependencies tracked BEFORE first await
-  const response = await fetch(`/api/users/${id}`);
-  return response.json();
-});
+effect(() => {
+  const id = userId.value; // Dependency tracked automatically
 
-// Access loading/data/error states
-subscribe(user, (state) => {
-  if (state.loading) console.log('Loading...');
-  if (state.data) console.log('User:', state.data);
-  if (state.error) console.log('Error:', state.error);
+  loading.value = true;
+  fetch(`/api/users/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      user.value = data;
+      loading.value = false;
+    });
+
+  // Optional cleanup
+  return () => console.log('Cleaning up effect');
 });
 
 // Automatically refetches when userId changes!

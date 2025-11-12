@@ -202,15 +202,18 @@ sub2();
 
 ## Async Computed Values
 
-For async operations, use `computedAsync()`:
+For async operations, use `effect()` with manual state management:
 
 ```typescript
-import { zen, computedAsync } from '@sylphx/zen';
+import { zen, effect } from '@sylphx/zen';
 
 const userId = zen(1);
 
 // Auto-tracks userId!
-const user = computedAsync(async () => {
+const user = zen(null);
+const loading = zen(false);
+
+effect(() => {
   const id = userId.value; // Dependencies tracked BEFORE first await
   const response = await fetch(`/api/users/${id}`);
   return response.json();

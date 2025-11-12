@@ -48,10 +48,10 @@ Zen v3 combines auto-tracking with zero-overhead reactivity:
 
 Every byte counts. Zen v3 is the smallest reactive library with auto-tracking:
 
-- Core: **1.14 KB gzipped** (vs 2.89 KB for Preact Signals, 4.5 KB for Solid)
+- Core: **1.13 KB gzipped** (vs 2.89 KB for Preact Signals, 4.5 KB for Solid)
 - React integration: +0.3KB
 - Vue integration: +0.2KB
-- Built-in async support with `computedAsync`
+- Built-in effect API for side effects
 
 ### 4. Framework Agnostic
 
@@ -109,23 +109,24 @@ const background = computed(() =>
 darkBg.value = '#111111'; // No update!
 ```
 
-### Built-in Async Support
+### Built-in Effect API
 
-`computedAsync` with automatic request cancellation:
+`effect()` for side effects with auto-tracking:
 
 ```typescript
 const userId = zen(1);
+const user = zen(null);
 
-const user = computedAsync(async () => {
+// Automatically re-runs when userId changes
+effect(() => {
   const id = userId.value; // Auto-tracked!
-  const response = await fetch(`/api/users/${id}`);
-  return response.json();
-});
+  fetch(`/api/users/${id}`)
+    .then(res => res.json())
+    .then(data => user.value = data);
 
-// Access loading/data/error states
-console.log(user.value.loading);
-console.log(user.value.data);
-console.log(user.value.error);
+  // Optional cleanup
+  return () => console.log('Cleanup');
+});
 ```
 
 ### Conditional Dependencies
@@ -156,7 +157,6 @@ count.value++; // Doesn't update display
 | Bundle Size | **1.14 KB** | 2.89 KB | 4.5 KB | 16.5 KB |
 | Auto-tracking | ✅ | ✅ | ✅ | ✅ |
 | Performance | **8x faster** | Baseline | ~2x slower | Much slower |
-| Built-in Async | ✅ | ❌ | ❌ | ✅ |
 | TypeScript | ✅ | ✅ | ✅ | ✅ |
 | Framework-agnostic | ✅ | ✅ | ❌ | ✅ |
 | Batching | ✅ | ✅ | ✅ | ✅ |
@@ -164,7 +164,7 @@ count.value++; // Doesn't update display
 **Why Zen over alternatives?**
 - **60% smaller** than Preact Signals with same auto-tracking magic
 - **8x faster** in real-world scenarios
-- Built-in `computedAsync` for async workflows
+- Built-in `effect()` API for side effects
 - Optional explicit dependencies for performance-critical code
 - Zero dependencies, tree-shakeable
 

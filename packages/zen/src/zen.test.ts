@@ -3,7 +3,7 @@
  * Target: 100% code coverage
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { zen, computed, computedAsync, subscribe, batch } from './zen-ultra';
+import { zen, computed, subscribe, batch, effect } from './zen';
 
 describe('zen-ultra: Core Signal (zen)', () => {
 	it('should create signal with initial value', () => {

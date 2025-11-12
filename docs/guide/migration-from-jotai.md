@@ -241,7 +241,7 @@ function App() {
 #### Zen - Option 1: computedAsync (Recommended)
 
 ```typescript
-import { zen, computedAsync } from '@sylphx/zen';
+import { zen, effect } from '@sylphx/zen';
 import { useStore } from '@sylphx/zen-react';
 
 const userId = zen(1);
