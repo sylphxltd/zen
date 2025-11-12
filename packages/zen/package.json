@@ -1,7 +1,7 @@
 {
   "name": "@sylphx/zen",
   "version": "3.0.0",
-  "description": "Zen state management library - extreme minimalism, extreme speed. V3: Auto-tracking reactivity, 80% smaller.",
+  "description": "Zen state management library - extreme minimalism, extreme speed. V3: Auto-tracking reactivity.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -25,7 +25,7 @@
     {
       "name": "zen v3 (full)",
       "path": "dist/index.js",
-      "import": "{ zen, computed, computedAsync, subscribe, batch }",
+      "import": "{ zen, computed, effect, subscribe, batch }",
       "limit": "1.5 kB"
     }
   ],

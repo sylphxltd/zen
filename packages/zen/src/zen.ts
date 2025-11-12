@@ -4,7 +4,7 @@
  * Maximum performance and minimum bundle size through aggressive inlining.
  * All code is inlined in a single file to eliminate module boundaries.
  *
- * Included: zen, computed, computedAsync, batch, subscribe
+ * Included: zen, computed, effect, batch, subscribe
  * Excluded: select, map, get/set, lifecycle, color tracking, advanced features
  *
  * Optimizations:
@@ -24,7 +24,7 @@ export type Listener<T> = (value: T, oldValue?: T | null) => void;
 export type Unsubscribe = () => void;
 
 type ZenCore<T> = {
-  _kind: 'zen' | 'computed' | 'computedAsync';
+  _kind: 'zen' | 'computed';
   _value: T;
   _listeners?: Listener<T>[];
 };
@@ -37,23 +37,7 @@ type ComputedCore<T> = ZenCore<T | null> & {
   _unsubs?: Unsubscribe[];
 };
 
-type AsyncState<T> = {
-  loading: boolean;
-  data?: T;
-  error?: Error;
-};
-
-type ComputedAsyncCore<T> = ZenCore<AsyncState<T>> & {
-  _kind: 'computedAsync';
-  _dirty: boolean;
-  _sources: AnyZen[];
-  _calc: () => Promise<T>;
-  _unsubs?: Unsubscribe[];
-  _promise?: Promise<T>;
-  _promiseId?: number;
-};
-
-export type AnyZen = ZenCore<any> | ComputedCore<any> | ComputedAsyncCore<any>;
+export type AnyZen = ZenCore<any> | ComputedCore<any>;
 
 export type ZenValue<A extends AnyZen> = A extends ZenCore<infer V> ? V : never;
 
@@ -61,7 +45,7 @@ export type ZenValue<A extends AnyZen> = A extends ZenCore<infer V> ? V : never;
 // AUTO-TRACKING
 // ============================================================================
 
-let currentListener: ComputedCore<any> | ComputedAsyncCore<any> | null = null;
+let currentListener: ComputedCore<any> | null = null;
 
 // ============================================================================
 // BATCHING
@@ -152,7 +136,7 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
   zenData._listeners.push(listener as any);
 
   // Subscribe computed to sources
-  if ((zen._kind === 'computed' || zen._kind === 'computedAsync') && zen._unsubs === undefined) {
+  if (zen._kind === 'computed' && zen._unsubs === undefined) {
     subscribeToSources(zen as any);
   }
 
@@ -172,7 +156,7 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
     // Unsubscribe computed from sources if no more listeners
     if (listeners.length === 0) {
       zenData._listeners = undefined;
-      if ((zen._kind === 'computed' || zen._kind === 'computedAsync') && zen._unsubs) {
+      if (zen._kind === 'computed' && zen._unsubs) {
         unsubscribeFromSources(zen as any);
       }
     }
@@ -256,16 +240,12 @@ function updateComputed<T>(c: ComputedCore<T>): void {
   }
 }
 
-function subscribeToSources(c: ComputedCore<any> | ComputedAsyncCore<any>): void {
+function subscribeToSources(c: ComputedCore<any>): void {
   const unsubs: Unsubscribe[] = [];
 
   const onSourceChange = () => {
     c._dirty = true;
-    if (c._kind === 'computed') {
-      updateComputed(c as ComputedCore<any>);
-    } else if (c._kind === 'computedAsync' && c._listeners && c._listeners.length > 0) {
-      executeAsync(c as ComputedAsyncCore<any>);
-    }
+    updateComputed(c);
   };
   (onSourceChange as any)._computedZen = c;
 
@@ -285,7 +265,7 @@ function subscribeToSources(c: ComputedCore<any> | ComputedAsyncCore<any>): void
   c._unsubs = unsubs;
 }
 
-function unsubscribeFromSources(c: ComputedCore<any> | ComputedAsyncCore<any>): void {
+function unsubscribeFromSources(c: ComputedCore<any>): void {
   if (!c._unsubs) return;
   for (let i = 0; i < c._unsubs.length; i++) {
     c._unsubs[i]();
@@ -333,107 +313,6 @@ export type ReadonlyZen<T> = ComputedCore<T>;
 export type ComputedZen<T> = ComputedCore<T>;
 
 // ============================================================================
-// COMPUTED ASYNC
-// ============================================================================
-
-async function executeAsync<T>(c: ComputedAsyncCore<T>): Promise<void> {
-  const promiseId = (c._promiseId ?? 0) + 1;
-  c._promiseId = promiseId;
-
-  const oldValue = c._value;
-  const wasLoading = oldValue.loading;
-
-  if (!wasLoading) {
-    c._value = { loading: true, data: oldValue.data, error: undefined };
-    notifyListeners(c, c._value, oldValue);
-  }
-
-  // Set as current listener for auto-tracking (only before first await)
-  const prevListener = currentListener;
-  currentListener = c;
-
-  try {
-    const promise = c._calc();
-    // Clear listener after sync portion (before await)
-    currentListener = prevListener;
-
-    c._promise = promise;
-    const result = await promise;
-
-    if (c._promiseId !== promiseId) return;
-
-    const hasChanged = oldValue.data === undefined || !Object.is(result, oldValue.data);
-    const newValue: AsyncState<T> = { loading: false, data: result, error: undefined };
-
-    c._value = newValue;
-    c._dirty = false;
-    c._promise = undefined;
-
-    if (hasChanged || wasLoading) {
-      notifyListeners(c, newValue, oldValue);
-    }
-  } catch (err) {
-    currentListener = prevListener;
-
-    if (c._promiseId !== promiseId) return;
-
-    const newValue: AsyncState<T> = {
-      loading: false,
-      data: undefined,
-      error: err instanceof Error ? err : new Error(String(err ?? 'Unknown error')),
-    };
-
-    c._value = newValue;
-    c._dirty = false;
-    c._promise = undefined;
-
-    notifyListeners(c, newValue, oldValue);
-  }
-}
-
-const computedAsyncProto = {
-  get value() {
-    // Auto-tracking: register as dependency if inside computed
-    if (currentListener) {
-      const sources = currentListener._sources as AnyZen[];
-      if (!sources.includes(this)) {
-        sources.push(this);
-      }
-    }
-
-    // Execute on first access or when dirty and has listeners
-    if (this._dirty && this._listeners && this._listeners.length > 0) {
-      executeAsync(this);
-      // Subscribe to tracked sources after execution starts
-      // Note: sources are tracked synchronously before first await
-      setTimeout(() => {
-        // Check if not yet subscribed (either undefined or empty array from eager subscribe call)
-        if ((this._unsubs === undefined || this._unsubs.length === 0) && this._sources.length > 0) {
-          subscribeToSources(this);
-        }
-      }, 0);
-    }
-    return this._value;
-  },
-};
-
-export function computedAsync<T>(
-  asyncCalculation: () => Promise<T>,
-  explicitDeps?: AnyZen[],
-): ComputedAsyncCore<T> & { value: AsyncState<T> } {
-  const c = Object.create(computedAsyncProto) as ComputedAsyncCore<T> & { value: AsyncState<T> };
-  c._kind = 'computedAsync';
-  c._value = { loading: false, data: undefined, error: undefined };
-  c._dirty = true;
-  c._sources = explicitDeps || []; // Empty array for auto-tracking
-  c._calc = asyncCalculation;
-
-  return c;
-}
-
-export type ComputedAsyncZen<T> = ComputedAsyncCore<T>;
-
-// ============================================================================
 // EFFECT (Side Effects with Auto-tracking)
 // ============================================================================
 
@@ -441,7 +320,7 @@ type EffectCore = {
   _sources: AnyZen[];
   _unsubs?: Unsubscribe[];
   _cleanup?: () => void;
-  _callback: () => void | (() => void);
+  _callback: () => undefined | (() => void);
   _cancelled: boolean;
   _autoTrack: boolean;
   _queued: boolean;
@@ -479,9 +358,7 @@ function executeEffect(e: EffectCore): void {
   try {
     const cleanup = e._callback();
     if (cleanup) e._cleanup = cleanup;
-  } catch (err) {
-    // Swallow errors to prevent breaking the reactivity system
-    console.error('Effect error:', err);
+  } catch (_err) {
   } finally {
     currentListener = prevListener;
   }
@@ -527,7 +404,7 @@ function runEffect(e: EffectCore): void {
 }
 
 export function effect(
-  callback: () => void | (() => void),
+  callback: () => undefined | (() => void),
   explicitDeps?: AnyZen[],
 ): Unsubscribe {
   const e: EffectCore = {
@@ -552,8 +429,7 @@ export function effect(
   try {
     const cleanup = e._callback();
     if (cleanup) e._cleanup = cleanup;
-  } catch (err) {
-    console.error('Effect error:', err);
+  } catch (_err) {
   } finally {
     currentListener = prevListener;
   }

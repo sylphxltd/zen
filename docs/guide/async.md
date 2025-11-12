@@ -1,194 +1,115 @@
 # Async Operations
 
-Zen provides two approaches for handling asynchronous operations:
+Zen provides flexible approaches for handling asynchronous operations using core primitives.
 
-1. **`computedAsync()`** - Reactive async computed values with auto-tracking (recommended for most cases)
-2. **Manual stores** - Separate stores for data, loading, and error states
+## Async State Pattern (Recommended)
 
-## computedAsync() - Reactive Async (Recommended)
-
-The simplest way to handle async operations is with `computedAsync()`, which automatically re-executes when dependencies change:
+For reactive async data fetching with loading/error states, use the [Async State Pattern](/patterns/async-state):
 
 ```typescript
-import { zen, computedAsync, subscribe } from '@sylphx/zen';
+import { zen, effect } from '@sylphx/zen';
+import { createAsyncState } from './patterns/async-state';
 
 const userId = zen(1);
 
-// Auto-tracks userId! Dependencies tracked BEFORE first await
-const user = computedAsync(async () => {
-  const id = userId.value; // Read dependencies before any await
-  const response = await fetch(`/api/users/${id}`);
-  return response.json();
-});
+const user = createAsyncState(
+  async () => {
+    const res = await fetch(`/api/user/${userId.value}`);
+    return res.json();
+  },
+  [userId] // Auto-refetch when userId changes
+);
 
-subscribe(user, (state) => {
-  if (state.loading) console.log('Loading...');
-  if (state.data) console.log('User:', state.data);
-  if (state.error) console.log('Error:', state.error);
-});
+// Access state
+console.log(user.state.value.loading); // boolean
+console.log(user.state.value.data);    // User | undefined
+console.log(user.state.value.error);   // Error | undefined
 
-// Change dependency triggers automatic refetch
-userId.value = 2;
+// Manual refetch
+user.refetch();
 ```
 
-**Benefits:**
-- ✅ Automatic refetching when dependencies change
-- ✅ Built-in loading/error states
-- ✅ Race condition protection (auto-cancellation)
-- ✅ Auto-tracking - no manual dependency arrays
-- ✅ Lazy execution (only runs when subscribed)
-
-**Important:** Dependencies are tracked synchronously BEFORE the first `await`. Access all dependencies at the top of your async function.
-
-```typescript
-// ✅ Good - dependencies tracked before await
-const result = computedAsync(async () => {
-  const a = signalA.value;  // Tracked
-  const b = signalB.value;  // Tracked
-
-  const response = await fetch('/api');
-  return processData(response, a, b);
-});
-
-// ❌ Bad - signalB accessed after await, not tracked
-const result = computedAsync(async () => {
-  const a = signalA.value;  // Tracked
-
-  const response = await fetch('/api');
-  const b = signalB.value;  // NOT tracked!
-  return processData(response, a, b);
-});
-```
+**See [Async State Pattern](/patterns/async-state) for full documentation.**
 
 ---
 
-## Manual Async Pattern
+## Manual Pattern
 
-For more control, use separate stores for data, loading, and error states:
+For simple cases, manage loading/error states manually:
 
 ```typescript
 import { zen } from '@sylphx/zen';
 
-const dataStore = zen<User | null>(null);
-const loadingStore = zen(false);
-const errorStore = zen<Error | null>(null);
-
-async function fetchUser(id: number) {
-  loadingStore.value = true;
-  errorStore.value = null;
-
-  try {
-    const response = await fetch(`/api/users/${id}`);
-    const data = await response.json();
-    dataStore.value = data;
-  } catch (err) {
-    errorStore.value = err as Error;
-  } finally {
-    loadingStore.value = false;
-  }
-}
-```
-
-## Loading States
-
-### Simple Loading
-
-```typescript
+const data = zen<User | null>(null);
 const loading = zen(false);
-const data = zen<string | null>(null);
-
-async function loadData() {
-  loading.value = true;
-  try {
-    const response = await fetch('/api/data');
-    data.value = await response.json();
-  } finally {
-    loading.value = false;
-  }
-}
-```
-
-### With Error Handling
-
-```typescript
-const loading = zen(false);
-const data = zen<string | null>(null);
 const error = zen<Error | null>(null);
 
-async function loadData() {
+async function fetchUser(id: number) {
   loading.value = true;
   error.value = null;
 
   try {
-    const response = await fetch('/api/data');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    const response = await fetch(`/api/users/${id}`);
     data.value = await response.json();
   } catch (err) {
     error.value = err as Error;
-    data.value = null;
   } finally {
     loading.value = false;
   }
 }
 ```
 
+---
+
 ## React Integration
 
-### Using computedAsync
+### With Async State Pattern
 
 ```tsx
-import { zen, computedAsync } from '@sylphx/zen';
-import { useStore } from '@sylphx/zen-react';
-
-const userId = zen(1);
-
-// Auto-tracked async computed
-const user = computedAsync(async () => {
-  const id = userId.value;
-  const response = await fetch(`/api/users/${id}`);
-  return response.json();
-});
+import { useZen } from '@sylphx/zen-react';
 
 function UserProfile() {
-  const { loading, data, error } = useStore(user);
+  const { loading, data, error } = useZen(user.state);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!data) return <div>No user</div>;
 
-  return <div>User: {data.name}</div>;
+  return (
+    <div>
+      <h1>{data.name}</h1>
+      <button onClick={user.refetch}>Refresh</button>
+    </div>
+  );
 }
 ```
 
-### Basic Async Component
+### Manual Pattern
 
 ```tsx
-import { zen } from '@sylphx/zen';
-import { useStore } from '@sylphx/zen-react';
+import { useZen } from '@sylphx/zen-react';
 import { useEffect } from 'react';
 
-const usersStore = zen<User[]>([]);
-const loadingStore = zen(false);
+const users = zen<User[]>([]);
+const loading = zen(false);
 
 function UserList() {
-  const users = useStore(usersStore);
-  const loading = useStore(loadingStore);
+  const data = useZen(users);
+  const isLoading = useZen(loading);
 
   useEffect(() => {
-    loadingStore.value = true;
+    loading.value = true;
     fetch('/api/users')
       .then(res => res.json())
-      .then(data => usersStore.value = data)
-      .finally(() => loadingStore.value = false);
+      .then(data => users.value = data)
+      .finally(() => loading.value = false);
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <ul>
-      {users.map(user => (
+      {data.map(user => (
         <li key={user.id}>{user.name}</li>
       ))}
     </ul>
@@ -196,280 +117,85 @@ function UserList() {
 }
 ```
 
-### With Error Handling
-
-```tsx
-const dataStore = zen<Data | null>(null);
-const loadingStore = zen(false);
-const errorStore = zen<Error | null>(null);
-
-function DataDisplay() {
-  const data = useStore(dataStore);
-  const loading = useStore(loadingStore);
-  const error = useStore(errorStore);
-
-  useEffect(() => {
-    loadingStore.value = true;
-    errorStore.value = null;
-
-    fetch('/api/data')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch');
-        return res.json();
-      })
-      .then(data => dataStore.value = data)
-      .catch(err => errorStore.value = err)
-      .finally(() => loadingStore.value = false);
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!data) return <div>No data</div>;
-
-  return <div>{JSON.stringify(data)}</div>;
-}
-```
+---
 
 ## Vue Integration
 
 ```vue
-<script setup lang="ts">
-import { onMounted } from 'vue';
-import { zen } from '@sylphx/zen';
-import { useStore } from '@sylphx/zen-vue';
+<script setup>
+import { useZen } from '@sylphx/zen-vue';
 
-const usersStore = zen<User[]>([]);
-const loadingStore = zen(false);
-const errorStore = zen<Error | null>(null);
-
-const users = useStore(usersStore);
-const loading = useStore(loadingStore);
-const error = useStore(errorStore);
-
-onMounted(async () => {
-  loadingStore.value = true;
-  errorStore.value = null;
-
-  try {
-    const response = await fetch('/api/users');
-    usersStore.value = await response.json();
-  } catch (err) {
-    errorStore.value = err as Error;
-  } finally {
-    loadingStore.value = false;
-  }
-});
+const state = useZen(user.state);
 </script>
 
 <template>
-  <div v-if="loading">Loading...</div>
-  <div v-else-if="error">Error: {{ error.message }}</div>
-  <ul v-else>
-    <li v-for="user in users" :key="user.id">
-      {{ user.name }}
-    </li>
-  </ul>
+  <div v-if="state.loading">Loading...</div>
+  <div v-else-if="state.error">Error: {{ state.error.message }}</div>
+  <div v-else-if="state.data">
+    <h1>{{ state.data.name }}</h1>
+    <button @click="user.refetch">Refresh</button>
+  </div>
 </template>
 ```
 
-## Debouncing with computedAsync
+---
 
-Use an intermediate signal to debounce:
+## Common Patterns
+
+### Debouncing
 
 ```typescript
-import { zen, computedAsync, subscribe } from '@sylphx/zen';
+import { zen, effect } from '@sylphx/zen';
 
 const searchTerm = zen('');
 const debouncedQuery = zen('');
 
-// Debounce logic
 let timeout: any;
-subscribe(searchTerm, (term) => {
+effect(() => {
+  const term = searchTerm.value;
   clearTimeout(timeout);
   timeout = setTimeout(() => {
     debouncedQuery.value = term;
   }, 300);
 });
 
-// Auto-refetches when debouncedQuery changes
-const results = computedAsync(async () => {
-  const query = debouncedQuery.value;
-  if (!query) return [];
-
-  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-  return response.json();
-});
-
-// Render results
-subscribe(results, ({ loading, data, error }) => {
-  if (loading) showSpinner();
-  if (error) showError(error);
-  if (data) renderResults(data);
-});
+// Use debouncedQuery in async state
+const results = createAsyncState(
+  async () => {
+    const query = debouncedQuery.value;
+    if (!query) return [];
+    const res = await fetch(`/api/search?q=${query}`);
+    return res.json();
+  },
+  [debouncedQuery]
+);
 ```
 
-## Debouncing (Manual Pattern)
-
-Debounce API calls when input changes frequently:
+### Cancellation
 
 ```typescript
-import { zen, subscribe } from '@sylphx/zen';
-
-const searchTerm = zen('');
-const searchResults = zen<Result[]>([]);
-const searching = zen(false);
-
-let debounceTimer: NodeJS.Timeout;
-
-subscribe(searchTerm, (term) => {
-  clearTimeout(debounceTimer);
-
-  if (!term) {
-    searchResults.value = [];
-    return;
-  }
-
-  debounceTimer = setTimeout(async () => {
-    searching.value = true;
-    try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
-      searchResults.value = await response.json();
-    } finally {
-      searching.value = false;
-    }
-  }, 300);
-});
-```
-
-### Debounce Helper
-
-```typescript
-function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timer: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
-
-const searchTerm = zen('');
-const searchResults = zen<Result[]>([]);
-
-const debouncedSearch = debounce(async (term: string) => {
-  if (!term) return;
-  const response = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
-  searchResults.value = await response.json();
-}, 300);
-
-subscribe(searchTerm, debouncedSearch);
-```
-
-## Polling
-
-Poll for updates at regular intervals:
-
-```typescript
-const data = zen<Data | null>(null);
-const polling = zen(false);
-
-let pollInterval: NodeJS.Timeout;
-
-function startPolling(intervalMs = 5000) {
-  polling.value = true;
-
-  const poll = async () => {
-    try {
-      const response = await fetch('/api/data');
-      data.value = await response.json();
-    } catch (err) {
-      console.error('Poll failed:', err);
-    }
-  };
-
-  // Initial fetch
-  poll();
-
-  // Set up interval
-  pollInterval = setInterval(poll, intervalMs);
-}
-
-function stopPolling() {
-  polling.value = false;
-  clearInterval(pollInterval);
-}
-```
-
-### With React
-
-```tsx
-function PollingComponent() {
-  const data = useStore(dataStore);
-  const polling = useStore(pollingStore);
-
-  useEffect(() => {
-    startPolling();
-    return () => stopPolling();
-  }, []);
-
-  return (
-    <div>
-      {polling && <span>Polling...</span>}
-      <div>{JSON.stringify(data)}</div>
-    </div>
-  );
-}
-```
-
-## Cancellation
-
-Cancel in-flight requests:
-
-```typescript
-const data = zen<Data | null>(null);
-const loading = zen(false);
-
 let abortController: AbortController | null = null;
 
 async function fetchData() {
-  // Cancel previous request
-  if (abortController) {
-    abortController.abort();
-  }
-
+  abortController?.abort();
   abortController = new AbortController();
-  loading.value = true;
 
   try {
-    const response = await fetch('/api/data', {
+    const res = await fetch('/api/data', {
       signal: abortController.signal
     });
-    data.value = await response.json();
+    return res.json();
   } catch (err) {
-    if (err.name !== 'AbortError') {
-      console.error('Fetch failed:', err);
-    }
-  } finally {
-    loading.value = false;
+    if (err.name !== 'AbortError') throw err;
   }
 }
 ```
 
-**Note:** `computedAsync()` handles cancellation automatically when dependencies change!
+See [Async State Pattern](/patterns/async-state) for full cancellation example.
 
-## Optimistic Updates
-
-Update UI immediately, then sync with server:
+### Optimistic Updates
 
 ```typescript
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-}
-
 const todos = zen<Todo[]>([]);
 
 async function toggleTodo(id: number) {
@@ -480,30 +206,37 @@ async function toggleTodo(id: number) {
   );
 
   try {
-    const response = await fetch(`/api/todos/${id}/toggle`, {
-      method: 'POST'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to toggle');
-    }
-
-    // Optionally sync with server response
-    const updated = await response.json();
-    todos.value = todos.value.map(todo =>
-      todo.id === id ? updated : todo
-    );
+    await fetch(`/api/todos/${id}/toggle`, { method: 'POST' });
   } catch (err) {
     // Rollback on error
     todos.value = oldTodos;
-    console.error('Failed to toggle todo:', err);
   }
 }
 ```
 
-## Pagination
+### Polling
 
-Handle paginated API responses:
+```typescript
+const data = zen<Data | null>(null);
+
+let pollInterval: any;
+
+function startPolling(intervalMs = 5000) {
+  const poll = async () => {
+    const res = await fetch('/api/data');
+    data.value = await res.json();
+  };
+
+  poll(); // Initial fetch
+  pollInterval = setInterval(poll, intervalMs);
+}
+
+function stopPolling() {
+  clearInterval(pollInterval);
+}
+```
+
+### Pagination
 
 ```typescript
 const items = zen<Item[]>([]);
@@ -515,10 +248,9 @@ async function loadMore() {
   if (loading.value || !hasMore.value) return;
 
   loading.value = true;
-
   try {
-    const response = await fetch(`/api/items?page=${page.value}&limit=20`);
-    const data = await response.json();
+    const res = await fetch(`/api/items?page=${page.value}&limit=20`);
+    const data = await res.json();
 
     items.value = [...items.value, ...data.items];
     hasMore.value = data.hasMore;
@@ -529,130 +261,44 @@ async function loadMore() {
 }
 ```
 
-### Infinite Scroll with React
-
-```tsx
-function InfiniteList() {
-  const items = useStore(itemsStore);
-  const hasMore = useStore(hasMoreStore);
-  const loading = useStore(loadingStore);
-
-  const observerRef = useRef<IntersectionObserver>();
-  const lastItemRef = useCallback((node: HTMLElement | null) => {
-    if (loading) return;
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMore();
-      }
-    });
-
-    if (node) observerRef.current.observe(node);
-  }, [loading, hasMore]);
-
-  return (
-    <div>
-      {items.map((item, index) => {
-        if (index === items.length - 1) {
-          return <div ref={lastItemRef} key={item.id}>{item.text}</div>;
-        }
-        return <div key={item.id}>{item.text}</div>;
-      })}
-      {loading && <div>Loading more...</div>}
-    </div>
-  );
-}
-```
-
-## Parallel Requests
-
-Fetch multiple resources in parallel:
+### Parallel Requests
 
 ```typescript
-const users = zen<User[]>([]);
-const posts = zen<Post[]>([]);
-const loading = zen(false);
-
 async function loadAll() {
-  loading.value = true;
+  const [usersRes, postsRes] = await Promise.all([
+    fetch('/api/users'),
+    fetch('/api/posts')
+  ]);
 
-  try {
-    const [usersResponse, postsResponse] = await Promise.all([
-      fetch('/api/users'),
-      fetch('/api/posts')
-    ]);
-
-    users.value = await usersResponse.json();
-    posts.value = await postsResponse.json();
-  } finally {
-    loading.value = false;
-  }
+  users.value = await usersRes.json();
+  posts.value = await postsRes.json();
 }
 ```
 
-## Sequential Requests
-
-Fetch resources in sequence when one depends on another:
+### Retry Logic
 
 ```typescript
-const user = zen<User | null>(null);
-const posts = zen<Post[]>([]);
-const loading = zen(false);
-
-async function loadUserAndPosts(userId: number) {
-  loading.value = true;
-
-  try {
-    // First, fetch user
-    const userResponse = await fetch(`/api/users/${userId}`);
-    const userData = await userResponse.json();
-    user.value = userData;
-
-    // Then, fetch their posts
-    const postsResponse = await fetch(`/api/users/${userId}/posts`);
-    posts.value = await postsResponse.json();
-  } finally {
-    loading.value = false;
-  }
-}
-```
-
-## Retry Logic
-
-Retry failed requests with exponential backoff:
-
-```typescript
-async function fetchWithRetry(
-  url: string,
-  maxRetries = 3,
-  delay = 1000
-): Promise<any> {
+async function fetchWithRetry(url: string, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Fetch failed');
-      return await response.json();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Fetch failed');
+      return await res.json();
     } catch (err) {
       if (i === maxRetries - 1) throw err;
-      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+      await new Promise(resolve =>
+        setTimeout(resolve, 1000 * Math.pow(2, i))
+      );
     }
   }
 }
-
-const data = zen<Data | null>(null);
-
-async function loadData() {
-  try {
-    data.value = await fetchWithRetry('/api/data');
-  } catch (err) {
-    console.error('All retries failed:', err);
-  }
-}
 ```
+
+---
 
 ## Next Steps
 
-- [Computed Values](/guide/computed) - Learn about computed values
-- [Migration Guide](/guide/migration-v2-to-v3) - Upgrading from v2
-- [Batching Updates](/guide/batching) - Optimize updates
+- **[Async State Pattern](/patterns/async-state)** - Full async state documentation
+- **[Store Pattern](/patterns/store-pattern)** - Zustand-style stores
+- **[Computed Values](/guide/computed)** - Derived state
+- **[Batching](/guide/batching)** - Optimize updates
