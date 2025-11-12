@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { deepMap, setPath } from './deepMap';
 import { listenKeys, listenPaths, onMount, onNotify, onSet, onStart, onStop } from './events';
 import { map, setKey } from './map';
-import { batch, set, subscribe, zen } from './zen';
+import { batch, subscribe, zen } from './zen'; // set removed
 
 describe('events', () => {
   describe('onMount', () => {
@@ -167,7 +167,7 @@ describe('events', () => {
 
       expect(listener).not.toHaveBeenCalled();
 
-      set(store, 1);
+      store.value = 1;
       expect(listener).toHaveBeenCalledTimes(1);
       // onSet listener receives the *new* value
       expect(listener).toHaveBeenCalledWith(1);
@@ -181,7 +181,7 @@ describe('events', () => {
       const store = zen(0);
       const unsubscribeSet = onSet(store, listener);
 
-      set(store, 0); // Set same value
+      store.value = 0; // Set same value
       expect(listener).not.toHaveBeenCalled();
 
       unsubscribeSet();
@@ -193,7 +193,7 @@ describe('events', () => {
       const unsubscribeSet = onSet(store, listener);
 
       batch(() => {
-        set(store, 1);
+        store.value = 1;
         expect(listener).not.toHaveBeenCalled(); // Not called during batch
       });
 
@@ -208,7 +208,7 @@ describe('events', () => {
     //   const listener = vi.fn(({ abort }) => { abort(); });
     //   const store = zen(0);
     //   const unsubscribeSet = onSet(store, listener);
-    //   set(store, 1);
+    //   store.value = 1;
     //   expect(listener).toHaveBeenCalledTimes(1);
     //   expect(store._value).toBe(0); // Value should not have changed
     //   unsubscribeSet();
@@ -229,7 +229,7 @@ describe('events', () => {
 
       expect(notifyListener).not.toHaveBeenCalled();
 
-      set(store, 1);
+      store.value = 1;
 
       // Check order: value listener first, then notify listener
       expect(valueListener).toHaveBeenCalledTimes(1);
@@ -249,7 +249,7 @@ describe('events', () => {
       const store = zen(0);
       const unsubscribeNotify = onNotify(store, notifyListener);
 
-      set(store, 0); // Set same value
+      store.value = 0; // Set same value
       expect(notifyListener).not.toHaveBeenCalled();
 
       unsubscribeNotify();
@@ -261,7 +261,7 @@ describe('events', () => {
       const unsubscribeNotify = onNotify(store, notifyListener);
 
       batch(() => {
-        set(store, 1);
+        store.value = 1;
       });
 
       // Notify listeners are called *after* batch completes
@@ -277,8 +277,8 @@ describe('events', () => {
       const unsubscribeNotify = onNotify(store, notifyListener);
 
       batch(() => {
-        set(store, 1);
-        set(store, 2);
+        store.value = 1;
+        store.value = 2;
       });
 
       expect(notifyListener).toHaveBeenCalledTimes(1); // Called once after batch
@@ -293,8 +293,8 @@ describe('events', () => {
       const unsubscribeNotify = onNotify(store, notifyListener);
 
       batch(() => {
-        set(store, 1);
-        set(store, 0); // Back to original
+        store.value = 1;
+        store.value = 0; // Back to original
       });
 
       expect(notifyListener).not.toHaveBeenCalled();
