@@ -1,0 +1,44 @@
+{
+  "name": "@sylphx/zen-patterns",
+  "version": "1.0.0",
+  "description": "Useful patterns and helpers for Zen state management",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": ["state", "store", "patterns", "reactive", "zen"],
+  "author": "Sylphx <hi@sylphx.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SylphxAI/zen.git"
+  },
+  "homepage": "https://github.com/SylphxAI/zen#readme",
+  "bugs": {
+    "url": "https://github.com/SylphxAI/zen/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@sylphx/zen": "^3.1.0"
+  },
+  "devDependencies": {
+    "@sylphx/zen": "workspace:*",
+    "bunup": "^0.15.13",
+    "typescript": "^5.8.3"
+  }
+}
