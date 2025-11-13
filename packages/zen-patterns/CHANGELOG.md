@@ -1,5 +1,12 @@
 # @sylphx/zen-patterns
 
+## 8.0.0
+
+### Patch Changes
+
+- Updated dependencies [e9cb5b9]
+  - @sylphx/zen@3.8.0
+
 ## 7.0.0
 
 ### Patch Changes
