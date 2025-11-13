@@ -13,7 +13,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
     "size": "bun size-limit",
@@ -55,5 +57,8 @@
   "devDependencies": {
     "bunup": "^0.15.13",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.10"
   }
 }
