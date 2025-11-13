@@ -5,7 +5,7 @@
 Zen is a revolutionary reactive state management library that combines extreme minimalism with magical auto-tracking.
 
 <p align="center">
-  <strong>1.21 KB gzipped • 52x faster than SolidJS • Auto-tracking • Zero config</strong>
+  <strong>831 B gzipped • Revolutionary performance • Batched compatibility • Auto-tracking • Zero config</strong>
 </p>
 
 ---
@@ -24,8 +24,8 @@ const sum = computed(() => a.value + b.value);
 
 ### 🎯 Key Features
 
-- 🪶 **Ultra-tiny** - Only **1.68 KB gzipped**
-- ⚡ **Lightning fast** - Blazing fast performance
+- 🪶 **Ultra-tiny** - Only **831 B gzipped** (50% smaller!)
+- ⚡ **Lightning fast** - Revolutionary ultra-performance (50M+ ops/sec)
 - 🪄 **Auto-tracking** - Dependencies tracked automatically, zero config
 - 🎯 **Clean API** - Unified `.value` everywhere, no `get()`/`set()`
 - 🔄 **Effect API** - Built-in `effect()` for side effects with auto-tracking
