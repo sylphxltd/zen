@@ -27,7 +27,13 @@ jobs:
         run: bun install
 
       - name: Build Packages
-        run: bun run build
+        run: |
+          for dir in packages/*/; do
+            if [ -f "$dir/package.json" ] && grep -q '"build"' "$dir/package.json"; then
+              echo "Building $dir..."
+              (cd "$dir" && bun run build)
+            fi
+          done
 
       - name: Run Tests
         run: bun test packages/zen/src
