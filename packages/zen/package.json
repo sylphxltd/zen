@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.1.3",
+  "version": "3.1.4",
   "description": "Zen state management library - extreme minimalism, extreme speed. V3.1.2: Single-file architecture, 1.21 KB gzipped, 52x faster than SolidJS.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -13,9 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
     "size": "bun size-limit",
