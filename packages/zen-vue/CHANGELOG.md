@@ -1,5 +1,12 @@
 # @sylphx/zen-vue
 
+## 3.0.2
+
+### Patch Changes
+
+- Updated dependencies [b8764fe]
+  - @sylphx/zen@3.1.1
+
 ## 3.0.1
 
 ### Patch Changes

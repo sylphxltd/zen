@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-react",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "React integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",
