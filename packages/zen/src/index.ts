@@ -7,22 +7,15 @@ import type { Zen as _Zen } from './zen';
 export type Zen<T = unknown> = _Zen<T>;
 
 // Other Types
-export type { ReadonlyZen, ComputedZen } from './zen';
+export type { ReadonlyZen, ComputedZen } from './computed';
 
 // Core Factories
-import { computed as _computed, effect as _effect, zen as _zen } from './zen';
+import { zen as _zen } from './zen';
 export const zen: typeof _zen = _zen;
-export const computed: typeof _computed = _computed;
-export const effect: typeof _effect = _effect;
+export { computed } from './computed';
+export { effect } from './effect';
 
 // Core Functions
-import {
-  batch as _batch,
-  batchDepth as _batchDepth,
-  queueZenForBatch as _queueZenForBatch,
-  subscribe as _subscribe,
-} from './zen';
+import { batch as _batch, subscribe as _subscribe } from './zen';
 export const subscribe: typeof _subscribe = _subscribe;
 export const batch: typeof _batch = _batch;
-export const queueZenForBatch: typeof _queueZenForBatch = _queueZenForBatch;
-export const batchDepth: typeof _batchDepth = _batchDepth;
