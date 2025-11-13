@@ -1,5 +1,12 @@
 # @sylphx/zen-solid
 
+## 3.0.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @sylphx/zen@3.3.0
+
 ## 3.0.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-preact",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Preact integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",

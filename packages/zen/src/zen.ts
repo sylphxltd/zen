@@ -52,9 +52,9 @@ let currentListener: ComputedCore<any> | null = null;
 // ============================================================================
 
 let batchDepth = 0;
-// OPTIMIZATION: Queue-based batching (Solid-inspired) - replaces Map with arrays
-let Updates: Set<ComputedCore<any>> | null = null; // Set for computed updates (deduplication)
-let Effects: Array<() => void> | null = null; // Queue for side effects
+// OPTIMIZATION v3.3: Reusable global queues (reduce GC pressure)
+const Updates: Set<ComputedCore<any>> = new Set(); // Set for computed updates (deduplication)
+const Effects: Array<() => void> = []; // Queue for side effects
 const pendingNotifications = new Map<AnyZen, any>(); // Keep for external stores (map, deepMap)
 let isProcessingUpdates = false; // Flag to indicate we're in STEP 1 (processing Updates)
 
@@ -79,10 +79,9 @@ export { batchDepth };
 
 // Helper to check if we're in batch processing phase (STEP 2/3, not STEP 1)
 export function isInBatchProcessing(): boolean {
-  // We're in processing phase only when batchDepth > 0 AND Updates is null
-  // During STEP 1 (Updates processing), Updates is a Set, so this returns false
-  // During STEP 2/3 (pendingNotifications/Effects), Updates is null, so this returns true
-  return batchDepth > 0 && Updates === null;
+  // We're in processing phase when isProcessingUpdates is true
+  // This indicates we're past STEP 1 (Updates processing) and in STEP 2/3
+  return isProcessingUpdates;
 }
 
 // ============================================================================
@@ -112,10 +111,11 @@ const zenProto = {
       for (let i = 0; i < listeners.length; i++) {
         const listener = listeners[i];
         const computedZen = (listener as any)._computedZen;
-        if (computedZen) {
+        if (computedZen && !computedZen._dirty) {
+          // ✅ v3.3 OPTIMIZATION: Only mark and queue if not already dirty
           computedZen._dirty = true;
           // Add to Updates set if in batch (Set handles deduplication)
-          if (Updates) {
+          if (batchDepth > 0) {
             Updates.add(computedZen);
           }
         }
@@ -215,9 +215,9 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
 // ============================================================================
 
 export function batch<T>(fn: () => T): T {
-  // OPTIMIZATION v3.2: Queue-based batching - 16x faster than Map-based approach!
-  // Already batching - just increment depth
-  if (batchDepth > 0 || Updates !== null) {
+  // ✅ v3.3 OPTIMIZATION: Simplified nesting with reusable queues
+  // Nested batch: just increment depth
+  if (batchDepth > 0) {
     batchDepth++;
     try {
       return fn();
@@ -226,93 +226,100 @@ export function batch<T>(fn: () => T): T {
     }
   }
 
-  // Start new batch with queues
+  // Start new batch
   batchDepth = 1;
-  Updates = new Set();
-  Effects = [];
 
   try {
     const result = fn();
 
-    // STEP 1: Process Updates set (computed values)
-    // Process iteratively to handle chains (e.g., a → sum → doubled)
-    if (Updates.size > 0) {
-      // Keep Updates as a Set to allow new computed to be added during processing
-      // This handles dependency chains where updating A dirties B which needs processing
-      const processed = new Set<ComputedCore<any>>();
-      isProcessingUpdates = true;
+    // Only process if we're at depth 1 (outermost batch)
+    if (batchDepth === 1) {
+      // STEP 1: Process Updates set (computed values)
+      // ✅ v3.3 LAZY OPTIMIZATION: Only process computed values that have active listeners
+      // This implements Solid-style pull-based evaluation for unobserved computed values
+      if (Updates.size > 0) {
+        // Keep Updates as a Set to allow new computed to be added during processing
+        // This handles dependency chains where updating A dirties B which needs processing
+        const processed = new Set<ComputedCore<any>>();
+        isProcessingUpdates = true;
 
-      while (Updates.size > 0) {
-        // Get next unprocessed computed
-        let computed: ComputedCore<any> | undefined;
-        for (const c of Updates) {
-          if (!processed.has(c)) {
-            computed = c;
-            break;
-          }
-        }
-
-        if (!computed) break; // All processed
-
-        // Remove from Updates and mark as processed
-        Updates.delete(computed);
-        processed.add(computed);
-
-        if (computed._dirty) {
-          const oldValue = computed._value;
-          let changed = false;
-
-          // Check if it's from computed.ts (has _update method)
-          if ((computed as any)._update) {
-            changed = (computed as any)._update();
-            // Send notification for computed.ts computed values
-            if (changed && computed._listeners) {
-              for (let j = 0; j < computed._listeners.length; j++) {
-                computed._listeners[j](computed._value, oldValue);
-              }
+        while (Updates.size > 0) {
+          // Get next unprocessed computed
+          let computed: ComputedCore<any> | undefined;
+          for (const c of Updates) {
+            if (!processed.has(c)) {
+              computed = c;
+              break;
             }
-          } else {
-            // It's from zen.ts (internal computed)
-            // updateComputed will handle both update and notification
-            updateComputed(computed);
           }
+
+          if (!computed) break; // All processed
+
+          // Remove from Updates and mark as processed
+          Updates.delete(computed);
+          processed.add(computed);
+
+          // ✅ v3.3 LAZY: Skip computation if no listeners (will compute on next access)
+          // This is the key difference from v3.2: we don't force computation during batch
+          if (computed._dirty && computed._listeners && computed._listeners.length > 0) {
+            const oldValue = computed._value;
+            let changed = false;
+
+            // Check if it's from computed.ts (has _update method)
+            if ((computed as any)._update) {
+              changed = (computed as any)._update();
+              // Send notification for computed.ts computed values
+              if (changed && computed._listeners) {
+                for (let j = 0; j < computed._listeners.length; j++) {
+                  computed._listeners[j](computed._value, oldValue);
+                }
+              }
+            } else {
+              // It's from zen.ts (internal computed)
+              // updateComputed will handle both update and notification
+              updateComputed(computed);
+            }
+          }
+          // If no listeners, computed stays dirty and will be evaluated on next access (lazy)
         }
+
+        isProcessingUpdates = false;
+        Updates.clear(); // Clear for reuse
       }
 
-      isProcessingUpdates = false;
-      Updates = null; // Clear after all processing
-    }
-
-    // STEP 2: Process external store notifications (map, deepMap)
-    if (pendingNotifications.size > 0) {
-      for (const [zen, oldValue] of pendingNotifications) {
-        const listeners = zen._listeners;
-        if (listeners) {
-          const newValue = zen._value;
-          for (let i = 0; i < listeners.length; i++) {
-            listeners[i](newValue, oldValue);
+      // STEP 2: Process external store notifications (map, deepMap)
+      if (pendingNotifications.size > 0) {
+        for (const [zen, oldValue] of pendingNotifications) {
+          const listeners = zen._listeners;
+          if (listeners) {
+            const newValue = zen._value;
+            for (let i = 0; i < listeners.length; i++) {
+              listeners[i](newValue, oldValue);
+            }
           }
         }
+        pendingNotifications.clear();
       }
-      pendingNotifications.clear();
-    }
 
-    // STEP 3: Process Effects queue (side effects)
-    if (Effects && Effects.length > 0) {
-      const effectQueue = Effects;
-      Effects = null;
+      // STEP 3: Process Effects queue (side effects)
+      if (Effects.length > 0) {
+        // Copy effects to process (in case new effects are queued during execution)
+        const effectsToRun = Effects.slice();
+        Effects.length = 0; // Clear for reuse
 
-      for (let i = 0; i < effectQueue.length; i++) {
-        effectQueue[i]();
+        for (let i = 0; i < effectsToRun.length; i++) {
+          effectsToRun[i]();
+        }
       }
     }
 
     return result;
   } finally {
-    batchDepth = 0;
-    Updates = null;
-    Effects = null;
-    isProcessingUpdates = false;
+    batchDepth--;
+    if (batchDepth === 0) {
+      // Cleanup only at outermost batch
+      isProcessingUpdates = false;
+    }
   }
 }
 
