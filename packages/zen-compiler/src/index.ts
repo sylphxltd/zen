@@ -121,6 +121,72 @@ function topologicalSort(
   return result;
 }
 
+/**
+ * Generate optimized graph code
+ */
+function generateGraphCode(
+  signals: Map<string, SignalInfo>,
+  computed: Map<string, ComputedInfo>,
+  executionOrder: string[]
+): t.VariableDeclaration | null {
+  if (signals.size === 0 && computed.size === 0) return null;
+
+  // Build name-to-id mapping
+  const nameToId = new Map<string, number>();
+  let currentId = 0;
+
+  for (const name of executionOrder) {
+    nameToId.set(name, currentId++);
+  }
+
+  // Generate signals array
+  const signalsArray = t.arrayExpression(
+    Array.from(signals.values())
+      .sort((a, b) => nameToId.get(a.name)! - nameToId.get(b.name)!)
+      .map((sig) =>
+        t.objectExpression([
+          t.objectProperty(t.identifier('id'), t.numericLiteral(nameToId.get(sig.name)!)),
+          t.objectProperty(t.identifier('value'), sig.initialValue),
+        ])
+      )
+  );
+
+  // Generate computed array
+  const computedArray = t.arrayExpression(
+    Array.from(computed.values())
+      .sort((a, b) => nameToId.get(a.name)! - nameToId.get(b.name)!)
+      .map((comp) => {
+        // Convert dep names to IDs
+        const depIds = Array.from(comp.deps).map((depName) => nameToId.get(depName)!);
+
+        return t.objectExpression([
+          t.objectProperty(t.identifier('id'), t.numericLiteral(nameToId.get(comp.name)!)),
+          t.objectProperty(
+            t.identifier('deps'),
+            t.arrayExpression(depIds.map((id) => t.numericLiteral(id)))
+          ),
+          t.objectProperty(t.identifier('fn'), comp.fn),
+        ]);
+      })
+  );
+
+  // Generate execution order array
+  const executionOrderArray = t.arrayExpression(
+    executionOrder.map((name) => t.numericLiteral(nameToId.get(name)!))
+  );
+
+  // Generate: const __zenGraph = { signals, computed, executionOrder }
+  const graphObject = t.objectExpression([
+    t.objectProperty(t.identifier('signals'), signalsArray),
+    t.objectProperty(t.identifier('computed'), computedArray),
+    t.objectProperty(t.identifier('executionOrder'), executionOrderArray),
+  ]);
+
+  return t.variableDeclaration('const', [
+    t.variableDeclarator(t.identifier('__zenCompiledGraph'), graphObject),
+  ]);
+}
+
 export default function zenCompilerPlugin(
   _babel: any,
   options: ZenCompilerOptions = {}
@@ -179,9 +245,17 @@ export default function zenCompilerPlugin(
             console.log('==========================================\n');
           }
 
-          // TODO: Generate optimized runtime code
-          // This is where we would inject the optimized graph structure
-          // For v3.9, we're focusing on analysis and validation first
+          // Generate optimized runtime code
+          const graphCode = generateGraphCode(signals, computed, executionOrder);
+
+          // Inject at the top of the program
+          if (graphCode) {
+            path.node.body.unshift(graphCode);
+
+            if (warnings && process.env.NODE_ENV === 'development') {
+              console.log('[zen-compiler] Generated optimized graph code\n');
+            }
+          }
         },
       },
 

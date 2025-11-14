@@ -19,3 +19,7 @@ export { effect } from './effect';
 import { batch as _batch, subscribe as _subscribe } from './zen';
 export const subscribe: typeof _subscribe = _subscribe;
 export const batch: typeof _batch = _batch;
+
+// Compiled Runtime (for compiler plugin)
+export type { CompiledGraph, CompiledSignal, CompiledComputed, CompiledGraphRuntime } from './compiled';
+export { createCompiledGraph } from './compiled';
