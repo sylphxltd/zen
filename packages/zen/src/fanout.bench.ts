@@ -11,7 +11,7 @@ import { bench, describe } from 'vitest';
 import { zen, computed as zenComputed } from './zen';
 
 // Solid imports
-import { createSignal, createMemo } from 'solid-js';
+import { createMemo, createSignal } from 'solid-js';
 
 // ============================================================================
 // FANOUT TESTS: 1 Signal → N Computeds
@@ -93,10 +93,10 @@ describe('Fanout: 1 → 1000 (Massive Fanout)', () => {
 describe('Fanout: 1 → 1000 (Update Only, No Read)', () => {
   // Setup once
   const zenSource = zen(0);
-  const zenComputeds = Array.from({ length: 1000 }, () => zenComputed(() => zenSource.value * 2));
+  const _zenComputeds = Array.from({ length: 1000 }, () => zenComputed(() => zenSource.value * 2));
 
   const [solidSource, setSolidSource] = createSignal(0);
-  const solidComputeds = Array.from({ length: 1000 }, () => createMemo(() => solidSource() * 2));
+  const _solidComputeds = Array.from({ length: 1000 }, () => createMemo(() => solidSource() * 2));
 
   bench('Zen: update only (eager)', () => {
     zenSource.value++;

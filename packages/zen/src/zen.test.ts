@@ -483,7 +483,7 @@ describe('zen-ultra: Coverage Edge Cases', () => {
 
 		// Manually remove listener
 		if (count._listeners) {
-			count._listeners.splice(count._listeners.indexOf(listener as any), 1);
+			count._listeners.delete(listener as any);
 		}
 
 		// Should not throw

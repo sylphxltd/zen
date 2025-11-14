@@ -26,7 +26,7 @@ export type Unsubscribe = () => void;
 type ZenCore<T> = {
   _kind: 'zen' | 'computed';
   _value: T;
-  _listeners?: Listener<T>[];
+  _listeners?: Set<Listener<T>>; // OPTIMIZATION: Set for O(1) add/remove
 };
 
 type ComputedCore<T> = ZenCore<T | null> & {
@@ -60,10 +60,11 @@ let isProcessingUpdates = false; // Flag to indicate we're in STEP 1 (processing
 
 export function notifyListeners<T>(zen: ZenCore<T>, newValue: T, oldValue: T): void {
   const listeners = zen._listeners;
-  if (!listeners) return;
+  if (!listeners || listeners.size === 0) return;
 
-  for (let i = 0; i < listeners.length; i++) {
-    listeners[i](newValue, oldValue);
+  // Use for-of for Set iteration
+  for (const listener of listeners) {
+    listener(newValue, oldValue);
   }
 }
 
@@ -149,14 +150,14 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
   const zenData = zen._kind === 'zen' ? zen : zen;
 
   // Add listener
-  if (!zenData._listeners) zenData._listeners = [];
-  zenData._listeners.push(listener as any);
+  if (!zenData._listeners) zenData._listeners = new Set();
+  zenData._listeners.add(listener as any);
 
   // Subscribe computed to sources
   if (zen._kind === 'computed') {
     // Check if it's from computed.ts (has _subscribeToSources method)
     if ((zen as any)._subscribeToSources) {
-      const firstListener = zenData._listeners.length === 1;
+      const firstListener = zenData._listeners.size === 1;
       if (firstListener) {
         (zen as any)._subscribeToSources();
       }
@@ -168,7 +169,7 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
 
   // Subscribe batched to sources (for batched stores from batched.ts)
   if (zen._kind === 'batched' && (zen as any)._subscribeToSources) {
-    const firstListener = zenData._listeners.length === 1;
+    const firstListener = zenData._listeners.size === 1;
     if (firstListener) {
       (zen as any)._subscribeToSources();
     }
@@ -182,13 +183,10 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
     const listeners = zenData._listeners;
     if (!listeners) return;
 
-    const idx = listeners.indexOf(listener as any);
-    if (idx === -1) return;
-
-    listeners.splice(idx, 1);
+    listeners.delete(listener as any); // O(1) removal with Set
 
     // Unsubscribe computed from sources if no more listeners
-    if (listeners.length === 0) {
+    if (listeners.size === 0) {
       zenData._listeners = undefined;
       if (zen._kind === 'computed') {
         // Check if it's from computed.ts (has _unsubscribeFromSources method)
@@ -258,7 +256,7 @@ export function batch<T>(fn: () => T): T {
 
           // ✅ v3.3 LAZY: Skip computation if no listeners (will compute on next access)
           // This is the key difference from v3.2: we don't force computation during batch
-          if (computed._dirty && computed._listeners && computed._listeners.length > 0) {
+          if (computed._dirty && computed._listeners && computed._listeners.size > 0) {
             const oldValue = computed._value;
             let changed = false;
 
@@ -267,8 +265,8 @@ export function batch<T>(fn: () => T): T {
               changed = (computed as any)._update();
               // Send notification for computed.ts computed values
               if (changed && computed._listeners) {
-                for (let j = 0; j < computed._listeners.length; j++) {
-                  computed._listeners[j](computed._value, oldValue);
+                for (const listener of computed._listeners) {
+                  listener(computed._value, oldValue);
                 }
               }
             } else {
@@ -288,10 +286,10 @@ export function batch<T>(fn: () => T): T {
       if (pendingNotifications.size > 0) {
         for (const [zen, oldValue] of pendingNotifications) {
           const listeners = zen._listeners;
-          if (listeners) {
+          if (listeners && listeners.size > 0) {
             const newValue = zen._value;
-            for (let i = 0; i < listeners.length; i++) {
-              listeners[i](newValue, oldValue);
+            for (const listener of listeners) {
+              listener(newValue, oldValue);
             }
           }
         }
@@ -409,14 +407,11 @@ function attachListener(sources: Set<AnyZen>, callback: any): Unsubscribe[] {
 
   for (const source of sources) {
     const zenSource = source as ZenCore<any>;
-    if (!zenSource._listeners) zenSource._listeners = [];
-    zenSource._listeners.push(callback);
+    if (!zenSource._listeners) zenSource._listeners = new Set();
+    zenSource._listeners.add(callback);
 
     unsubs.push(() => {
-      const listeners = zenSource._listeners;
-      if (!listeners) return;
-      const idx = listeners.indexOf(callback);
-      if (idx !== -1) listeners.splice(idx, 1);
+      zenSource._listeners?.delete(callback); // O(1) removal with Set
     });
   }
 
@@ -430,7 +425,7 @@ function subscribeToSources(c: ComputedCore<any>): void {
     // OPTIMIZATION: Lazy evaluation for leaf computeds (no listeners)
     // Only eager update if this computed has downstream dependencies
     // This dramatically improves fanout performance (1→N pattern)
-    if (c._listeners && c._listeners.length > 0) {
+    if (c._listeners && c._listeners.size > 0) {
       updateComputed(c);
     }
     // else: Lazy - will recalc on next .value access (pull-based)
