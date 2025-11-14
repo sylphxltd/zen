@@ -73,6 +73,54 @@ interface GraphState {
   nextId: number;
 }
 
+/**
+ * Topological sort for dependency graph
+ * Returns execution order (signals first, then computed in dependency order)
+ */
+function topologicalSort(
+  signals: Map<string, SignalInfo>,
+  computed: Map<string, ComputedInfo>
+): string[] {
+  const result: string[] = [];
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+
+  // Helper function for DFS
+  function visit(name: string) {
+    if (visited.has(name)) return;
+    if (visiting.has(name)) {
+      console.warn(`[zen-compiler] Circular dependency detected involving: ${name}`);
+      return;
+    }
+
+    visiting.add(name);
+
+    // If it's a computed, visit its dependencies first
+    const comp = computed.get(name);
+    if (comp) {
+      for (const dep of comp.deps) {
+        visit(dep);
+      }
+    }
+
+    visiting.delete(name);
+    visited.add(name);
+    result.push(name);
+  }
+
+  // Visit all signals first (they have no dependencies)
+  for (const signalName of signals.keys()) {
+    visit(signalName);
+  }
+
+  // Visit all computed values
+  for (const computedName of computed.keys()) {
+    visit(computedName);
+  }
+
+  return result;
+}
+
 export default function zenCompilerPlugin(
   _babel: any,
   options: ZenCompilerOptions = {}
@@ -106,15 +154,34 @@ export default function zenCompilerPlugin(
           // Skip if no zen calls detected
           if (signals.size === 0 && computed.size === 0) return;
 
-          // TODO: Generate optimized graph
-          // This is where we would inject the optimized runtime code
-          // For now, we just log the analysis results
+          // Perform topological sort
+          const executionOrder = topologicalSort(signals, computed);
 
+          // Log analysis results
           if (warnings && process.env.NODE_ENV === 'development') {
-            console.log('[zen-compiler] Analysis results:');
-            console.log(`  Signals: ${signals.size}`);
-            console.log(`  Computed: ${computed.size}`);
+            console.log('\n[zen-compiler] ===== Analysis Results =====');
+            console.log(`Signals: ${signals.size}`);
+            console.log(`Computed: ${computed.size}`);
+            console.log('\nDependency Graph:');
+
+            for (const comp of computed.values()) {
+              const depsArray = Array.from(comp.deps);
+              console.log(`  ${comp.name} → [${depsArray.join(', ')}]`);
+            }
+
+            console.log('\nExecution Order:');
+            executionOrder.forEach((name, idx) => {
+              const isSignal = signals.has(name);
+              const type = isSignal ? 'signal' : 'computed';
+              console.log(`  ${idx}. ${name} (${type})`);
+            });
+
+            console.log('==========================================\n');
           }
+
+          // TODO: Generate optimized runtime code
+          // This is where we would inject the optimized graph structure
+          // For v3.9, we're focusing on analysis and validation first
         },
       },
 
@@ -198,13 +265,58 @@ export default function zenCompilerPlugin(
         if (!t.isIdentifier(path.node.property)) return;
         if (path.node.property.name !== 'value') return;
 
-        // Check if the object is a known signal
+        // Check if the object is a known signal or computed
         if (!t.isIdentifier(path.node.object)) return;
 
         const signalName = path.node.object.name;
 
-        // TODO: Track this dependency in the current computed context
-        // This requires traversing up to find which computed we're inside
+        // Find if we're inside a computed function
+        let currentComputed: ComputedInfo | null = null;
+        let currentPath = path.parentPath;
+
+        // Traverse up to find the computed we're inside
+        while (currentPath) {
+          // Check if we're inside a function that's part of a computed() call
+          if (
+            (t.isArrowFunctionExpression(currentPath.node) ||
+              t.isFunctionExpression(currentPath.node)) &&
+            currentPath.parentPath &&
+            t.isCallExpression(currentPath.parentPath.node)
+          ) {
+            const callExpr = currentPath.parentPath.node;
+            if (
+              t.isIdentifier(callExpr.callee) &&
+              callExpr.callee.name === 'computed'
+            ) {
+              // Found the computed call, now find which computed this is
+              const varDeclarator = currentPath.parentPath.parentPath;
+              if (varDeclarator && t.isVariableDeclarator(varDeclarator.node)) {
+                const computedId = varDeclarator.node.id;
+                if (t.isIdentifier(computedId)) {
+                  currentComputed = state.zenGraph.computed.get(computedId.name) || null;
+                  break;
+                }
+              }
+            }
+          }
+          currentPath = currentPath.parentPath;
+        }
+
+        // If we found a computed context and the signal is known
+        if (currentComputed) {
+          const isKnownSignal = state.zenGraph.signals.has(signalName);
+          const isKnownComputed = state.zenGraph.computed.has(signalName);
+
+          if (isKnownSignal || isKnownComputed) {
+            currentComputed.deps.add(signalName);
+
+            if (warnings && process.env.NODE_ENV === 'development') {
+              console.log(
+                `[zen-compiler] Detected dependency: ${currentComputed.name} depends on ${signalName}`
+              );
+            }
+          }
+        }
       },
     },
   };

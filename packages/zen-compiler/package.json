@@ -41,6 +41,7 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/parser": "^7.26.0",
+    "@babel/preset-typescript": "^7.28.5",
     "bunup": "^0.15.13",
     "typescript": "^5.8.3"
   }
