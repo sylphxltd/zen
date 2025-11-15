@@ -1,5 +1,23 @@
 # @sylphx/zen-svelte
 
+## 4.0.0
+
+### Patch Changes
+
+- ce5dee7: perf(zen): slot-based O(1) listener management and optimized notifications
+
+  Performance improvements to zen core reactivity system:
+
+  - **O(1) unsubscribe**: Slot-based index tracking replaces linear array search
+  - **O(1) batch deduplication**: FLAG_PENDING_NOTIFY prevents duplicate notifications
+  - **Optimized hot paths**: Removed optional chaining from notification loops
+  - **Cleaner internals**: Extracted addEffectListener() and addComputedListener()
+
+  No breaking changes - pure internal optimization. All existing code continues to work unchanged.
+
+- Updated dependencies [ce5dee7]
+  - @sylphx/zen@3.11.0
+
 ## 3.0.10
 
 ### Patch Changes

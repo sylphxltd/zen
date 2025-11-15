@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-vue",
-  "version": "3.0.10",
+  "version": "4.0.0",
   "description": "Vue integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -13,13 +13,15 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node --minify"
   },
   "peerDependencies": {
-    "@sylphx/zen": "^3.0.0",
+    "@sylphx/zen": "^3.11.0",
     "vue": "^3.0.0"
   },
   "devDependencies": {
@@ -35,7 +37,11 @@
     "url": "https://github.com/SylphxAI/zen.git",
     "directory": "packages/zen-vue"
   },
-  "keywords": ["zen", "state manager", "vue"],
+  "keywords": [
+    "zen",
+    "state manager",
+    "vue"
+  ],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {
