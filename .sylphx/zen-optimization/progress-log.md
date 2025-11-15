@@ -79,7 +79,17 @@ Direct property access (computed._flags |= STALE) is much faster.
 **Lesson:** TypeScript type assertions don't affect runtime. V8 optimizes `?.` well.
 **Details:** See pass3-failed.md
 
-## Next Steps (Pass 4 Options)
+## Pass 4: Bidirectional Pointers ⚠️ MIXED - Rejected
+**Status:** Implemented O(1) cleanup, but net negative
+**Results:**
+- Fanout: +6.9% (14,073 → 15,046 ops/sec) ✅
+- Triangle: +0.7% ✅
+- Diamond: -3.5% (172,129 → 166,127 ops/sec) ❌
+- Deep chain: -12.5% (132,797 → 116,110 ops/sec) ❌
+**Lesson:** O(n) → O(1) doesn't always win. Small n makes indexOf fast. Slot overhead hurts.
+**Details:** See pass4-mixed-results.md
+
+## Next Steps (Pass 5 Options)
 
 ### Option A: Inline Hot Paths (Expected: +15-25%)
 Inline array access patterns for 1-3 listeners (most common case).
