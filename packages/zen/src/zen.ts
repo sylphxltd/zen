@@ -77,7 +77,11 @@ const zenProto = {
       currentListener._sources = [];
     }
     if (currentListener) {
-      currentListener._sources?.push(this);
+      const sources = currentListener._sources;
+      // Only add if not already tracking this source
+      if (sources && sources.indexOf(this) === -1) {
+        sources.push(this);
+      }
     }
     return this._value;
   },
@@ -183,7 +187,11 @@ const computedProto = {
       currentListener._sources = [];
     }
     if (currentListener) {
-      currentListener._sources?.push(this);
+      const sources = currentListener._sources;
+      // Only add if not already tracking this source
+      if (sources && sources.indexOf(this) === -1) {
+        sources.push(this);
+      }
     }
 
     return this._value;
@@ -240,10 +248,13 @@ const computedProto = {
           }
         }
 
-        const listeners = this._listeners;
-        if (listeners) {
-          for (let i = 0; i < listeners.length; i++) {
-            listeners[i](this._value, oldValue);
+        // Only notify if value actually changed
+        if (!Object.is(this._value, oldValue)) {
+          const listeners = this._listeners;
+          if (listeners) {
+            for (let i = 0; i < listeners.length; i++) {
+              listeners[i](this._value, oldValue);
+            }
           }
         }
       }
@@ -286,8 +297,10 @@ export function computed<T>(calculation: () => T): ComputedCore<T> & { value: T 
   // Initialize as empty array with size property for test compatibility
   const sources: any[] = [];
   Object.defineProperty(sources, 'size', {
-    get() { return this.length; },
-    enumerable: false
+    get() {
+      return this.length;
+    },
+    enumerable: false,
   });
   c._sources = sources;
   c._sourceUnsubs = undefined;
@@ -360,7 +373,7 @@ export function subscribe<A extends AnyZen>(zenItem: A, listener: Listener<any>)
   if (!zenItem._listeners) {
     const listeners: any[] = [];
     // Add delete method for test compatibility
-    (listeners as any).delete = function(item: any) {
+    (listeners as any).delete = function (item: any) {
       const idx = this.indexOf(item);
       if (idx !== -1) {
         const last = this.length - 1;
