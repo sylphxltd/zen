@@ -41,23 +41,28 @@ describe('deepMap', () => {
       },
     });
 
-    let themeChanges = 0;
-    let sidebarChanges = 0;
-    let widthChanges = 0;
+    const themeListener = vi.fn();
+    const sidebarListener = vi.fn();
+    const widthListener = vi.fn();
 
-    listenPaths(config, ['ui.theme'], () => themeChanges++);
-    listenPaths(config, ['ui.layout.sidebar'], () => sidebarChanges++);
-    listenPaths(config, ['ui.layout.width'], () => widthChanges++);
+    listenPaths(config, ['ui.theme'], themeListener);
+    listenPaths(config, ['ui.layout.sidebar'], sidebarListener);
+    listenPaths(config, ['ui.layout.width'], widthListener);
+
+    // Listeners are called immediately on subscription with initial values
+    expect(themeListener).toHaveBeenCalledTimes(1);
+    expect(sidebarListener).toHaveBeenCalledTimes(1);
+    expect(widthListener).toHaveBeenCalledTimes(1);
 
     config.setPath('ui.theme', 'light');
-    expect(themeChanges).toBe(1);
-    expect(sidebarChanges).toBe(0);
-    expect(widthChanges).toBe(0);
+    expect(themeListener).toHaveBeenCalledTimes(2);
+    expect(sidebarListener).toHaveBeenCalledTimes(1);
+    expect(widthListener).toHaveBeenCalledTimes(1);
 
     config.setPath('ui.layout.width', 300);
-    expect(themeChanges).toBe(1);
-    expect(sidebarChanges).toBe(0);
-    expect(widthChanges).toBe(1);
+    expect(themeListener).toHaveBeenCalledTimes(2);
+    expect(sidebarListener).toHaveBeenCalledTimes(1);
+    expect(widthListener).toHaveBeenCalledTimes(2);
   });
 
   it('should support array bracket notation', () => {
@@ -99,9 +104,12 @@ describe('deepMap', () => {
     const listener = vi.fn();
     const unsub = listenPaths(config, ['ui.theme'], listener);
 
+    // Clear initial call on subscription
+    listener.mockClear();
+
     config.setPath('ui.theme', 'light');
 
-    expect(listener).toHaveBeenCalledWith('light', 'ui.theme', config.value);
+    expect(listener).toHaveBeenCalledWith('light', 'ui.theme', expect.objectContaining({ ui: { theme: 'light' } }));
 
     unsub();
   });

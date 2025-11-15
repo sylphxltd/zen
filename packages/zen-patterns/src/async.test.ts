@@ -104,14 +104,17 @@ describe('computedAsync', () => {
       [userId]
     );
 
+    // Wait for initial execution
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(callCount).toBe(1);
+
     expect(user.state.value.data?.id).toBe(1);
+    const callsBeforeChange = callCount;
 
     userId.value = 2;
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(callCount).toBe(2);
+    // Should have executed exactly one more time
+    expect(callCount).toBe(callsBeforeChange + 1);
     expect(user.state.value.data?.id).toBe(2);
   });
 

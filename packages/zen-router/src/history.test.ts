@@ -119,7 +119,9 @@ beforeEach(async () => {
   vi.mocked(utils.parseQuery).mockReturnValue({});
 
   // Reset the state of the *real* $router store
-  $router.value = { path: '', search: {}, params: {} };
+  setKey($router, 'path', '');
+  setKey($router, 'search', {});
+  setKey($router, 'params', {});
 
   // Spy on the actual setKey function if needed for assertions
   // vi.spyOn(core, 'setKey'); // Example: Add this if tests need to assert setKey calls

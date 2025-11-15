@@ -1,6 +1,7 @@
 // Import subscribe normally - they will be mocked by vi.mock below
 import { type MapZen, type Unsubscribe, map, subscribe } from '@sylphx/zen';
 import { $router, type RouterState } from '@sylphx/zen-router'; // Import real $router
+import { setKey } from '@sylphx/zen-patterns';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRouter } from './index'; // Import the hook
@@ -41,7 +42,9 @@ describe('useRouter', () => {
     mockUnsubscribe = vi.fn();
 
     // Set the $router's value to match currentState
-    $router.value = currentState;
+    setKey($router, 'path', currentState.path);
+    setKey($router, 'search', currentState.search);
+    setKey($router, 'params', currentState.params);
 
     // Setup mock implementation for subscribe
     mockSubscribe.mockImplementation(

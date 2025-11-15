@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { $router } from '../index';
 import { matchRoutes } from '../matcher'; // Assuming matchRoutes is exported or made available for testing
 import { defineRoutes, getRoutes } from '../routes'; // Assuming getRoutes is exported or made available for testing
+import { setKey } from '@sylphx/zen-patterns';
 
 // Mock routes for testing
 const testRoutes = [
@@ -18,7 +19,9 @@ describe('Router - Routing Logic', () => {
     // Or ensure defineRoutes returns a fresh set
     defineRoutes(testRoutes);
     // Reset router store if needed
-    $router.value = { path: '', params: {}, search: {} };
+    setKey($router, 'path', '');
+    setKey($router, 'params', {});
+    setKey($router, 'search', {});
   });
 
   it('should define and retrieve routes', () => {
