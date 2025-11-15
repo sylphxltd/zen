@@ -242,15 +242,10 @@ class ComputedNode<T> extends BaseNode<T | null> {
     }
 
     const hadSubscriptions = this._sourceUnsubs !== undefined;
-
-    // Track dependencies
     const prevListener = currentListener;
-    currentListener = this as unknown as DependencyCollector;
 
-    // Store old sources length for comparison (avoid array copy)
-    const oldSourcesLen = this._sources.length;
-    const oldFirstSource = oldSourcesLen > 0 ? this._sources[0] : null;
-    const oldSecondSource = oldSourcesLen > 1 ? this._sources[1] : null;
+    // BUG FIX 1.1: Store complete old sources for full comparison
+    const oldSources = hadSubscriptions ? this._sources.slice() : null;
 
     this._sources.length = 0;
 
@@ -258,46 +253,51 @@ class ComputedNode<T> extends BaseNode<T | null> {
     this._flags &= ~FLAG_STALE;
 
     const oldValue = this._value;
-    const newValue = this._calc();
-    this._value = newValue;
+    let newValue: T | null;
 
-    this._flags &= ~FLAG_PENDING;
-    this._version++;
+    // BUG FIX 1.2: try/finally to ensure cleanup on error
+    try {
+      currentListener = this as unknown as DependencyCollector;
+      newValue = this._calc();
+      this._value = newValue;
+      this._version++;
 
-    currentListener = prevListener;
+      // BUG FIX 1.1: Full dependency comparison
+      if (hadSubscriptions && oldSources) {
+        const srcs = this._sources;
+        let depsChanged = oldSources.length !== srcs.length;
 
-    // Rewire subscriptions if dependency set changed
-    if (hadSubscriptions) {
-      const srcs = this._sources;
-      const srcLen = srcs.length;
+        if (!depsChanged) {
+          for (let i = 0; i < srcs.length; i++) {
+            if (oldSources[i] !== srcs[i]) {
+              depsChanged = true;
+              break;
+            }
+          }
+        }
 
-      // Fast path: check length and first two sources
-      let depsChanged = oldSourcesLen !== srcLen;
-      if (!depsChanged && srcLen > 0) {
-        depsChanged = oldFirstSource !== srcs[0];
-        if (!depsChanged && srcLen > 1) {
-          depsChanged = oldSecondSource !== srcs[1];
+        if (depsChanged) {
+          this._unsubscribeFromSources();
+          if (srcs.length > 0) {
+            this._subscribeToSources();
+          }
         }
       }
 
-      if (depsChanged) {
-        this._unsubscribeFromSources();
-        if (srcLen > 0) {
-          this._subscribeToSources();
+      // Queue notification if value changed
+      if (!valuesEqual(oldValue, newValue)) {
+        // CRITICAL: Mark downstream computeds as stale (fixes computed chain bug)
+        const downstream = this._computedListeners;
+        const downLen = downstream.length;
+        for (let i = 0; i < downLen; i++) {
+          downstream[i]!._flags |= FLAG_STALE;
         }
-      }
-    }
 
-    // Queue notification if value changed
-    if (!valuesEqual(oldValue, newValue)) {
-      // CRITICAL: Mark downstream computeds as stale (fixes computed chain bug)
-      const downstream = this._computedListeners;
-      const downLen = downstream.length;
-      for (let i = 0; i < downLen; i++) {
-        downstream[i]!._flags |= FLAG_STALE;
+        queueBatchedNotification(this as AnyNode, oldValue);
       }
-
-      queueBatchedNotification(this as AnyNode, oldValue);
+    } finally {
+      currentListener = prevListener;
+      this._flags &= ~FLAG_PENDING;
     }
   }
 
@@ -404,22 +404,23 @@ function notifyEffects(node: AnyNode, newValue: unknown, oldValue: unknown): voi
 
 /**
  * Flush all pending notifications.
+ * BUG FIX 1.3: Handle notifications added during flush.
  */
 function flushPendingNotifications(): void {
   const pending = pendingNotifications;
-  const len = pending.length;
-  if (len === 0) return;
+  while (pending.length > 0) {
+    const len = pending.length;
+    for (let i = 0; i < len; i++) {
+      const entry = pending[i]!;
+      const node = entry[0];
+      const oldVal = entry[1];
 
-  for (let i = 0; i < len; i++) {
-    const entry = pending[i]!;
-    const node = entry[0];
-    const oldVal = entry[1];
-
-    node._flags &= ~FLAG_PENDING_NOTIFY;
-    notifyEffects(node, node._value, oldVal);
+      node._flags &= ~FLAG_PENDING_NOTIFY;
+      notifyEffects(node, node._value, oldVal);
+    }
+    // Only clear processed items; preserve any added during notification
+    pending.splice(0, len);
   }
-
-  pending.length = 0;
 }
 
 // Guard against recursive flush
@@ -427,7 +428,7 @@ let isFlushing = false;
 
 /**
  * Flush batched updates - mark computeds dirty and notify effects.
- * Simple direct propagation for maximum performance.
+ * BUG FIX 1.3: Handle dirty nodes added during flush.
  */
 function flushBatchedUpdates(): void {
   if (isFlushing) return;
@@ -448,10 +449,12 @@ function flushBatchedUpdates(): void {
         }
       }
 
-      dirtyNodes.length = 0;
+      // Only clear processed items; preserve any added during flush
+      dirtyNodes.splice(0, dirtyLen);
 
       // Flush pending effect notifications
       flushPendingNotifications();
+      // Loop continues if new dirtyNodes were added
     }
   } finally {
     isFlushing = false;
