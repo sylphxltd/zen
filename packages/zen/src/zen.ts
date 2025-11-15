@@ -169,20 +169,8 @@ class ZenNode<T> extends BaseNode<T> {
 
     // Direct propagation for maximum performance
     if (batchDepth === 0 && !isFlushing) {
-      // Mark computed listeners stale
-      const computed = this._computedListeners;
-      const computedLen = computed.length;
-      for (let i = 0; i < computedLen; i++) {
-        const c = computed[i]!;
-        c._flags |= FLAG_STALE;
-        // BUG FIX 1.4: If computed has effect listeners (or downstream computeds with effect listeners),
-        // trigger recompute + notify (recursively)
-        if (hasDownstreamEffectListeners(c)) {
-          (c as ComputedNode<any>)._recomputeIfNeeded();
-          // Recursively trigger downstream computeds that also have effect listeners
-          recomputeDownstreamWithListeners(c);
-        }
-      }
+      // Unified path: mark computed listeners stale and recompute if needed
+      propagateToComputeds(this as AnyNode);
 
       // Notify effects immediately
       const effects = this._effectListeners;
@@ -464,6 +452,24 @@ function recomputeDownstreamWithListeners(node: AnyNode): void {
   }
 }
 
+/**
+ * Unified path: Mark computed listeners stale and trigger recompute if needed.
+ * Used by both immediate and batched update paths.
+ */
+function propagateToComputeds(node: AnyNode): void {
+  const computed = node._computedListeners;
+  const len = computed.length;
+  for (let i = 0; i < len; i++) {
+    const c = computed[i]!;
+    c._flags |= FLAG_STALE;
+    // BUG FIX 1.4: If computed has effect listeners, trigger recompute + notify
+    if (hasDownstreamEffectListeners(c)) {
+      (c as ComputedNode<any>)._recomputeIfNeeded();
+      recomputeDownstreamWithListeners(c);
+    }
+  }
+}
+
 let batchDepth = 0;
 
 type PendingNotification = [AnyNode, unknown];
@@ -545,16 +551,11 @@ function flushBatchedUpdates(): void {
         const node = dirtyNodes[i]!;
         node._flags &= ~FLAG_IN_DIRTY_QUEUE;
 
-        // BUG FIX 1.4: If node is computed with subscribers, recompute it
+        // Unified path: propagate to computeds (recompute if needed)
         if (node instanceof ComputedNode) {
           (node as ComputedNode<any>)._recomputeIfNeeded();
         } else {
-          // For signals, mark downstream computeds as stale
-          const computed = node._computedListeners;
-          const computedLen = computed.length;
-          for (let j = 0; j < computedLen; j++) {
-            computed[j]!._flags |= FLAG_STALE;
-          }
+          propagateToComputeds(node);
         }
       }
 
