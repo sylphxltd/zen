@@ -13,22 +13,13 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node --minify",
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "keywords": [
-    "zen",
-    "router",
-    "routing",
-    "state management",
-    "minimal",
-    "tiny"
-  ],
+  "keywords": ["zen", "router", "routing", "state management", "minimal", "tiny"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
