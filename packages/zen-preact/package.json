@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-preact",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Preact integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -22,7 +22,7 @@
     "build": "bunup --format esm,cjs --dts --target node --minify"
   },
   "peerDependencies": {
-    "@sylphx/zen": "^3.11.0",
+    "@sylphx/zen": "^3.12.0",
     "preact": "^10.0.0"
   },
   "devDependencies": {

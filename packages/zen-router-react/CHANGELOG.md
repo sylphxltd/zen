@@ -1,5 +1,55 @@
 # @sylphlab/zen-router-react
 
+## 5.0.0
+
+### Patch Changes
+
+- 6016b8f: feat(zen): topological scheduling for glitch-free reactive updates
+
+  Major improvement to reactivity guarantees:
+
+  **Glitch-Free Guarantees**
+
+  - Entire dependency graph stabilizes after each signal write
+  - Computeds update in topological order (level-based)
+  - No temporary inconsistent states visible to observers
+  - All notifications batched and flushed after stabilization
+
+  **Before:**
+
+  ```ts
+  const a = zen(1);
+  const b = computed(() => a.value * 2);
+  a.value = 5;
+  // b was only marked STALE, not recomputed
+  ```
+
+  **After:**
+
+  ```ts
+  const a = zen(1);
+  const b = computed(() => a.value * 2);
+  a.value = 5;
+  // b automatically stabilized in topo order
+  // Guaranteed consistent state
+  ```
+
+  **Performance:**
+
+  - O(1) per node/edge core operations maintained
+  - Topological processing only on affected subgraph
+  - Version-based staleness prevents wasted recomputation
+
+  **Compatibility:**
+
+  - Breaking semantic change: computeds eagerly stabilize when in active graph
+  - All existing code continues to work
+  - Tests updated to reflect new eager stabilization behavior
+
+- Updated dependencies [6016b8f]
+  - @sylphx/zen@3.12.0
+  - @sylphx/zen-router@5.0.0
+
 ## 4.0.0
 
 ### Patch Changes

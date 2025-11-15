@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-router",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Tiny URL router for zen state management.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -41,8 +41,8 @@
     "url": "https://github.com/SylphxAI/zen/issues"
   },
   "peerDependencies": {
-    "@sylphx/zen": "^3.11.0",
-    "@sylphx/zen-patterns": "^11.0.0"
+    "@sylphx/zen": "^3.12.0",
+    "@sylphx/zen-patterns": "^12.0.0"
   },
   "devDependencies": {
     "@sylphx/zen": "workspace:*",

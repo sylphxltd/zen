@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-svelte",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Svelte integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -22,7 +22,7 @@
     "build": "bunup --format esm,cjs --dts --target node --minify"
   },
   "peerDependencies": {
-    "@sylphx/zen": "^3.11.0",
+    "@sylphx/zen": "^3.12.0",
     "svelte": "^3.0.0 || ^4.0.0 || ^5.0.0"
   },
   "devDependencies": {

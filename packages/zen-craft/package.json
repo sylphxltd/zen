@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-craft",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Craft immutable state updates with JSON Patches for Zen",
   "type": "module",
   "source": "./src/index.ts",
@@ -34,7 +34,7 @@
     "@sylphx/craft": "^1.0.0"
   },
   "peerDependencies": {
-    "@sylphx/zen": "^3.11.0"
+    "@sylphx/zen": "^3.12.0"
   },
   "devDependencies": {
     "@sylphx/zen": "workspace:*",

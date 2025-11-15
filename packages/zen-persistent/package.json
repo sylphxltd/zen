@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-persistent",
-  "version": "14.0.0",
+  "version": "15.0.0",
   "description": "Persistent store for Zen state manager (localStorage/sessionStorage sync)",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,8 +23,8 @@
     "validate": "bun run check-format && bun run lint && bun run typecheck && bun run test"
   },
   "peerDependencies": {
-    "@sylphx/zen": "^3.11.0",
-    "@sylphx/zen-patterns": "^11.0.0"
+    "@sylphx/zen": "^3.12.0",
+    "@sylphx/zen-patterns": "^12.0.0"
   },
   "devDependencies": {
     "@sylphx/zen": "workspace:*",
