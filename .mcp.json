@@ -11,7 +11,10 @@
     "coderag": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@sylphx/coderag-mcp"],
+      "args": [
+        "-y",
+        "@sylphx/coderag-mcp"
+      ],
       "env": {
         "OPENAI_API_KEY": "",
         "CODEBASE_ROOT": ".",
