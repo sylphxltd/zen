@@ -194,3 +194,63 @@ if (node.observers && node.observers.length) {
 4. No state checks to prevent redundant work
 
 **The fix:** Keep auto-batching, but defer recalculation until flush (like SolidJS)
+
+---
+
+## Q: Can we remove manual batch()?
+
+**NO - Keep manual batch() for nested batching optimization.**
+
+### Why keep batch()?
+
+Even with auto-batching, manual `batch()` is still valuable:
+
+```typescript
+// Without manual batch():
+// Each update creates its own micro-batch
+store.users.value = newUsers;      // ← Batch 1: flush
+store.filter.value = newFilter;    // ← Batch 2: flush
+store.sortBy.value = newSort;      // ← Batch 3: flush
+// Result: 3 flushes, computeds may recalculate 3 times
+
+// With manual batch():
+batch(() => {
+  store.users.value = newUsers;    // ← Queued
+  store.filter.value = newFilter;  // ← Queued
+  store.sortBy.value = newSort;    // ← Queued
+});  // ← Single flush here
+// Result: 1 flush, computeds recalculate once
+```
+
+### SolidJS keeps batch() too
+
+SolidJS has both:
+- Auto-batching via `runUpdates()` wrapper in `writeSignal()`
+- Manual `batch()` function exported for user control
+
+```typescript
+export function batch<T>(fn: Accessor<T>): T {
+  return runUpdates(fn, false);
+}
+```
+
+The auto-batching prevents glitches, manual batching optimizes multi-update scenarios.
+
+### How runUpdates handles nested batching
+
+```typescript
+function runUpdates<T>(fn: () => T, init: boolean) {
+  if (Updates) return fn();  // ← Already batching, just run fn
+  // ... create queue, run fn, flush ...
+}
+```
+
+When nested:
+1. Outer `runUpdates` creates Updates queue
+2. Inner `runUpdates` sees queue exists → just runs fn, no flush
+3. Only outer flush happens
+
+**Zen should work the same way:**
+- Auto-batching: Every signal change wraps in batch
+- Manual batch: User wraps multiple changes
+- Nested batching: Inner batches skip flush, only outer flushes
