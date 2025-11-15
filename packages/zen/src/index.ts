@@ -13,9 +13,6 @@ export {
   batch,
   subscribe,
   effect,
-  notifyListeners,
-  queueZenForBatch,
-  batchDepth,
 } from './zen';
 
 export type { Zen, ReadonlyZen, ComputedZen } from './zen';
