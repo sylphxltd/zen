@@ -1,0 +1,84 @@
+Benchmarking is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v3.2.4 /Users/kyle/zen/packages/zen
+
+
+ ✓ src/comprehensive.bench.ts > Diamond Pattern 1379ms
+     name                                      hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: diamond with 1k updates        1,881.55  0.4755  0.7038  0.5315  0.5323  0.6017  0.6160  0.7038  ±0.25%      941
+   · Solid: diamond with 1k updates  1,866,002.95  0.0004  0.0994  0.0005  0.0005  0.0007  0.0007  0.0009  ±0.12%   933002
+
+ ✓ src/comprehensive.bench.ts > Triangle Pattern 1417ms
+     name                                       hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: triangle 1->2->1 pattern        1,793.98  0.4911  1.0721  0.5574  0.5556  0.9456  0.9728  1.0721  ±0.78%      897
+   · Solid: triangle 1->2->1 pattern  1,847,990.18  0.0004  1.5730  0.0005  0.0005  0.0007  0.0007  0.0010  ±0.65%   923996
+
+ ✓ src/comprehensive.bench.ts > Repeated Observers (Fanout) 1250ms
+     name                                    hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: 1 source -> 100 computeds      358.44  2.4803  5.0278  2.7899  2.7815  4.8085  5.0278  5.0278  ±1.62%      180
+   · Solid: 1 source -> 100 memos    305,008.77  0.0027  0.1102  0.0033  0.0033  0.0040  0.0042  0.0090  ±0.10%   152505
+
+ ✓ src/comprehensive.bench.ts > Deep Propagation 1575ms
+     name                             hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: 10-level chain        3,374.22  0.2613  0.8772  0.2964  0.2937  0.7333  0.8158  0.8536  ±0.84%     1688
+   · Solid: 10-level chain  3,795,321.48  0.0002  2.3606  0.0003  0.0003  0.0004  0.0005  0.0007  ±0.93%  1897661
+
+ ✓ src/comprehensive.bench.ts > Broad Propagation 1268ms
+     name                              hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: 50 sources merged      4,215.84  0.2001  4.3965  0.2372  0.2248  0.3457  0.3618  1.4967  ±2.13%     2108
+   · Solid: 50 sources merged  578,734.82  0.0014  0.1593  0.0017  0.0017  0.0022  0.0023  0.0037  ±0.21%   289368
+
+ ✓ src/comprehensive.bench.ts > Creation Overhead 2533ms
+     name                                hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: create 1000 signals     88,920.88  0.0099  0.0313  0.0112  0.0111  0.0125  0.0146  0.0211  ±0.06%    44461
+   · Solid: create 1000 signals  798,664.81  0.0009  0.1372  0.0013  0.0013  0.0020  0.0025  0.0061  ±0.28%   399333
+   · Zen: create 1000 computeds    7,373.25  0.1026  3.9387  0.1356  0.1184  0.1947  2.9581  3.4704  ±5.52%     3687
+   · Solid: create 1000 memos    104,737.04  0.0080  0.0906  0.0095  0.0095  0.0140  0.0167  0.0529  ±0.23%    52369
+
+ ✓ src/comprehensive.bench.ts > Batching Efficiency 1212ms
+     name                             hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: batch 100 updates     1,824.62  0.5116  1.8785  0.5481  0.5462  0.5784  1.6942  1.8785  ±1.15%      913
+   · Solid: batch 100 updates  45,878.80  0.0193  0.1735  0.0218  0.0218  0.0263  0.0296  0.0326  ±0.16%    22940
+
+ ✓ src/comprehensive.bench.ts > Unstable Dependencies 1346ms
+     name                                       hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: alternating dependencies        7,153.62  0.1153  5.1152  0.1398  0.1308  0.3420  0.4606  0.5205  ±2.22%     3577
+   · Solid: alternating dependencies  1,368,350.73  0.0006  0.2734  0.0007  0.0007  0.0009  0.0009  0.0010  ±0.15%   684176
+
+ ✓ src/comprehensive.bench.ts > Mixed Graph 1268ms
+     name                                hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · Zen: complex mixed graph      8,676.28  0.0933  3.6780  0.1153  0.1048  0.1323  0.1449  3.1707  ±4.49%     4339
+   · Solid: complex mixed graph  541,820.29  0.0015  9.2225  0.0018  0.0017  0.0028  0.0061  0.0155  ±3.63%   270911
+
+ BENCH  Summary
+
+  Solid: diamond with 1k updates - src/comprehensive.bench.ts > Diamond Pattern
+    991.74x faster than Zen: diamond with 1k updates
+
+  Solid: triangle 1->2->1 pattern - src/comprehensive.bench.ts > Triangle Pattern
+    1030.10x faster than Zen: triangle 1->2->1 pattern
+
+  Solid: 1 source -> 100 memos - src/comprehensive.bench.ts > Repeated Observers (Fanout)
+    850.93x faster than Zen: 1 source -> 100 computeds
+
+  Solid: 10-level chain - src/comprehensive.bench.ts > Deep Propagation
+    1124.80x faster than Zen: 10-level chain
+
+  Solid: 50 sources merged - src/comprehensive.bench.ts > Broad Propagation
+    137.28x faster than Zen: 50 sources merged
+
+  Solid: create 1000 signals - src/comprehensive.bench.ts > Creation Overhead
+    7.63x faster than Solid: create 1000 memos
+    8.98x faster than Zen: create 1000 signals
+    108.32x faster than Zen: create 1000 computeds
+
+  Solid: batch 100 updates - src/comprehensive.bench.ts > Batching Efficiency
+    25.14x faster than Zen: batch 100 updates
+
+  Solid: alternating dependencies - src/comprehensive.bench.ts > Unstable Dependencies
+    191.28x faster than Zen: alternating dependencies
+
+  Solid: complex mixed graph - src/comprehensive.bench.ts > Mixed Graph
+    62.45x faster than Zen: complex mixed graph
+

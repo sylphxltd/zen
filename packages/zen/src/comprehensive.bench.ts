@@ -6,7 +6,7 @@
 
 import { createEffect, createMemo, createSignal, batch as solidBatch } from 'solid-js';
 import { bench, describe } from 'vitest';
-import { batch, computed, effect, zen } from './index';
+import { batch, computed, effect, zen } from '../dist/index.js';
 
 // ============================================================================
 // 1. DIAMOND PATTERN (Classic glitch-free test)
