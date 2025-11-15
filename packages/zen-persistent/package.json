@@ -13,9 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "sideEffects": false,
   "scripts": {
     "typecheck": "bun tsc --noEmit",
@@ -35,13 +33,7 @@
     "url": "https://github.com/SylphxAI/zen.git",
     "directory": "packages/zen-persistent"
   },
-  "keywords": [
-    "zen",
-    "state manager",
-    "persistent",
-    "localstorage",
-    "sessionstorage"
-  ],
+  "keywords": ["zen", "state manager", "persistent", "localstorage", "sessionstorage"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {

@@ -43,6 +43,7 @@ abstract class BaseNode<V> {
   _effectListeners: Listener<any>[] = [];
   _flags = 0;
   _version = 0;
+  _lastSeenEpoch = 0; // Epoch-based deduplication: O(1) tracking check
 
   constructor(initial: V) {
     this._value = initial;
@@ -56,31 +57,25 @@ type AnyNode = BaseNode<unknown>;
  */
 interface DependencyCollector {
   _sources: AnyNode[];
+  _epoch: number; // Current tracking epoch for O(1) deduplication
 }
 
 // Global tracking context
 let currentListener: DependencyCollector | null = null;
+
+// Global tracking epoch counter for O(1) dependency deduplication
+let TRACKING_EPOCH = 1;
 
 // ============================================================================
 // HELPERS
 // ============================================================================
 
 /**
- * Value equality with special NaN and +0/-0 handling.
+ * Value equality check using Object.is (handles NaN and +0/-0 correctly).
+ * Object.is is optimized by V8 and handles edge cases natively.
  */
 function valuesEqual(a: unknown, b: unknown): boolean {
-  if (a === b) {
-    // Distinguish +0 from -0
-    if (a === 0 && b === 0) {
-      return 1 / (a as number) === 1 / (b as number);
-    }
-    return true;
-  }
-  // NaN === NaN
-  if ((a as any) !== (a as any) && (b as any) !== (b as any)) {
-    return true;
-  }
-  return false;
+  return Object.is(a, b);
 }
 
 /**
@@ -137,11 +132,16 @@ function markNodeDirty(node: AnyNode): void {
 
 class ZenNode<T> extends BaseNode<T> {
   get value(): T {
-    // Runtime dependency tracking
+    // Runtime dependency tracking with O(1) epoch-based deduplication
     if (currentListener) {
       const list = currentListener._sources;
       const self = this as AnyNode;
-      if (list.indexOf(self) === -1) list.push(self);
+
+      // Only add if not seen in this tracking session (O(1) check)
+      if (self._lastSeenEpoch !== currentListener._epoch) {
+        self._lastSeenEpoch = currentListener._epoch;
+        list.push(self);
+      }
     }
     return this._value;
   }
@@ -286,7 +286,9 @@ class ComputedNode<T> extends BaseNode<T | null> {
 
     // BUG FIX 1.2: try/finally to ensure cleanup on error
     try {
+      // Set up new tracking epoch for O(1) dependency deduplication
       currentListener = this as unknown as DependencyCollector;
+      (currentListener as any)._epoch = ++TRACKING_EPOCH;
       newValue = this._calc();
       this._value = newValue;
       this._version++;
@@ -334,11 +336,16 @@ class ComputedNode<T> extends BaseNode<T | null> {
     // Lazy evaluation
     this._recomputeIfNeeded();
 
-    // Allow tracking by parent computeds/effects
+    // Allow tracking by parent computeds/effects with O(1) epoch-based deduplication
     if (currentListener) {
       const list = currentListener._sources;
       const self = this as AnyNode;
-      if (list.indexOf(self) === -1) list.push(self);
+
+      // Only add if not seen in this tracking session (O(1) check)
+      if (self._lastSeenEpoch !== currentListener._epoch) {
+        self._lastSeenEpoch = currentListener._epoch;
+        list.push(self);
+      }
     }
 
     // First-time subscription to sources
@@ -624,9 +631,10 @@ function executeEffect(e: EffectCore): void {
 
   e._sources.length = 0;
 
-  // Track dependencies
+  // Track dependencies with new tracking epoch for O(1) deduplication
   const prevListener = currentListener;
   currentListener = e;
+  e._epoch = ++TRACKING_EPOCH;
 
   try {
     const cleanup = e._callback();

@@ -13,10 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "sideEffects": false,
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node --minify"
@@ -37,13 +34,7 @@
     "url": "https://github.com/SylphxAI/zen.git",
     "directory": "packages/zen-solid"
   },
-  "keywords": [
-    "zen",
-    "state manager",
-    "solid",
-    "solidjs",
-    "signals"
-  ],
+  "keywords": ["zen", "state manager", "solid", "solidjs", "signals"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {

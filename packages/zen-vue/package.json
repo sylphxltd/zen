@@ -13,9 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "sideEffects": false,
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node --minify"
@@ -38,11 +36,7 @@
     "url": "https://github.com/SylphxAI/zen.git",
     "directory": "packages/zen-vue"
   },
-  "keywords": [
-    "zen",
-    "state manager",
-    "vue"
-  ],
+  "keywords": ["zen", "state manager", "vue"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {
