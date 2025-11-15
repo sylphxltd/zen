@@ -438,36 +438,3 @@ export function effect(callback: () => undefined | (() => void)): Unsubscribe {
     }
   };
 }
-
-// ============================================================================
-// EXPORTS FOR COMPATIBILITY
-// ============================================================================
-
-export const notifyListeners = <T>(
-  zenItem: ZenCore<T> | ComputedCore<T>,
-  newValue: T,
-  oldValue: T
-): void => {
-  // Mark computeds as STALE
-  const computeds = zenItem._computedListeners;
-  for (let i = 0; i < computeds.length; i++) {
-    computeds[i]!._flags |= FLAG_STALE;
-  }
-
-  // Notify effects
-  const effects = zenItem._effectListeners;
-  for (let i = 0; i < effects.length; i++) {
-    effects[i]?.(newValue, oldValue);
-  }
-};
-
-export const queueZenForBatch = <T>(
-  zenItem: ZenCore<T> | ComputedCore<T>,
-  oldValue: T
-): void => {
-  if (batchDepth > 0) {
-    pendingNotifications.push([zenItem as ZenCore<unknown> | ComputedCore<unknown>, oldValue]);
-  }
-};
-
-export { batchDepth };
