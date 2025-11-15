@@ -401,65 +401,8 @@ const computedProto = {
     this._sourceUnsubs = [];
     const onSourceChange = () => {
       if (this._state !== CLEAN) return;
+      // LAZY PULL: Just mark STALE, let flush or value getter handle recalculation
       this._state = STALE;
-
-      // Only eagerly update if this computed has listeners
-      if (this._listeners && this._listeners.length > 0) {
-        // If in batch, it should already be queued by zen setter
-        if (batchDepth > 0) {
-          return;
-        }
-
-        // Save old sources to detect dependency changes
-        const oldSources = this._sources ? [...this._sources] : [];
-        const oldUnsubs = this._sourceUnsubs;
-
-        const prevListener = currentListener;
-        const prevOwner = currentOwner;
-        currentListener = this;
-        currentOwner = this as any;
-
-        // Re-track sources
-        if (this._sources) {
-          this._sources.length = 0;
-        }
-
-        const oldValue = this._value;
-        this._state = PENDING;
-        this._value = this._calc();
-        this._state = CLEAN;
-        this._updatedAt = ExecCount;
-
-        currentListener = prevListener;
-        currentOwner = prevOwner;
-
-        // Check if sources changed and re-subscribe if needed
-        const sourcesChanged = !arraysEqual(oldSources, this._sources || []);
-        if (sourcesChanged) {
-          // Clean up old subscriptions
-          if (oldUnsubs) {
-            for (let i = 0; i < oldUnsubs.length; i++) {
-              oldUnsubs[i]();
-            }
-          }
-          this._sourceUnsubs = undefined;
-
-          // Re-subscribe to new sources
-          if (this._sources && this._sources.length > 0) {
-            this._subscribeToSources();
-          }
-        }
-
-        // Only notify if value actually changed
-        if (!Object.is(this._value, oldValue)) {
-          const listeners = this._listeners;
-          if (listeners) {
-            for (let i = 0; i < listeners.length; i++) {
-              listeners[i](this._value, oldValue);
-            }
-          }
-        }
-      }
     };
     // Attach reference to computed for zen setter to detect
     (onSourceChange as any)._computedZen = this;
