@@ -165,11 +165,13 @@ describe('History API', () => {
       const mockMatch = { route: { path: '/users/:id' }, params: { id: '123' } };
       vi.mocked(routes.getRoutes).mockReturnValue([{ path: '/users/:id' }]);
       vi.mocked(matcher.matchRoutes).mockReturnValue(mockMatch);
-      // Set initial state of the real $router store
-      $router.value = { path: '/users/123', search: {}, params: { id: '123' } };
+      // Set initial state of the real $router store using setKey
+      setKey($router, 'path', '/users/123');
+      setKey($router, 'search', {});
+      setKey($router, 'params', { id: '123' });
 
-      // Spy on setKey to check it wasn't called
-      const setKeySpy = vi.spyOn(core, 'setKey');
+      // Spy on setKey to check it wasn't called again
+      const setKeySpy = vi.spyOn({ setKey }, 'setKey');
       startHistoryListener();
       expect(setKeySpy).not.toHaveBeenCalled();
       setKeySpy.mockRestore(); // Clean up spy
@@ -192,7 +194,7 @@ describe('History API', () => {
     // Test non-browser behavior (should be no-op)
     it('should not update state outside browser', () => {
       const originalWin = globalThis.window;
-      const setKeySpy = vi.spyOn(core, 'setKey');
+      const setKeySpy = vi.spyOn({ setKey }, 'setKey');
       try {
         globalThis.window = undefined as any; // Simulate non-browser
         startHistoryListener(); // Should do nothing

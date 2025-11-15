@@ -1,5 +1,5 @@
-import { $router } from '@sylphx/zen-router'; // The store the hook reads from
 import { setKey } from '@sylphx/zen-patterns'; // To update the store
+import { $router } from '@sylphx/zen-router'; // The store the hook reads from
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useRouter } from '../index'; // The hook under test

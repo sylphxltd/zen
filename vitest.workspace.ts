@@ -1,5 +1,5 @@
-import { defineWorkspace } from 'vitest/config';
 import path from 'node:path';
+import { defineWorkspace } from 'vitest/config';
 
 export default defineWorkspace([
   {

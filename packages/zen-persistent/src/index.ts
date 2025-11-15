@@ -210,7 +210,8 @@ export function persistentMap<Value extends object>(
   }
 
   // Subscribe to persist future changes immediately after creation.
-  subscribe(baseMap, (newValue: Value) => {
+  // Use _state to subscribe to the underlying zen atom instead of the MapStore
+  subscribe(baseMap._state, (newValue: Value) => {
     writeToStorage(newValue);
   });
 
