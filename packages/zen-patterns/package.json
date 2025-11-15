@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-patterns",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "description": "Useful patterns and helpers for Zen state management",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -42,7 +42,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@sylphx/zen": "^3.8.0"
+    "@sylphx/zen": "^3.9.0"
   },
   "devDependencies": {
     "@sylphx/zen": "workspace:*",
