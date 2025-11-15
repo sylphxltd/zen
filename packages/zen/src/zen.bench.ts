@@ -1,3 +1,9 @@
+import {
+  zen as zenCreateAtom,
+  get as zenGetAtomValue,
+  set as zenSetAtomValue,
+  subscribe as zenSubscribeToAtom,
+} from '@sylphx/zen'; // Import updated functional API, alias atom as zenCreateAtom
 import { act, renderHook } from '@testing-library/react';
 import { createEvent as createEffectorEvent, createStore as createEffectorStore } from 'effector';
 import {
@@ -16,12 +22,6 @@ import { proxy as valtioProxy, subscribe as valtioSubscribe } from 'valtio/vanil
 // @vitest-environment jsdom
 import { bench, describe } from 'vitest';
 import { createStore as createZustandVanillaStore } from 'zustand/vanilla';
-import {
-  zen as zenCreateAtom,
-  get as zenGetAtomValue,
-  set as zenSetAtomValue,
-  subscribe as zenSubscribeToAtom,
-} from './zen'; // Import updated functional API, alias atom as zenCreateAtom
 
 // --- Common Setup Helpers (Duplicated from original index.bench.ts for atom tests) ---
 const createJotaiReadBenchSetup = <T>(atomToRead: Atom<T>) => {

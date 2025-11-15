@@ -1,7 +1,7 @@
+import { batch, set, subscribe, zen } from '@sylphx/zen'; // Import functional API including batch
 // Removed import { batch as zenBatch } from './batch';
 import { atom as nanoAtom } from 'nanostores';
 import { bench, describe } from 'vitest';
-import { batch, set, subscribe, zen } from './zen'; // Import functional API including batch
 
 describe('Batch vs Sequential Sets (No Listeners) (functional)', () => {
   describe('2 Sets', () => {

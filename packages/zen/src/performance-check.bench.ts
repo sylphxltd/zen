@@ -1,5 +1,5 @@
+import { batch, computed, effect, subscribe, zen } from '@sylphx/zen';
 import { bench, describe } from 'vitest';
-import { batch, computed, effect, subscribe, zen } from './zen';
 
 describe('Core Performance - zen.ts with lifecycle events', () => {
   describe('Atom Creation', () => {

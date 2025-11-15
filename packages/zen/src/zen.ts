@@ -12,10 +12,15 @@ type ZenCore<T> = {
   _listeners?: Listener<T>[];
 };
 
+// State flags for computed values (inspired by SolidJS)
+const CLEAN = 0; // Value is up to date
+const STALE = 1; // Value needs recalculation
+const PENDING = 2; // Currently being recalculated (prevents cycles)
+
 type ComputedCore<T> = {
   _kind: 'computed';
   _value: T | null;
-  _dirty: boolean;
+  _state: 0 | 1 | 2; // CLEAN, STALE, or PENDING
   _calc: () => T;
   _listeners?: Listener<T>[];
   _sources?: ZenCore<any>[];
@@ -41,8 +46,8 @@ function arraysEqual<T>(a: T[], b: T[]): boolean {
   return true;
 }
 
-// Helper to propagate dirty flag to downstream computeds
-function markDownstreamDirty(computed: ComputedCore<any>): void {
+// Helper to propagate STALE state to downstream computeds
+function markDownstreamStale(computed: ComputedCore<any>): void {
   const listeners = computed._listeners;
   if (!listeners) return;
 
@@ -52,10 +57,10 @@ function markDownstreamDirty(computed: ComputedCore<any>): void {
     const listener = listeners[i];
     const downstreamComputed = (listener as any)._computedZen;
     if (downstreamComputed) {
-      if (!downstreamComputed._dirty) {
-        downstreamComputed._dirty = true;
+      if (downstreamComputed._state === CLEAN) {
+        downstreamComputed._state = STALE;
         // Recursively propagate
-        markDownstreamDirty(downstreamComputed);
+        markDownstreamStale(downstreamComputed);
       }
     } else {
       hasNonComputedListeners = true;
@@ -100,17 +105,17 @@ const zenProto = {
 
     try {
       if (batchDepth > 0) {
-        // Mark computed dependents as dirty and queue them
+        // Mark computed dependents as STALE and queue them
         let hasNonComputedListeners = false;
         if (listeners) {
           for (let i = 0; i < listeners.length; i++) {
             const listener = listeners[i];
             const computedZen = (listener as any)._computedZen;
             if (computedZen) {
-              if (!computedZen._dirty) {
-                computedZen._dirty = true;
-                // Propagate dirty to downstream computeds and queue leaf computeds
-                markDownstreamDirty(computedZen);
+              if (computedZen._state === CLEAN) {
+                computedZen._state = STALE;
+                // Propagate STALE to downstream computeds and queue leaf computeds
+                markDownstreamStale(computedZen);
               }
             } else {
               hasNonComputedListeners = true;
@@ -150,7 +155,7 @@ const zenProto = {
             const [zenItem, oldVal] = unique[i]!;
 
             // If it's a computed, recalculate it first
-            if (zenItem._kind === 'computed' && zenItem._dirty) {
+            if (zenItem._kind === 'computed' && zenItem._state !== CLEAN) {
               const prevListener = currentListener;
               currentListener = zenItem as any;
 
@@ -158,10 +163,11 @@ const zenProto = {
                 (zenItem as any)._sources.length = 0;
               }
 
+              (zenItem as any)._state = PENDING;
               const newVal = (zenItem as any)._calc();
               const oldComputedVal = (zenItem as any)._value;
               (zenItem as any)._value = newVal;
-              (zenItem as any)._dirty = false;
+              (zenItem as any)._state = CLEAN;
 
               currentListener = prevListener;
 
@@ -228,9 +234,13 @@ const computedProto = {
   get _unsubs(this: ComputedProto<any>) {
     return this._sourceUnsubs;
   },
+  get _dirty(this: ComputedProto<any>) {
+    return this._state !== CLEAN;
+  },
 
   get value(this: ComputedProto<any>) {
-    if (this._dirty) {
+    // Lazy pull-based evaluation: only recalculate when accessed and STALE
+    if (this._state === STALE) {
       // Save old sources to detect changes
       const oldSources = this._sources && this._sourceUnsubs ? [...this._sources] : null;
 
@@ -241,8 +251,9 @@ const computedProto = {
         this._sources.length = 0;
       }
 
+      this._state = PENDING;
       this._value = this._calc();
-      this._dirty = false;
+      this._state = CLEAN;
 
       currentListener = prevListener;
 
@@ -285,8 +296,8 @@ const computedProto = {
 
     this._sourceUnsubs = [];
     const onSourceChange = () => {
-      if (this._dirty) return;
-      this._dirty = true;
+      if (this._state !== CLEAN) return;
+      this._state = STALE;
 
       // Only eagerly update if this computed has listeners
       if (this._listeners && this._listeners.length > 0) {
@@ -308,8 +319,9 @@ const computedProto = {
         }
 
         const oldValue = this._value;
+        this._state = PENDING;
         this._value = this._calc();
-        this._dirty = false;
+        this._state = CLEAN;
 
         currentListener = prevListener;
 
@@ -373,7 +385,7 @@ export function computed<T>(calculation: () => T): ComputedCore<T> & { value: T 
   const c = Object.create(computedProto) as ComputedCore<T> & { value: T };
   c._kind = 'computed';
   c._value = null;
-  c._dirty = true;
+  c._state = STALE; // Start as STALE to trigger initial calculation
   c._calc = calculation;
   c._listeners = undefined;
   // Initialize as empty array with size property for test compatibility
@@ -419,7 +431,7 @@ export function batch<T>(fn: () => T): T {
         const [zenItem, oldValue] = unique[i]!;
 
         // If it's a computed, recalculate it first
-        if (zenItem._kind === 'computed' && zenItem._dirty) {
+        if (zenItem._kind === 'computed' && zenItem._state !== CLEAN) {
           const prevListener = currentListener;
           currentListener = zenItem as any;
 
@@ -427,10 +439,11 @@ export function batch<T>(fn: () => T): T {
             (zenItem as any)._sources.length = 0;
           }
 
+          (zenItem as any)._state = PENDING;
           const newValue = (zenItem as any)._calc();
           const oldComputedValue = (zenItem as any)._value;
           (zenItem as any)._value = newValue;
-          (zenItem as any)._dirty = false;
+          (zenItem as any)._state = CLEAN;
 
           currentListener = prevListener;
 

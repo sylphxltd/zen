@@ -8,7 +8,7 @@
 import { bench, describe } from 'vitest';
 
 // Zen imports
-import { zen, batch as zenBatch, computed as zenComputed, effect as zenEffect } from './zen';
+import { zen, batch as zenBatch, computed as zenComputed, effect as zenEffect } from '@sylphx/zen';
 
 // Solid imports
 import { createEffect, createMemo, createSignal, batch as solidBatch } from 'solid-js';

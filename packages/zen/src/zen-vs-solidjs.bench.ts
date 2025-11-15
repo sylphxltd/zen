@@ -3,8 +3,8 @@
  * Tests signal creation, computed, effects, and complex dependency graphs
  */
 
+import { batch, computed, effect, zen } from '@sylphx/zen';
 import { bench, describe } from 'vitest';
-import { batch, computed, effect, zen } from './zen';
 
 // SolidJS imports
 import { createEffect, createMemo, createSignal, batch as solidBatch } from 'solid-js';
