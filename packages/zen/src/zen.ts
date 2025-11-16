@@ -183,6 +183,10 @@ function addEffectListener(node: AnyNode, cb: Listener<any>): Unsubscribe {
  * Optimization 2.1: Propagate FLAG_HAD_EFFECT_DOWNSTREAM upward during subscription.
  * Optimization 3.2: Slot-based O(1) unsubscribe (Solid-style).
  */
+/**
+ * Add computed listener with slot-based tracking (Solid-style).
+ * BUG FIX: Use observer._sourceSlots as source of truth, not captured sourceSlot.
+ */
 function addComputedListener(
   source: AnyNode,
   observer: AnyNode & DependencyCollector,
@@ -191,6 +195,9 @@ function addComputedListener(
   const sourceSlot = source._computedListeners.length;
   source._computedListeners.push(observer);
   source._computedListenerSlots.push(observerSourceIndex);
+
+  // Write back to observer side (source of truth)
+  observer._sourceSlots[observerSourceIndex] = sourceSlot;
 
   // Propagate effect flag upward if child has effects
   if ((observer._flags & FLAG_HAD_EFFECT_DOWNSTREAM) !== 0) {
@@ -202,21 +209,31 @@ function addComputedListener(
     const slots = source._computedListenerSlots;
     const lastIdx = listeners.length - 1;
 
-    if (sourceSlot < lastIdx) {
+    // Read "current" index from observer, not captured sourceSlot
+    const idx = observer._sourceSlots[observerSourceIndex];
+    if (idx < 0 || idx > lastIdx) {
+      // Already removed or double unsubscribe
+      return;
+    }
+
+    if (idx < lastIdx) {
       // Swap with last element
       const lastObserver = listeners[lastIdx]! as AnyNode & DependencyCollector;
       const lastObserverSourceIdx = slots[lastIdx]!;
 
-      listeners[sourceSlot] = lastObserver;
-      slots[sourceSlot] = lastObserverSourceIdx;
+      listeners[idx] = lastObserver;
+      slots[idx] = lastObserverSourceIdx;
 
       // Update the moved observer's slot reference
-      lastObserver._sourceSlots[lastObserverSourceIdx] = sourceSlot;
+      lastObserver._sourceSlots[lastObserverSourceIdx] = idx;
     }
 
     // Pop last element
     listeners.pop();
     slots.pop();
+
+    // Mark this source as removed from observer
+    observer._sourceSlots[observerSourceIndex] = -1;
   };
 }
 
@@ -271,9 +288,8 @@ class ZenNode<T> extends BaseNode<T> {
       // Only add if not seen in this tracking session (O(1) check)
       if (self._lastSeenEpoch !== currentListener._epoch) {
         self._lastSeenEpoch = currentListener._epoch;
-        const slot = list.length;
         list.push(self);
-        currentListener._sourceSlots.push(slot);
+        // _sourceSlots will be filled by addComputedListener during _subscribeToSources
       }
     }
     return this._value;
@@ -447,9 +463,8 @@ class ComputedNode<T> extends Computation<T> {
       // Only add if not seen in this tracking session (O(1) check)
       if (self._lastSeenEpoch !== currentListener._epoch) {
         self._lastSeenEpoch = currentListener._epoch;
-        const slot = list.length;
         list.push(self);
-        currentListener._sourceSlots.push(slot);
+        // _sourceSlots will be filled by addComputedListener during _subscribeToSources
       }
     }
 

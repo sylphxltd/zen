@@ -761,4 +761,41 @@ describe('utility helpers', () => {
     a.value = 2;
     expect(runs).toBe(2); // a tracked
   });
+
+  it('slot-based unsubscribe should handle swap-and-pop correctly', () => {
+    // Bug: captured sourceSlot becomes stale after other unsubscribes
+    // Test case: [A, B, C, D, E], unsubscribe B (swaps E to index 1), then unsubscribe E
+    const source = zen(1);
+    const computedA = computed(() => source.value * 1);
+    const computedB = computed(() => source.value * 2);
+    const computedC = computed(() => source.value * 3);
+    const computedD = computed(() => source.value * 4);
+    const computedE = computed(() => source.value * 5);
+
+    // Force all computeds to subscribe
+    computedA.value;
+    computedB.value;
+    computedC.value;
+    computedD.value;
+    computedE.value;
+
+    // Verify all are subscribed
+    expect(source._computedListeners.length).toBe(5);
+
+    // Unsubscribe B (index 1)
+    // This should swap E (index 4) to index 1, then pop
+    computedB._unsubscribeFromSources();
+    expect(source._computedListeners.length).toBe(4);
+    expect(source._computedListeners[1]).toBe(computedE); // E moved to index 1
+
+    // Unsubscribe E
+    // BUG: If using captured sourceSlot=4, this would try to remove index 4 (D)
+    // FIX: Should use observer._sourceSlots to find current index (1)
+    computedE._unsubscribeFromSources();
+    expect(source._computedListeners.length).toBe(3);
+
+    // Verify E was actually removed, not D
+    expect(source._computedListeners.includes(computedE as any)).toBe(false);
+    expect(source._computedListeners.includes(computedD as any)).toBe(true);
+  });
 });
