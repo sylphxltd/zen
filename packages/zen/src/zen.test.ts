@@ -43,12 +43,6 @@ describe('zen', () => {
     expect(listener).not.toHaveBeenCalled();
   });
 
-  it('should increment version on change', () => {
-    const count = zen(0);
-    const initialVersion = count._version;
-    count.value = 1;
-    expect(count._version).toBe(initialVersion + 1);
-  });
 });
 
 describe('computed', () => {

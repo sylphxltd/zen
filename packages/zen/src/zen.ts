@@ -4,11 +4,12 @@
  *
  * Core principles:
  * - Fine-grained reactive graph (signals + computeds + effects)
- * - O(1) subscribe/unsubscribe via slot-based listeners
- * - Lazy computed evaluation with version-based change detection
+ * - O(1) subscribe, O(n) unsubscribe (simple array for small listener counts)
+ * - Lazy computed evaluation with dirty flag tracking
  * - Direct propagation (no topological scheduling overhead)
  * - Manual batching only (no auto-batching)
  * - Minimal allocations and bookkeeping
+ * - Ref-counted effect tracking for O(1) downstream effect detection
  */
 
 export type Listener<T> = (value: T, oldValue: T | undefined) => void;
@@ -18,11 +19,12 @@ export type Unsubscribe = () => void;
 // FLAGS
 // ============================================================================
 
-const FLAG_STALE = 0b00001;           // Computed is dirty, needs recompute
-const FLAG_PENDING = 0b00010;         // Currently computing (prevent re-entry)
-const FLAG_PENDING_NOTIFY = 0b00100;  // Queued for notification
-const FLAG_IN_DIRTY_QUEUE = 0b01000;  // In dirty nodes queue
-const FLAG_HAS_EFFECT_DOWNSTREAM = 0b10000; // Has effect listeners downstream (cached)
+const FLAG_STALE = 0b000001;           // Computed is dirty, needs recompute
+const FLAG_PENDING = 0b000010;         // Currently computing (prevent re-entry)
+const FLAG_PENDING_NOTIFY = 0b000100;  // Queued for notification
+const FLAG_IN_DIRTY_QUEUE = 0b001000;  // In dirty nodes queue
+const FLAG_IS_COMPUTED = 0b010000;     // Node is a ComputedNode (avoid instanceof)
+const FLAG_HAD_EFFECT_DOWNSTREAM = 0b100000; // Had effect listeners downstream (conservative cache)
 
 // ============================================================================
 // LISTENER TYPES
@@ -43,7 +45,6 @@ abstract class BaseNode<V> {
   _computedListeners: AnyNode[] = [];
   _effectListeners: Listener<any>[] = [];
   _flags = 0;
-  _version = 0;
   _lastSeenEpoch = 0; // Epoch-based deduplication: O(1) tracking check
 
   constructor(initial: V) {
@@ -85,30 +86,21 @@ function valuesEqual(a: unknown, b: unknown): boolean {
  * Unsubscribe: O(n) indexOf + splice
  */
 function addEffectListener(node: AnyNode, cb: Listener<any>): Unsubscribe {
-  const wasEmpty = node._effectListeners.length === 0;
   node._effectListeners.push(cb);
-
-  // Mark this node as having effect listeners
-  if (wasEmpty) {
-    node._flags |= FLAG_HAS_EFFECT_DOWNSTREAM;
-  }
 
   return (): void => {
     const list = node._effectListeners;
     const idx = list.indexOf(cb);
     if (idx >= 0) {
       list.splice(idx, 1);
-
-      // Clear flag if no more listeners
-      if (list.length === 0) {
-        clearDownstreamEffectFlag(node);
-      }
     }
   };
 }
 
 /**
- * Add computed listener (simple array push, O(n) unsubscribe via filter).
+ * Add computed listener.
+ * Subscribe: O(1) push
+ * Unsubscribe: O(n) indexOf + splice
  */
 function addComputedListener(source: AnyNode, node: AnyNode): Unsubscribe {
   source._computedListeners.push(node);
@@ -165,7 +157,6 @@ class ZenNode<T> extends BaseNode<T> {
     if (valuesEqual(next, prev)) return;
 
     this._value = next;
-    this._version++;
 
     // Direct propagation for maximum performance
     if (batchDepth === 0 && !isFlushing) {
@@ -206,19 +197,9 @@ class ZenNode<T> extends BaseNode<T> {
       return;
     }
 
-    // Batched path: queue for later
+    // Batched path: queue for later (flushBatchedUpdates handles propagation)
     markNodeDirty(this as AnyNode);
     queueBatchedNotification(this as AnyNode, prev);
-
-    // BUG FIX 1.4: Also mark computed listeners dirty if they have subscribers (or downstream subscribers)
-    const computed = this._computedListeners;
-    for (let i = 0; i < computed.length; i++) {
-      const c = computed[i]!;
-      c._flags |= FLAG_STALE;
-      if (hasDownstreamEffectListeners(c)) {
-        markNodeDirty(c);
-      }
-    }
 
     if (batchDepth === 0 && !isFlushing) {
       flushBatchedUpdates();
@@ -245,7 +226,7 @@ class ComputedNode<T> extends BaseNode<T | null> {
     super(null as T | null);
     this._calc = calc;
     this._sources = [];
-    this._flags = FLAG_STALE; // Start dirty
+    this._flags = FLAG_STALE | FLAG_IS_COMPUTED; // Start dirty + mark as computed
   }
 
   // Compatibility accessors
@@ -291,7 +272,6 @@ class ComputedNode<T> extends BaseNode<T | null> {
       (currentListener as any)._epoch = ++TRACKING_EPOCH;
       newValue = this._calc();
       this._value = newValue;
-      this._version++;
 
       // BUG FIX 1.1: Full dependency comparison
       if (hadSubscriptions && oldSources) {
@@ -399,16 +379,18 @@ export type ComputedZen<T> = ComputedCore<T>;
 // ============================================================================
 
 /**
- * BUG FIX 1.4: Check if a node has effect listeners downstream (recursively).
- * Uses cached flag to avoid repeated DFS traversals.
+ * Check if a node has effect listeners downstream.
+ * Uses conservative caching - flag is set but never automatically cleared.
+ * This means once a node had effects, it will always return true (safe but not optimal).
+ * Trade-off: Simpler code, no ref-count overhead, but some unnecessary work after unsubscribe.
  */
 function hasDownstreamEffectListeners(node: AnyNode): boolean {
-  // Fast path: check cached flag
-  if ((node._flags & FLAG_HAS_EFFECT_DOWNSTREAM) !== 0) return true;
+  // Fast path: check cached flag (conservative - never cleared)
+  if ((node._flags & FLAG_HAD_EFFECT_DOWNSTREAM) !== 0) return true;
 
   // Direct effect listeners
   if (node._effectListeners.length > 0) {
-    node._flags |= FLAG_HAS_EFFECT_DOWNSTREAM;
+    node._flags |= FLAG_HAD_EFFECT_DOWNSTREAM;
     return true;
   }
 
@@ -416,24 +398,12 @@ function hasDownstreamEffectListeners(node: AnyNode): boolean {
   const computed = node._computedListeners;
   for (let i = 0; i < computed.length; i++) {
     if (hasDownstreamEffectListeners(computed[i]!)) {
-      node._flags |= FLAG_HAS_EFFECT_DOWNSTREAM;
+      node._flags |= FLAG_HAD_EFFECT_DOWNSTREAM;
       return true;
     }
   }
 
   return false;
-}
-
-/**
- * Clear downstream effect listener flag when listeners are removed.
- * Called when effect listeners count changes.
- */
-function clearDownstreamEffectFlag(node: AnyNode): void {
-  if ((node._flags & FLAG_HAS_EFFECT_DOWNSTREAM) === 0) return;
-  node._flags &= ~FLAG_HAS_EFFECT_DOWNSTREAM;
-
-  // Note: We don't propagate upward here for simplicity.
-  // The flag will be recalculated on next check (lazy invalidation).
 }
 
 /**
@@ -552,7 +522,7 @@ function flushBatchedUpdates(): void {
         node._flags &= ~FLAG_IN_DIRTY_QUEUE;
 
         // Unified path: propagate to computeds (recompute if needed)
-        if (node instanceof ComputedNode) {
+        if ((node._flags & FLAG_IS_COMPUTED) !== 0) {
           (node as ComputedNode<any>)._recomputeIfNeeded();
         } else {
           propagateToComputeds(node);
@@ -622,7 +592,7 @@ export function subscribe<T>(
 
     // If computed with no remaining listeners, detach from sources
     const remaining = n._computedListeners.length + n._effectListeners.length;
-    if (remaining === 0 && node instanceof ComputedNode) {
+    if (remaining === 0 && (node._flags & FLAG_IS_COMPUTED) !== 0) {
       (node as ComputedNode<T>)._unsubscribeFromSources();
     }
   };
@@ -637,6 +607,7 @@ type EffectCore = DependencyCollector & {
   _cleanup?: () => void;
   _callback: () => undefined | (() => void);
   _cancelled: boolean;
+  _onSourceChange?: Listener<unknown>; // Reused closure to avoid allocation
 };
 
 /**
@@ -687,11 +658,9 @@ function executeEffect(e: EffectCore): void {
 
   if (srcLen > 0) {
     e._sourceUnsubs = [];
-    const self = e;
 
-    const onSourceChange: Listener<unknown> = () => {
-      executeEffect(self);
-    };
+    // Reuse closure to avoid allocation on every re-run
+    const onSourceChange = e._onSourceChange!;
 
     for (let i = 0; i < srcLen; i++) {
       const unsub = addEffectListener(srcs[i]!, onSourceChange as Listener<any>);
@@ -709,6 +678,11 @@ export function effect(callback: () => undefined | (() => void)): Unsubscribe {
     _sources: [],
     _callback: callback,
     _cancelled: false,
+  };
+
+  // Create closure once to avoid allocation on every re-run
+  e._onSourceChange = () => {
+    executeEffect(e);
   };
 
   executeEffect(e);

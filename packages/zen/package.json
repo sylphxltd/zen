@@ -13,9 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
     "size": "bun size-limit",
