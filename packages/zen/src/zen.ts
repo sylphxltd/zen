@@ -242,11 +242,21 @@ class Computation<T> implements SourceType, ObserverType, Owner {
   }
 
   read(): T {
-    // OPTIMIZATION: Fast path for CLEAN state
+    // OPTIMIZATION: Extract state once, fast path for CLEAN
     const state = this._state & 3;
 
     if (currentObserver) {
-      track(this);
+      // OPTIMIZATION: Inline track - avoid function call
+      const sources = currentObserver._sources;
+      if (!newSources && sources && sources[newSourcesIndex] === this) {
+        newSourcesIndex++;
+      } else if (!newSources) {
+        newSources = [this];
+      } else if (this !== newSources[newSources.length - 1]) {
+        newSources.push(this);
+      }
+
+      // Only check if not CLEAN
       if (state !== STATE_CLEAN) {
         this._updateIfNecessary();
       }
@@ -284,33 +294,37 @@ class Computation<T> implements SourceType, ObserverType, Owner {
   _updateIfNecessary(): void {
     const state = this._state & 3;
 
-    if (state === STATE_DISPOSED || state === STATE_CLEAN) {
-      return;
-    }
+    // OPTIMIZATION: Fast exit for CLEAN or DISPOSED
+    if (state === STATE_CLEAN || state === STATE_DISPOSED) return;
 
     if (state === STATE_CHECK) {
-      // SOLID.JS PATTERN: Check ALL sources recursively first
       const sources = this._sources;
       if (sources) {
+        const myTime = this._time;
         const len = sources.length;
+
+        // OPTIMIZATION: Check all sources, early exit if any changed
         for (let i = 0; i < len; i++) {
           sources[i]._updateIfNecessary();
 
-          // OPTIMIZATION: Early exit if changed (avoid checking remaining sources)
-          if (sources[i]._time > this._time) {
+          // Early exit optimization
+          if (sources[i]._time > myTime) {
             this._state = (this._state & ~3) | STATE_DIRTY;
             break;
           }
         }
       }
+
+      // After checking, if still CHECK, mark CLEAN
+      if ((this._state & 3) === STATE_CHECK) {
+        this._state = (this._state & ~3) | STATE_CLEAN;
+        return;
+      }
     }
 
-    // Only update if still dirty after checking sources
+    // Only update if DIRTY
     if ((this._state & 3) === STATE_DIRTY) {
       this.update();
-    } else if ((this._state & 3) === STATE_CHECK) {
-      // OPTIMIZATION: Set CLEAN if still CHECK after verifying all sources
-      this._state = (this._state & ~3) | STATE_CLEAN;
     }
   }
 
@@ -405,25 +419,27 @@ class Computation<T> implements SourceType, ObserverType, Owner {
 
   _notify(state: number): void {
     const currentState = this._state & 3;
-    const isExecutingSelf = currentObserver === this;
 
+    // OPTIMIZATION: Fast path - already at or past this state
     if (currentState >= state || currentState === STATE_DISPOSED) {
-      if (isExecutingSelf && (state === STATE_DIRTY || state === STATE_CHECK) && this._effectType !== EFFECT_PURE) {
-        // Effect is executing and received a notification - ALWAYS schedule for next round
-        // Even if FLAG_PENDING is set (it will be from the current execution)
+      // Special handling for self-executing effects
+      if (currentObserver === this && state >= STATE_CHECK && this._effectType !== EFFECT_PURE) {
         this._state |= FLAG_PENDING;
         pendingEffects[pendingCount++] = this;
       }
       return;
     }
 
+    // Update state
     this._state = (this._state & ~3) | state;
 
+    // Schedule user effects
     if (this._effectType !== EFFECT_PURE) {
       scheduleEffect(this);
     }
 
-    if (state === STATE_DIRTY || state === STATE_CHECK) {
+    // Propagate CHECK to observers
+    if (state >= STATE_CHECK) {
       this._notifyObservers(STATE_CHECK);
     }
   }
@@ -432,8 +448,15 @@ class Computation<T> implements SourceType, ObserverType, Owner {
     const observers = this._observers;
     if (!observers) return;
 
-    // OPTIMIZATION: Batch notify to reduce intermediate work
     const len = observers.length;
+
+    // OPTIMIZATION: Single observer fast path
+    if (len === 1) {
+      observers[0]._notify(state);
+      return;
+    }
+
+    // OPTIMIZATION: Batch for large observer counts
     if (len > 100) {
       batchDepth++;
       for (let i = 0; i < len; i++) {
@@ -484,14 +507,11 @@ class Signal<T> implements SourceType {
   }
 
   get value(): T {
-    // OPTIMIZATION: Inline track check
+    // OPTIMIZATION: Inline track - avoid function call overhead
     if (currentObserver) {
-      // OPTIMIZATION: Compare with old sources first
-      if (
-        !newSources &&
-        currentObserver._sources &&
-        currentObserver._sources[newSourcesIndex] === this
-      ) {
+      const sources = currentObserver._sources;
+      // OPTIMIZATION: Fast path - source unchanged at same index
+      if (!newSources && sources && sources[newSourcesIndex] === this) {
         newSourcesIndex++;
       } else if (!newSources) {
         newSources = [this];
@@ -508,29 +528,32 @@ class Signal<T> implements SourceType {
     this._value = next;
     this._time = ++clock;
 
-    if (!this._observers) return;
+    const observers = this._observers;
+    if (!observers) return;
 
-    // OPTIMIZATION: Skip batching overhead for small observer counts
-    const len = this._observers.length;
+    const len = observers.length;
+
+    // OPTIMIZATION: Fast path for single observer (common case)
     if (len === 1) {
-      // Fast path for single observer
-      this._observers[0]._notify(STATE_DIRTY);
-      if (batchDepth === 0 && !isFlushScheduled && pendingCount > 0) {
+      observers[0]._notify(STATE_DIRTY);
+      // Only flush if effects are pending and not already scheduled
+      if (batchDepth === 0 && pendingCount > 0 && !isFlushScheduled) {
         isFlushScheduled = true;
         flushEffects();
       }
-    } else {
-      // Auto-batching for multiple observers
-      batchDepth++;
-      for (let i = 0; i < len; i++) {
-        this._observers[i]._notify(STATE_DIRTY);
-      }
-      batchDepth--;
+      return;
+    }
 
-      if (batchDepth === 0 && !isFlushScheduled && pendingCount > 0) {
-        isFlushScheduled = true;
-        flushEffects();
-      }
+    // Auto-batching for multiple observers
+    batchDepth++;
+    for (let i = 0; i < len; i++) {
+      observers[i]._notify(STATE_DIRTY);
+    }
+    batchDepth--;
+
+    if (batchDepth === 0 && pendingCount > 0 && !isFlushScheduled) {
+      isFlushScheduled = true;
+      flushEffects();
     }
   }
 
