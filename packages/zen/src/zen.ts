@@ -80,7 +80,8 @@ let currentListener: DependencyCollector | null = null;
 // Global tracking epoch counter for O(1) dependency deduplication
 let TRACKING_EPOCH = 1;
 
-// Global effect count: tracks active effects/subscribers
+// Global effect count: tracks all push-style consumers (effect edges + legacy listeners)
+// GLOBAL_EFFECT_COUNT = active effect→source edges + active legacy effect listeners
 // Optimization: skip DFS when count is 0 (pure pull-style computed)
 // Decrements on unsubscribe for accurate tracking
 let GLOBAL_EFFECT_COUNT = 0;
@@ -447,8 +448,8 @@ class ComputedNode<T> extends Computation<T> {
     const prevUnsubs = this._sourceUnsubs;
 
     // Track into new arrays
+    // CRITICAL: Do NOT clear _sourceSlots yet - unsubscribe closures need it
     this._sources = [];
-    this._sourceSlots.length = 0;
     this._sourceUnsubs = undefined;
 
     // Track new dependencies
@@ -473,6 +474,7 @@ class ComputedNode<T> extends Computation<T> {
         diverge++;
       }
       // Unsubscribe from removed/changed sources
+      // Uses old _sourceSlots to correctly locate observer in source's listener array
       for (let i = diverge; i < oldLen; i++) {
         prevUnsubs[i]!();
       }
@@ -494,6 +496,9 @@ class ComputedNode<T> extends Computation<T> {
 
       this._sourceUnsubs = newUnsubs;
     }
+
+    // Now safe to resize _sourceSlots to match new sources
+    this._sourceSlots.length = newLen;
 
     this._flags &= ~FLAG_PENDING;
 
