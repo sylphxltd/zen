@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.39.0",
+  "version": "3.40.0",
   "description": "Zen state management library - extreme minimalism, extreme speed. V3.39: Deep chain optimizations (loop unrolling, lower batch threshold).",
   "type": "module",
   "main": "./dist/index.cjs",

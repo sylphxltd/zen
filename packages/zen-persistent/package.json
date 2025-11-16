@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-persistent",
-  "version": "15.0.26",
+  "version": "15.0.27",
   "description": "Persistent store for Zen state manager (localStorage/sessionStorage sync)",
   "type": "module",
   "main": "./dist/index.cjs",
