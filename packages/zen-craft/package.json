@@ -19,10 +19,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node",
     "dev": "bun build src/index.ts --outdir dist --target node --sourcemap --watch",

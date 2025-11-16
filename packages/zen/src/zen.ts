@@ -19,13 +19,14 @@ export type Unsubscribe = () => void;
 // FLAGS
 // ============================================================================
 
-const FLAG_STALE = 0b0000001;           // Computed is dirty, needs recompute
-const FLAG_PENDING = 0b0000010;         // Currently computing (prevent re-entry)
-const FLAG_PENDING_NOTIFY = 0b0000100;  // Queued for notification
-const FLAG_IN_DIRTY_QUEUE = 0b0001000;  // In dirty nodes queue
-const FLAG_IS_COMPUTED = 0b0010000;     // Node is a ComputedNode (avoid instanceof)
-const FLAG_HAD_EFFECT_DOWNSTREAM = 0b0100000; // Had effect listeners downstream (conservative cache)
-const FLAG_IN_COMPUTED_QUEUE = 0b1000000; // In dirty computeds queue (batch dedup)
+const FLAG_STALE = 0b00000001;           // Computed is dirty, needs recompute
+const FLAG_PENDING = 0b00000010;         // Currently computing (prevent re-entry)
+const FLAG_PENDING_NOTIFY = 0b00000100;  // Queued for notification
+const FLAG_IN_DIRTY_QUEUE = 0b00001000;  // In dirty nodes queue
+const FLAG_IS_COMPUTED = 0b00010000;     // Node is a ComputedNode (avoid instanceof)
+const FLAG_HAD_EFFECT_DOWNSTREAM = 0b00100000; // Had effect listeners downstream (conservative cache)
+const FLAG_IN_COMPUTED_QUEUE = 0b01000000; // In dirty computeds queue (batch dedup)
+const FLAG_IN_SUBSCRIBE_CALL = 0b10000000; // Currently in subscribe initial call
 
 // ============================================================================
 // LISTENER TYPES
@@ -285,12 +286,22 @@ class ZenNode<T> extends BaseNode<T> {
       const list = currentListener._sources;
       const self = this as AnyNode;
 
-      // Fast path: check last source to handle consecutive duplicate reads
-      const last = list[list.length - 1];
-      if (last !== self) {
-        list.push(self);
-        // _sourceSlots will be filled by addComputedListener during _subscribeToSources
+      // For signals: simple last-source check (consecutive duplicates common)
+      // For computations: use epoch dedup (non-consecutive duplicates common)
+      if ((currentListener as any)._flags & FLAG_IS_COMPUTED) {
+        // Computation: epoch-based dedup (handles all duplicates)
+        if (this._lastSeenEpoch !== (currentListener as any)._epoch) {
+          this._lastSeenEpoch = (currentListener as any)._epoch;
+          list.push(self);
+        }
+      } else {
+        // Effect: last-source check only (faster, consecutive duplicates rare)
+        const last = list[list.length - 1];
+        if (last !== self) {
+          list.push(self);
+        }
       }
+      // _sourceSlots will be filled by addComputedListener during _subscribeToSources
     }
     return this._value;
   }
@@ -527,25 +538,11 @@ function hasDownstreamEffectListeners(node: AnyNode): boolean {
 }
 
 /**
- * BUG FIX 1.4: Recursively recompute downstream computeds that have effect listeners.
- * This ensures multi-level computed chains update correctly.
- */
-function recomputeDownstreamWithListeners(node: AnyNode): void {
-  const computed = node._computedListeners;
-  for (let i = 0; i < computed.length; i++) {
-    const c = computed[i]!;
-    if (hasDownstreamEffectListeners(c)) {
-      (c as ComputedNode<any>)._recomputeIfNeeded();
-      // Recursively process this computed's downstream
-      recomputeDownstreamWithListeners(c);
-    }
-  }
-}
-
-/**
- * Unified path: Mark computed listeners stale and trigger recompute if needed.
+ * Unified DFS: Mark computed listeners stale and trigger recompute if needed.
+ * Merges propagateToComputeds + recomputeDownstreamWithListeners into single DFS.
  * Used by both immediate and batched update paths.
  * Optimization: if no effects exist globally, skip DFS and eager recompute.
+ * BUG FIX 1.4: Recursively recompute downstream computeds that have effect listeners.
  */
 function propagateToComputeds(node: AnyNode): void {
   const computed = node._computedListeners;
@@ -559,7 +556,7 @@ function propagateToComputeds(node: AnyNode): void {
     return;
   }
 
-  // Effects exist: mark dirty with dedup queue (for batch) or recompute (for direct)
+  // Effects exist: mark dirty with dedup queue (for batch) or recompute recursively (for direct)
   for (let i = 0; i < len; i++) {
     const c = computed[i]!;
 
@@ -567,11 +564,12 @@ function propagateToComputeds(node: AnyNode): void {
       // Batched path: use dedup queue
       markComputedDirty(c);
     } else {
-      // Direct path: mark stale and recompute if has effects
+      // Direct path: mark stale and recompute if has effects (merged DFS)
       c._flags |= FLAG_STALE;
       if (hasDownstreamEffectListeners(c)) {
         (c as ComputedNode<any>)._recomputeIfNeeded();
-        recomputeDownstreamWithListeners(c);
+        // Recursively propagate downstream (unified DFS - no separate recompute function)
+        propagateToComputeds(c);
       }
     }
   }
@@ -586,8 +584,14 @@ let pendingNotificationsHead = 0;
 /**
  * Queue node for batched notification (deduped via FLAG_PENDING_NOTIFY).
  * Earliest oldValue wins.
+ * Optimization: Skip queueing during subscribe initial call.
  */
 function queueBatchedNotification(node: AnyNode, oldValue: unknown): void {
+  // Skip queueing if we're in subscribe initial call (O(1) flag check)
+  if ((node._flags & FLAG_IN_SUBSCRIBE_CALL) !== 0) {
+    return;
+  }
+
   if ((node._flags & FLAG_PENDING_NOTIFY) === 0) {
     node._flags |= FLAG_PENDING_NOTIFY;
     pendingNotifications.push([node, oldValue]);
@@ -695,7 +699,8 @@ function flushBatchedUpdates(): void {
           c._flags &= ~FLAG_IN_COMPUTED_QUEUE;
 
           c._recomputeIfNeeded();
-          recomputeDownstreamWithListeners(c);
+          // Propagate downstream (unified DFS handles recursion)
+          propagateToComputeds(c);
         }
 
         dirtyComputedsHead = endHead;
@@ -748,24 +753,14 @@ export function subscribe<T>(
   // Add effect listener (O(1))
   const unsubEffect = addEffectListener(n, listener as Listener<any>);
 
-  // Record pending notifications length before immediate call
-  const startLen = pendingNotifications.length;
+  // Set flag to prevent queueing during initial call (O(1))
+  n._flags |= FLAG_IN_SUBSCRIBE_CALL;
 
   // Immediate call with current value (triggers lazy eval for computeds)
   listener((node as any).value as T, undefined);
 
-  // Only remove notifications added during subscribe (don't steal existing batched notifications)
-  // Clear all new entries for this node (handles edge cases where listener triggers multiple batches)
-  for (let i = pendingNotifications.length - 1; i >= startLen; i--) {
-    const entry = pendingNotifications[i]!;
-    if (entry[0] === n) {
-      pendingNotifications.splice(i, 1);
-    }
-  }
-  // Clear flag only if no pending notifications remain for this node
-  if (startLen === 0 || !pendingNotifications.some(entry => entry[0] === n)) {
-    n._flags &= ~FLAG_PENDING_NOTIFY;
-  }
+  // Clear flag after initial call (O(1))
+  n._flags &= ~FLAG_IN_SUBSCRIBE_CALL;
 
   return (): void => {
     unsubEffect();
