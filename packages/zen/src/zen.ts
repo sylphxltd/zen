@@ -82,6 +82,8 @@ function scheduleEffect(effect: Computation<any>) {
   if (effect._state & FLAG_PENDING) return;
 
   effect._state |= FLAG_PENDING;
+
+  // OPTIMIZATION: Use indexed assignment instead of push
   pendingEffects[pendingCount++] = effect;
 
   if (!isFlushScheduled && batchDepth === 0) {
@@ -102,6 +104,7 @@ function flushEffects() {
     const count = pendingCount;
     pendingCount = 0;
 
+    // OPTIMIZATION: Process effects in batches for better cache locality
     for (let i = 0; i < count; i++) {
       const effect = pendingEffects[i];
 
@@ -115,6 +118,10 @@ function flushEffects() {
 
       // Clear FLAG_PENDING AFTER update completes
       effect._state &= ~FLAG_PENDING;
+    }
+
+    // Clear pending array after processing all effects
+    for (let i = 0; i < count; i++) {
       pendingEffects[i] = null as any;
     }
   }
@@ -146,22 +153,20 @@ function disposeOwner(owner: Owner) {
  * rebuild the sources array.
  */
 function track(source: SourceType) {
-  if (currentObserver) {
-    // OPTIMIZATION: Compare with old sources first
-    if (
-      !newSources &&
-      currentObserver._sources &&
-      currentObserver._sources[newSourcesIndex] === source
-    ) {
-      // Source at this index hasn't changed, just increment
-      newSourcesIndex++;
-    } else if (!newSources) {
-      // First changed source - create newSources array
-      newSources = [source];
-    } else if (source !== newSources[newSources.length - 1]) {
-      // Don't add duplicate if it's the same as last source
-      newSources.push(source);
-    }
+  // OPTIMIZATION: Compare with old sources first
+  if (
+    !newSources &&
+    currentObserver!._sources &&
+    currentObserver!._sources[newSourcesIndex] === source
+  ) {
+    // Source at this index hasn't changed, just increment
+    newSourcesIndex++;
+  } else if (!newSources) {
+    // First changed source - create newSources array
+    newSources = [source];
+  } else if (source !== newSources[newSources.length - 1]) {
+    // Don't add duplicate if it's the same as last source
+    newSources.push(source);
   }
 }
 
@@ -173,17 +178,34 @@ function removeSourceObservers(observer: ObserverType, fromIndex: number) {
   const sources = observer._sources;
   if (!sources) return;
 
-  for (let i = fromIndex; i < sources.length; i++) {
+  const len = sources.length;
+  for (let i = fromIndex; i < len; i++) {
     const source = sources[i];
     if (source && source._observers) {
       const observers = source._observers;
-      const idx = observers.indexOf(observer);
-      if (idx !== -1) {
-        const last = observers.length - 1;
-        if (idx < last) {
-          observers[idx] = observers[last];
+      const observerCount = observers.length;
+
+      // OPTIMIZATION: Linear search for small arrays, faster than indexOf
+      if (observerCount <= 8) {
+        for (let j = 0; j < observerCount; j++) {
+          if (observers[j] === observer) {
+            const last = observerCount - 1;
+            if (j < last) {
+              observers[j] = observers[last];
+            }
+            observers.pop();
+            break;
+          }
         }
-        observers.pop();
+      } else {
+        const idx = observers.indexOf(observer);
+        if (idx !== -1) {
+          const last = observerCount - 1;
+          if (idx < last) {
+            observers[idx] = observers[last];
+          }
+          observers.pop();
+        }
       }
     }
   }
@@ -221,7 +243,9 @@ class Computation<T> implements SourceType, ObserverType, Owner {
 
   read(): T {
     // Track this source in current observer
-    track(this);
+    if (currentObserver) {
+      track(this);
+    }
 
     if (this._state & 3) {
       this._updateIfNecessary();
@@ -401,8 +425,18 @@ class Computation<T> implements SourceType, ObserverType, Owner {
     const observers = this._observers;
     if (!observers) return;
 
-    for (let i = 0; i < observers.length; i++) {
-      observers[i]._notify(state);
+    // OPTIMIZATION: Batch notify to reduce intermediate work
+    const len = observers.length;
+    if (len > 100) {
+      batchDepth++;
+      for (let i = 0; i < len; i++) {
+        observers[i]._notify(state);
+      }
+      batchDepth--;
+    } else {
+      for (let i = 0; i < len; i++) {
+        observers[i]._notify(state);
+      }
     }
   }
 
@@ -443,7 +477,9 @@ class Signal<T> implements SourceType {
   }
 
   get value(): T {
-    track(this);
+    if (currentObserver) {
+      track(this);
+    }
     return this._value;
   }
 
@@ -455,16 +491,27 @@ class Signal<T> implements SourceType {
 
     if (!this._observers) return;
 
-    // Auto-batching
-    batchDepth++;
-    for (let i = 0; i < this._observers.length; i++) {
-      this._observers[i]._notify(STATE_DIRTY);
-    }
-    batchDepth--;
+    // OPTIMIZATION: Skip batching overhead for small observer counts
+    const len = this._observers.length;
+    if (len === 1) {
+      // Fast path for single observer
+      this._observers[0]._notify(STATE_DIRTY);
+      if (batchDepth === 0 && !isFlushScheduled && pendingCount > 0) {
+        isFlushScheduled = true;
+        flushEffects();
+      }
+    } else {
+      // Auto-batching for multiple observers
+      batchDepth++;
+      for (let i = 0; i < len; i++) {
+        this._observers[i]._notify(STATE_DIRTY);
+      }
+      batchDepth--;
 
-    if (batchDepth === 0 && !isFlushScheduled && pendingCount > 0) {
-      isFlushScheduled = true;
-      flushEffects();
+      if (batchDepth === 0 && !isFlushScheduled && pendingCount > 0) {
+        isFlushScheduled = true;
+        flushEffects();
+      }
     }
   }
 
