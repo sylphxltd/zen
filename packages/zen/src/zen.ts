@@ -97,6 +97,32 @@ function valuesEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
+ * Track source dependency for current listener (unified for Computed + Effect).
+ * Uses epoch-based deduplication to prevent duplicate subscriptions.
+ * BUG FIX: Effect nodes now use epoch dedup instead of last-source check,
+ * preventing duplicate subscriptions when reading same source non-consecutively.
+ */
+function trackSource(source: AnyNode): void {
+  if (!currentListener) return;
+
+  const epoch = currentListener._epoch;
+  if (epoch !== undefined && epoch !== 0) {
+    // Fast path: epoch-based dedup (handles all duplicates)
+    if (source._lastSeenEpoch !== epoch) {
+      source._lastSeenEpoch = epoch;
+      currentListener._sources.push(source);
+    }
+  } else {
+    // Fallback: last-source dedup (for collectors without epoch)
+    const list = currentListener._sources;
+    const last = list[list.length - 1];
+    if (last !== source) {
+      list.push(source);
+    }
+  }
+}
+
+/**
  * Propagate FLAG_HAD_EFFECT_DOWNSTREAM upward through the dependency graph.
  * Optimization 2.1: Iterative approach using stack to avoid DFS during updates.
  * Called during effect subscription to eagerly mark all upstream nodes.
@@ -281,28 +307,8 @@ function markComputedDirty(c: AnyNode): void {
 
 class ZenNode<T> extends BaseNode<T> {
   get value(): T {
-    // Runtime dependency tracking
-    if (currentListener) {
-      const list = currentListener._sources;
-      const self = this as AnyNode;
-
-      // For signals: simple last-source check (consecutive duplicates common)
-      // For computations: use epoch dedup (non-consecutive duplicates common)
-      if ((currentListener as any)._flags & FLAG_IS_COMPUTED) {
-        // Computation: epoch-based dedup (handles all duplicates)
-        if (this._lastSeenEpoch !== (currentListener as any)._epoch) {
-          this._lastSeenEpoch = (currentListener as any)._epoch;
-          list.push(self);
-        }
-      } else {
-        // Effect: last-source check only (faster, consecutive duplicates rare)
-        const last = list[list.length - 1];
-        if (last !== self) {
-          list.push(self);
-        }
-      }
-      // _sourceSlots will be filled by addComputedListener during _subscribeToSources
-    }
+    // Runtime dependency tracking (unified epoch-based dedup)
+    trackSource(this as AnyNode);
     return this._value;
   }
 
@@ -425,66 +431,23 @@ class ComputedNode<T> extends Computation<T> {
 
     const oldValue = this._value;
 
-    // Save old sources for diffing (dependency diffing optimization)
-    const oldSources = this._sources.slice();
-    const oldSourceSlots = this._sourceSlots.slice();
-
-    // Clear for tracking new dependencies
+    // Full unsubscribe (safe approach - ensures correctness)
+    if (hadSubscriptions) {
+      this._unsubscribeFromSources();
+    }
     this._sources.length = 0;
     this._sourceSlots.length = 0;
 
     // Track new dependencies
     currentListener = this as unknown as DependencyCollector;
-    (currentListener as any)._epoch = ++TRACKING_EPOCH;
+    this._epoch = ++TRACKING_EPOCH;
     const newValue = this._fn();
     currentListener = prevListener;
     this._value = newValue;
 
-    // Dependency diffing: only update changed sources
-    if (hadSubscriptions) {
-      const newSources = this._sources;
-
-      // Find common prefix (sources that haven't changed)
-      let commonPrefix = 0;
-      while (
-        commonPrefix < newSources.length &&
-        commonPrefix < oldSources.length &&
-        newSources[commonPrefix] === oldSources[commonPrefix]
-      ) {
-        commonPrefix++;
-      }
-
-      // Restore slots for common prefix (no need to re-subscribe)
-      for (let i = 0; i < commonPrefix; i++) {
-        this._sourceSlots[i] = oldSourceSlots[i];
-      }
-
-      // Unsubscribe from removed sources (old[commonPrefix..])
-      if (this._sourceUnsubs) {
-        for (let i = commonPrefix; i < oldSources.length; i++) {
-          const unsub = this._sourceUnsubs[i];
-          if (unsub) unsub();
-        }
-        // Truncate unsubs array to common prefix
-        this._sourceUnsubs.length = commonPrefix;
-      }
-
-      // Subscribe to new sources (new[commonPrefix..])
-      if (newSources.length > commonPrefix) {
-        if (!this._sourceUnsubs) {
-          this._sourceUnsubs = [];
-        }
-        for (let i = commonPrefix; i < newSources.length; i++) {
-          const source = newSources[i]!;
-          const unsub = addComputedListener(source, this, i);
-          this._sourceUnsubs[i] = unsub;
-        }
-      }
-    } else {
-      // First subscription: subscribe to all sources
-      if (this._sources.length > 0) {
-        this._subscribeToSources();
-      }
+    // Subscribe to new sources
+    if (this._sources.length > 0) {
+      this._subscribeToSources();
     }
 
     this._flags &= ~FLAG_PENDING;
@@ -506,18 +469,8 @@ class ComputedNode<T> extends Computation<T> {
     // Lazy evaluation
     this._recomputeIfNeeded();
 
-    // Allow tracking by parent computeds/effects
-    if (currentListener) {
-      const list = currentListener._sources;
-      const self = this as AnyNode;
-
-      // Fast path: check last source to handle consecutive duplicate reads
-      const last = list[list.length - 1];
-      if (last !== self) {
-        list.push(self);
-        // _sourceSlots will be filled by addComputedListener during _subscribeToSources
-      }
-    }
+    // Allow tracking by parent computeds/effects (unified epoch-based dedup)
+    trackSource(this as AnyNode);
 
     // First-time subscription to sources
     if (this._sourceUnsubs === undefined && this._sources.length > 0) {
