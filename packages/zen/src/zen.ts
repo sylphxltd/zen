@@ -80,8 +80,9 @@ let currentListener: DependencyCollector | null = null;
 // Global tracking epoch counter for O(1) dependency deduplication
 let TRACKING_EPOCH = 1;
 
-// Global effect count: tracks all push-style consumers (effect edges + legacy listeners)
-// GLOBAL_EFFECT_COUNT = active effect→source edges + active legacy effect listeners
+// Global effect count: tracks active effect→source edges (NOT legacy listeners)
+// GLOBAL_EFFECT_COUNT = active effect edges managed by trackEffectEdge
+// Legacy listeners use FLAG_HAD_EFFECT_DOWNSTREAM only (no global count)
 // Optimization: skip DFS when count is 0 (pure pull-style computed)
 // Decrements on unsubscribe for accurate tracking
 let GLOBAL_EFFECT_COUNT = 0;
@@ -159,9 +160,15 @@ function markHasEffectUpstream(node: AnyNode): void {
 }
 
 /**
- * Add effect listener.
+ * Add effect listener (legacy subscription API - currently unused).
  * Subscribe: O(1)
  * Unsubscribe: O(1) for inline, O(n) for array
+ *
+ * IMPORTANT: Does NOT increment GLOBAL_EFFECT_COUNT.
+ * GLOBAL_EFFECT_COUNT only tracks effect→source edges (trackEffectEdge).
+ * Legacy listeners rely on FLAG_HAD_EFFECT_DOWNSTREAM + notification queue only.
+ * This prevents incorrect lazy-path bypass when only legacy listeners exist.
+ *
  * Optimization 2.1: Propagates FLAG_HAD_EFFECT_DOWNSTREAM upward on subscription.
  * Optimization 2.3: Inline storage for 1-2 listeners, array for 3+.
  * BUG FIX: When transitioning to array mode, clear inline slots to prevent double-call.
@@ -184,9 +191,9 @@ function addEffectListener(node: AnyNode, cb: Listener<any>): Unsubscribe {
     node._effectListener2 = undefined;
   }
 
-  // Mark that effects exist + increment global count
+  // Mark that effects exist (for FLAG propagation and notification queue)
+  // Do NOT increment GLOBAL_EFFECT_COUNT - legacy listeners are separate concern
   node._flags |= FLAG_HAD_EFFECT_DOWNSTREAM;
-  GLOBAL_EFFECT_COUNT++;
 
   // Propagate flag upstream through dependency graph
   markHasEffectUpstream(node);
@@ -198,7 +205,6 @@ function addEffectListener(node: AnyNode, cb: Listener<any>): Unsubscribe {
       const idx = list.indexOf(cb);
       if (idx >= 0) {
         list.splice(idx, 1);
-        GLOBAL_EFFECT_COUNT--;
       }
       return;
     }
@@ -207,12 +213,10 @@ function addEffectListener(node: AnyNode, cb: Listener<any>): Unsubscribe {
     if (node._effectListener1 === cb) {
       node._effectListener1 = node._effectListener2;
       node._effectListener2 = undefined;
-      GLOBAL_EFFECT_COUNT--;
       return;
     }
     if (node._effectListener2 === cb) {
       node._effectListener2 = undefined;
-      GLOBAL_EFFECT_COUNT--;
     }
   };
 }
