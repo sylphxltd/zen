@@ -113,8 +113,10 @@ function flushQueue(queue: EffectQueue, queueType: number) {
       globalClock++;
     }
 
+    queue._scheduled = false;
     let error: any;
-    // Loop while there are effects to process
+
+    // 使用 while 循環處理 effect 執行期間新加入的 effects
     while (queue._effects.length > 0) {
       const effects = queue._effects.slice();
       queue._effects.length = 0;
@@ -131,8 +133,6 @@ function flushQueue(queue: EffectQueue, queueType: number) {
         }
       }
     }
-
-    queue._scheduled = false;
 
     // 重置更新計數
     if (queueType === EFFECT_USER) {
@@ -499,13 +499,21 @@ class Signal<T> implements SourceType {
     this._value = next;
     this._epoch = ++globalClock;
 
-    // 通知觀察者：直接子節點 DIRTY，深層 CHECK
+    // 使用 batch 確保所有 observers 都被加入隊列後才執行
+    // 但使用特殊標誌來區分外層 batch 和 Signal.set 的內部 batch
+    batchDepth++;
     const observers = this._observers;
     for (let i = 0; i < observers.length; i++) {
       const observer = observers[i];
       if (observer) {
         observer.notify(STATE_DIRTY);
       }
+    }
+    batchDepth--;
+
+    // 只有在最外層（batchDepth === 0）時才 flush
+    if (batchDepth === 0) {
+      flush();
     }
   }
 }
@@ -530,11 +538,16 @@ export function zen<T>(initial: T): ZenNode<T> {
 export function computed<T>(fn: () => T): ComputedNode<T> {
   const c = new Computation(fn, undefined as any, EFFECT_PURE);
 
-  return {
+  const node = {
     get value() {
       return c.read();
     },
   } as any;
+
+  // 暴露內部 Computation 用於測試和調試
+  node._computation = c;
+
+  return node;
 }
 
 export function effect(fn: () => undefined | (() => void)): Unsubscribe {

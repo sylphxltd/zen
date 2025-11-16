@@ -138,11 +138,11 @@ describe('computed', () => {
     // Subscribe to trigger source subscriptions
     const unsub = subscribe(dynamic, vi.fn());
 
-    expect((dynamic as any)._sources?.length).toBe(2); // toggle + a
+    expect((dynamic as any)._computation._sources?.length).toBe(2); // toggle + a
 
     toggle.value = false;
     expect(dynamic.value).toBe(10);
-    expect((dynamic as any)._sources?.length).toBe(2); // toggle + b
+    expect((dynamic as any)._computation._sources?.length).toBe(2); // toggle + b
 
     unsub();
   });
@@ -153,18 +153,18 @@ describe('computed', () => {
 
     // Initial access
     expect(doubled.value).toBe(2);
-    expect((doubled as any)._state).toBe(0); // STATE_CLEAN
+    expect((doubled as any)._computation._state).toBe(0); // STATE_CLEAN
 
     // Change source
     count.value = 5;
 
     // Fast mode: direct propagation marks computed stale without recomputing
     // Lazy evaluation - computed stays stale until accessed
-    expect((doubled as any)._state).toBeGreaterThan(0); // STATE_CHECK or STATE_DIRTY
+    expect((doubled as any)._computation._state).toBeGreaterThan(0); // STATE_CHECK or STATE_DIRTY
 
     // Access triggers lazy recomputation
     expect(doubled.value).toBe(10);
-    expect((doubled as any)._state).toBe(0); // STATE_CLEAN after access
+    expect((doubled as any)._computation._state).toBe(0); // STATE_CLEAN after access
   });
 });
 
@@ -290,7 +290,7 @@ describe('subscribe', () => {
 
     // BREAKING CHANGE: subscribe now creates an EffectNode, not direct subscription to computed
     // The EffectNode subscribes to the computed, so computed will have _observers
-    expect((doubled as any)._observers).toBeDefined();
+    expect((doubled as any)._computation._observers).toBeDefined();
 
     unsub();
 
@@ -703,11 +703,11 @@ describe('integration', () => {
 
     // BREAKING CHANGE: subscribe now uses EffectNodes instead of direct effect listeners
     // Each subscribe creates an EffectNode that subscribes to the computed
-    expect((doubled as any)._observers.length).toBe(2);
+    expect((doubled as any)._computation._observers.length).toBe(2);
 
     unsub1();
     // After unsubscribe, one EffectNode remains (lazy cleanup of subscriptions)
-    expect((doubled as any)._observers.length).toBeGreaterThanOrEqual(1);
+    expect((doubled as any)._computation._observers.length).toBeGreaterThanOrEqual(1);
 
     unsub2();
     // After both unsubscribe, effects are cancelled but subscriptions may remain (lazy cleanup)
