@@ -505,6 +505,7 @@ let batchDepth = 0;
 
 type PendingNotification = [AnyNode, unknown];
 const pendingNotifications: PendingNotification[] = [];
+let pendingNotificationsHead = 0;
 
 /**
  * Queue node for batched notification (deduped via FLAG_PENDING_NOTIFY).
@@ -546,22 +547,28 @@ function notifyEffects(node: AnyNode, newValue: unknown, oldValue: unknown): voi
 /**
  * Flush all pending notifications.
  * BUG FIX 1.3: Handle notifications added during flush.
+ * Optimization 3.1: Index-based processing (no splice).
  */
 function flushPendingNotifications(): void {
-  const pending = pendingNotifications;
-  while (pending.length > 0) {
-    const len = pending.length;
-    for (let i = 0; i < len; i++) {
-      const entry = pending[i]!;
+  while (pendingNotificationsHead < pendingNotifications.length) {
+    const startHead = pendingNotificationsHead;
+    const endHead = pendingNotifications.length;
+
+    for (let i = startHead; i < endHead; i++) {
+      const entry = pendingNotifications[i]!;
       const node = entry[0];
       const oldVal = entry[1];
 
       node._flags &= ~FLAG_PENDING_NOTIFY;
       notifyEffects(node, node._value, oldVal);
     }
-    // Only clear processed items; preserve any added during notification
-    pending.splice(0, len);
+
+    pendingNotificationsHead = endHead;
   }
+
+  // Reset queue after full flush
+  pendingNotifications.length = 0;
+  pendingNotificationsHead = 0;
 }
 
 // Guard against recursive flush
