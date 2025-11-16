@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-craft",
-  "version": "5.0.7",
+  "version": "5.0.8",
   "description": "Craft immutable state updates with JSON Patches for Zen",
   "type": "module",
   "source": "./src/index.ts",
