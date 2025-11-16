@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-craft",
-  "version": "5.0.19",
+  "version": "5.0.20",
   "description": "Craft immutable state updates with JSON Patches for Zen",
   "type": "module",
   "source": "./src/index.ts",
@@ -19,7 +19,10 @@
       }
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node",
     "dev": "bun build src/index.ts --outdir dist --target node --sourcemap --watch",
