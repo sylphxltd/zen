@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-svelte",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "description": "Svelte integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",

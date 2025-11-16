@@ -1,5 +1,12 @@
 # @sylphx/zen-preact
 
+## 5.0.7
+
+### Patch Changes
+
+- Updated dependencies [28b1325]
+  - @sylphx/zen@3.16.1
+
 ## 5.0.6
 
 ### Patch Changes
