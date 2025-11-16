@@ -319,13 +319,21 @@ export function zen<T>(initial: T): ZenNode<T> {
 export type Zen<T> = ReturnType<typeof zen<T>>;
 
 // ============================================================================
-// COMPUTATION BASE (Unified Computed + Effect data structure)
+// COMPUTATION BASE (Unified Computed + Effect)
 // ============================================================================
 
 /**
- * Base Computation class for both Computed and Effect.
- * Optimization 3.3: Unified shape for better V8 hidden class optimization.
- * Shares common dependency tracking structure while keeping execution logic separate.
+ * Computation: Unified base for both Computed and Effect (Solid-style).
+ * Optimization 3.3: Same data layout for V8 hidden class optimization.
+ *
+ * A Computation is a reactive node that:
+ * - Has a function (_fn) that computes a value based on dependencies
+ * - Tracks its sources (_sources) for auto-tracking
+ * - Can be invalidated and re-executed
+ *
+ * The only difference between Computed and Effect:
+ * - Computed: caches value, lazy (pull-based)
+ * - Effect: no cache, eager (push-based)
  */
 abstract class Computation<T> extends BaseNode<T | null> implements DependencyCollector {
   _fn: () => T;
@@ -333,7 +341,8 @@ abstract class Computation<T> extends BaseNode<T | null> implements DependencyCo
   _sourceSlots: number[]; // Optimization 3.2: Slot tracking for O(1) unsubscribe
   _sourceUnsubs?: Unsubscribe[];
   _epoch = 0; // DependencyCollector interface requirement
-  _cleanup?: () => void; // For effects
+  _cleanup?: () => void; // Effect cleanup function
+  _cancelled = false; // Effect cancellation flag
 
   constructor(fn: () => T, initialValue: T | null) {
     super(initialValue);
@@ -341,6 +350,12 @@ abstract class Computation<T> extends BaseNode<T | null> implements DependencyCo
     this._sources = [];
     this._sourceSlots = [];
   }
+
+  /**
+   * Unified execution logic (Solid-style).
+   * Subclasses override for specific behavior (lazy vs eager).
+   */
+  abstract _execute(): void;
 }
 
 // ============================================================================
@@ -365,6 +380,14 @@ class ComputedNode<T> extends Computation<T> {
 
   get _dirty(): boolean {
     return (this._flags & FLAG_STALE) !== 0;
+  }
+
+  /**
+   * Unified execution method (Solid-style).
+   * For Computed: lazy pull-based with caching.
+   */
+  _execute(): void {
+    this._recomputeIfNeeded();
   }
 
   /**
@@ -769,14 +792,13 @@ export function subscribe<T>(
  * Optimization 3.3: Same data structure as ComputedNode for V8 optimization.
  */
 class EffectNode extends Computation<void | (() => void)> {
-  _cancelled = false;
   _onSourceChange?: Listener<unknown>; // Reused closure
 
   constructor(callback: () => undefined | (() => void)) {
     super(callback, null);
     // Create closure once to avoid allocation on every re-run
     this._onSourceChange = () => {
-      executeEffect(this);
+      this._execute();
     };
   }
 
@@ -784,69 +806,78 @@ class EffectNode extends Computation<void | (() => void)> {
   get _callback(): () => undefined | (() => void) {
     return this._fn;
   }
+
+  /**
+   * Unified execution method (Solid-style).
+   * For Effect: eager push-based, no caching.
+   */
+  _execute(): void {
+    if (this._cancelled) return;
+
+    // Run previous cleanup
+    if (this._cleanup) {
+      try {
+        this._cleanup();
+      } catch {
+        // Swallow cleanup errors
+      }
+      this._cleanup = undefined;
+    }
+
+    // Unsubscribe from previous sources
+    const unsubs = this._sourceUnsubs;
+    if (unsubs) {
+      const len = unsubs.length;
+      for (let i = 0; i < len; i++) {
+        unsubs[i]!();
+      }
+      this._sourceUnsubs = undefined;
+    }
+
+    this._sources.length = 0;
+    this._sourceSlots.length = 0;
+
+    // Track dependencies with new tracking epoch for O(1) deduplication
+    const prevListener = currentListener;
+    currentListener = this;
+    this._epoch = ++TRACKING_EPOCH;
+
+    try {
+      const cleanup = this._fn();
+      if (cleanup) this._cleanup = cleanup;
+    } catch {
+      // Swallow effect errors
+    } finally {
+      currentListener = prevListener;
+    }
+
+    // Subscribe to tracked sources
+    const srcs = this._sources;
+    const srcLen = srcs.length;
+
+    if (srcLen > 0) {
+      this._sourceUnsubs = [];
+
+      // Reuse closure to avoid allocation on every re-run
+      const onChange = this._onSourceChange!;
+
+      for (let i = 0; i < srcLen; i++) {
+        // Effects use effect listeners, not computed listeners (no slot tracking needed for effects)
+        const unsub = addEffectListener(srcs[i]!, onChange as Listener<any>);
+        this._sourceUnsubs.push(unsub);
+      }
+    }
+  }
 }
 
 type EffectCore = EffectNode; // Backward compatibility
 
 /**
  * Execute effect with auto-tracking.
+ * Optimization 3.3: Unified execution via Computation._execute().
  */
 function executeEffect(e: EffectCore): void {
-  if (e._cancelled) return;
-
-  // Run previous cleanup
-  if (e._cleanup) {
-    try {
-      e._cleanup();
-    } catch {
-      // Swallow cleanup errors
-    }
-    e._cleanup = undefined;
-  }
-
-  // Unsubscribe from previous sources
-  const unsubs = e._sourceUnsubs;
-  if (unsubs) {
-    const len = unsubs.length;
-    for (let i = 0; i < len; i++) {
-      unsubs[i]!();
-    }
-    e._sourceUnsubs = undefined;
-  }
-
-  e._sources.length = 0;
-  e._sourceSlots.length = 0;
-
-  // Track dependencies with new tracking epoch for O(1) deduplication
-  const prevListener = currentListener;
-  currentListener = e;
-  e._epoch = ++TRACKING_EPOCH;
-
-  try {
-    const cleanup = e._callback();
-    if (cleanup) e._cleanup = cleanup;
-  } catch {
-    // Swallow effect errors
-  } finally {
-    currentListener = prevListener;
-  }
-
-  // Subscribe to tracked sources
-  const srcs = e._sources;
-  const srcLen = srcs.length;
-
-  if (srcLen > 0) {
-    e._sourceUnsubs = [];
-
-    // Reuse closure to avoid allocation on every re-run
-    const onSourceChange = e._onSourceChange!;
-
-    for (let i = 0; i < srcLen; i++) {
-      // Effects use effect listeners, not computed listeners (no slot tracking needed for effects)
-      const unsub = addEffectListener(srcs[i]!, onSourceChange as Listener<any>);
-      e._sourceUnsubs.push(unsub);
-    }
-  }
+  e._execute();
 }
 
 /**
