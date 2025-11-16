@@ -1,5 +1,12 @@
 # @sylphx/zen-solid
 
+## 5.0.12
+
+### Patch Changes
+
+- Updated dependencies
+  - @sylphx/zen@3.19.1
+
 ## 5.0.11
 
 ### Patch Changes

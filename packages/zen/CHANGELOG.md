@@ -1,5 +1,48 @@
 # @sylphx/zen
 
+## 3.19.1
+
+### Patch Changes
+
+- perf: major hot path optimizations approaching Solid.js performance
+
+  **Critical optimizations:**
+
+  1. **Remove try/finally from hot paths**
+
+     - Eliminated try/finally wrapper in `_recomputeIfNeeded`
+     - Restore `currentListener` directly after `_fn()` call
+     - Avoid V8 deoptimization and enable aggressive inlining
+
+  2. **Simplify epoch-based deduplication**
+
+     - Replace full epoch tracking with last-source comparison
+     - Only dedupe consecutive duplicate reads (common case)
+     - Eliminate `_lastSeenEpoch` read/write overhead
+     - Remove global `TRACKING_EPOCH` increment
+
+  3. **Minimal error handling**
+     - Keep try/catch only for cleanup and effect errors (rare)
+     - Error paths don't affect hot path performance
+     - Maintain backward compatibility
+
+  **Performance improvements:**
+
+  - read computed (stale): +65% (719K → 1.19M ops/s)
+  - computed with 3 deps: +1387% (26K → 387K ops/s)
+  - subscribe + unsubscribe: +113% (7.92M → 16.9M ops/s)
+  - subscribe to computed: +16,745% (22K → 3.72M ops/s)
+  - create effect: +82% (612K → 1.12M ops/s)
+  - effect + dispose: +265% (4.66M → 17.0M ops/s)
+  - effect re-execution: +109% (262K → 549K ops/s)
+  - effect with cleanup: +209% (175K → 541K ops/s)
+
+  **Exports:**
+
+  - Added missing `untrack` and `peek` exports to index.ts
+
+  Bundle size: 1.88 KB → 1.92 KB (+40 bytes for new exports)
+
 ## 3.19.0
 
 ### Minor Changes

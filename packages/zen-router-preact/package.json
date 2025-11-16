@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-router-preact",
-  "version": "5.0.11",
+  "version": "5.0.12",
   "description": "Preact integration for @sylphx/zen-router",
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
@@ -20,8 +20,17 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md"],
-  "keywords": ["zen", "router", "preact", "hooks", "state management"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "zen",
+    "router",
+    "preact",
+    "hooks",
+    "state management"
+  ],
   "homepage": "https://github.com/SylphxAI/zen/tree/main/packages/zen-router-preact#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/zen/issues"
