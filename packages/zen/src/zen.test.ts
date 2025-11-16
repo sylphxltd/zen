@@ -153,18 +153,18 @@ describe('computed', () => {
 
     // Initial access
     expect(doubled.value).toBe(2);
-    expect(doubled._dirty).toBe(false);
+    expect((doubled._flags & 0b0000001) === 0).toBe(true); // Not stale
 
     // Change source
     count.value = 5;
 
     // Fast mode: direct propagation marks computed stale without recomputing
     // Lazy evaluation - computed stays stale until accessed
-    expect(doubled._dirty).toBe(true); // Marked stale, not recomputed yet
+    expect((doubled._flags & 0b0000001) !== 0).toBe(true); // Stale flag set
 
     // Access triggers lazy recomputation
     expect(doubled.value).toBe(10);
-    expect(doubled._dirty).toBe(false); // Now fresh after access
+    expect((doubled._flags & 0b0000001) === 0).toBe(true); // Fresh after access
   });
 });
 

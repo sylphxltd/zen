@@ -368,20 +368,6 @@ class ComputedNode<T> extends Computation<T> {
     this._flags = FLAG_STALE | FLAG_IS_COMPUTED; // Start dirty + mark as computed
   }
 
-  // Backward compatibility
-  get _calc(): () => T {
-    return this._fn;
-  }
-
-  // Compatibility accessors
-  get _unsubs(): Unsubscribe[] | undefined {
-    return this._sourceUnsubs;
-  }
-
-  get _dirty(): boolean {
-    return (this._flags & FLAG_STALE) !== 0;
-  }
-
   /**
    * Unified execution method (Solid-style).
    * For Computed: lazy pull-based with caching.
@@ -421,7 +407,7 @@ class ComputedNode<T> extends Computation<T> {
       // Set up new tracking epoch for O(1) dependency deduplication
       currentListener = this as unknown as DependencyCollector;
       (currentListener as any)._epoch = ++TRACKING_EPOCH;
-      newValue = this._calc();
+      newValue = this._fn();
       this._value = newValue;
 
       // Always rewire subscriptions (simpler, fewer edge cases than diff)
@@ -802,11 +788,6 @@ class EffectNode extends Computation<void | (() => void)> {
     };
   }
 
-  // Backward compatibility
-  get _callback(): () => undefined | (() => void) {
-    return this._fn;
-  }
-
   /**
    * Unified execution method (Solid-style).
    * For Effect: eager push-based, no caching.
@@ -870,13 +851,11 @@ class EffectNode extends Computation<void | (() => void)> {
   }
 }
 
-type EffectCore = EffectNode; // Backward compatibility
-
 /**
  * Execute effect with auto-tracking.
  * Optimization 3.3: Unified execution via Computation._execute().
  */
-function executeEffect(e: EffectCore): void {
+function executeEffect(e: EffectNode): void {
   e._execute();
 }
 
