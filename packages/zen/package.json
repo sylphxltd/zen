@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.29.0",
+  "version": "3.30.0",
   "description": "Zen state management library - extreme minimalism, extreme speed. V3.29: Complete Solid.js algorithm absorption (track optimization, incremental sources, proper STATE_CHECK).",
   "type": "module",
   "main": "./dist/index.cjs",
