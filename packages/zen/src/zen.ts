@@ -756,7 +756,7 @@ export function batch<T>(fn: () => T): T {
 /**
  * BREAKING CHANGE: Subscribe now uses unified scheduler (Solid-style).
  * - Listener runs at most once per flush (automatic dedup)
- * - No immediate initial call (effect-based)
+ * - Initial call happens on first update (not immediately)
  * - Simpler implementation using effect
  */
 export function subscribe<T>(
@@ -764,17 +764,17 @@ export function subscribe<T>(
   listener: Listener<T>,
 ): Unsubscribe {
   let previousValue: T | undefined;
-  let isFirst = true;
 
   return effect(() => {
     const currentValue = node.value;
 
-    if (isFirst) {
-      isFirst = false;
+    // First run: just store value, no listener call
+    if (previousValue === undefined) {
       previousValue = currentValue;
       return;
     }
 
+    // Subsequent runs: call listener with old and new values
     listener(currentValue, previousValue);
     previousValue = currentValue;
   });
@@ -844,7 +844,17 @@ class EffectNode extends Computation<void | (() => void)> {
         // SCHEDULER REWRITE: Subscribe using computed listener (slot-based)
         // When source changes, mark this effect dirty (scheduler queues it)
         const unsub = addComputedListener(srcs[i]!, this as unknown as AnyNode & DependencyCollector, i);
-        this._sourceUnsubs.push(unsub);
+
+        // Increment GLOBAL_EFFECT_COUNT for each subscription
+        GLOBAL_EFFECT_COUNT++;
+
+        // Wrap unsub to decrement count on unsubscribe
+        const wrappedUnsub = (): void => {
+          unsub();
+          GLOBAL_EFFECT_COUNT--;
+        };
+
+        this._sourceUnsubs.push(wrappedUnsub);
       }
     }
   }
@@ -883,7 +893,7 @@ export function effect(callback: () => undefined | (() => void)): Unsubscribe {
     if (unsubs) {
       const len = unsubs.length;
       for (let i = 0; i < len; i++) {
-        unsubs[i]?.();
+        unsubs[i]?.(); // Wrapped unsub already decrements GLOBAL_EFFECT_COUNT
       }
     }
   };
