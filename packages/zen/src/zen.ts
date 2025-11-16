@@ -319,22 +319,43 @@ export function zen<T>(initial: T): ZenNode<T> {
 export type Zen<T> = ReturnType<typeof zen<T>>;
 
 // ============================================================================
-// COMPUTED
+// COMPUTATION BASE (Unified Computed + Effect data structure)
 // ============================================================================
 
-class ComputedNode<T> extends BaseNode<T | null> implements DependencyCollector {
-  _calc: () => T;
+/**
+ * Base Computation class for both Computed and Effect.
+ * Optimization 3.3: Unified shape for better V8 hidden class optimization.
+ * Shares common dependency tracking structure while keeping execution logic separate.
+ */
+abstract class Computation<T> extends BaseNode<T | null> implements DependencyCollector {
+  _fn: () => T;
   _sources: AnyNode[];
   _sourceSlots: number[]; // Optimization 3.2: Slot tracking for O(1) unsubscribe
   _sourceUnsubs?: Unsubscribe[];
   _epoch = 0; // DependencyCollector interface requirement
+  _cleanup?: () => void; // For effects
 
-  constructor(calc: () => T) {
-    super(null as T | null);
-    this._calc = calc;
+  constructor(fn: () => T, initialValue: T | null) {
+    super(initialValue);
+    this._fn = fn;
     this._sources = [];
     this._sourceSlots = [];
+  }
+}
+
+// ============================================================================
+// COMPUTED
+// ============================================================================
+
+class ComputedNode<T> extends Computation<T> {
+  constructor(calc: () => T) {
+    super(calc, null as T | null);
     this._flags = FLAG_STALE | FLAG_IS_COMPUTED; // Start dirty + mark as computed
+  }
+
+  // Backward compatibility
+  get _calc(): () => T {
+    return this._fn;
   }
 
   // Compatibility accessors
@@ -743,14 +764,29 @@ export function subscribe<T>(
 // EFFECT
 // ============================================================================
 
-type EffectCore = DependencyCollector & {
-  _sourceSlots: number[]; // Explicitly declare for type safety
-  _sourceUnsubs?: Unsubscribe[];
-  _cleanup?: () => void;
-  _callback: () => undefined | (() => void);
-  _cancelled: boolean;
-  _onSourceChange?: Listener<unknown>; // Reused closure to avoid allocation
-};
+/**
+ * EffectNode: extends Computation for unified shape.
+ * Optimization 3.3: Same data structure as ComputedNode for V8 optimization.
+ */
+class EffectNode extends Computation<void | (() => void)> {
+  _cancelled = false;
+  _onSourceChange?: Listener<unknown>; // Reused closure
+
+  constructor(callback: () => undefined | (() => void)) {
+    super(callback, null);
+    // Create closure once to avoid allocation on every re-run
+    this._onSourceChange = () => {
+      executeEffect(this);
+    };
+  }
+
+  // Backward compatibility
+  get _callback(): () => undefined | (() => void) {
+    return this._fn;
+  }
+}
+
+type EffectCore = EffectNode; // Backward compatibility
 
 /**
  * Execute effect with auto-tracking.
@@ -818,22 +854,7 @@ function executeEffect(e: EffectCore): void {
  * Runs immediately and re-runs when dependencies change.
  */
 export function effect(callback: () => undefined | (() => void)): Unsubscribe {
-  // Define all properties upfront for V8 optimization (stable hidden class)
-  const e: EffectCore = {
-    _sources: [],
-    _sourceSlots: [],
-    _epoch: 0,
-    _sourceUnsubs: undefined,
-    _cleanup: undefined,
-    _callback: callback,
-    _cancelled: false,
-    _onSourceChange: undefined as any,
-  };
-
-  // Create closure once to avoid allocation on every re-run
-  e._onSourceChange = () => {
-    executeEffect(e);
-  };
+  const e = new EffectNode(callback);
 
   executeEffect(e);
 

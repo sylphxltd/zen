@@ -20,17 +20,8 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "keywords": [
-    "zen",
-    "router",
-    "preact",
-    "hooks",
-    "state management"
-  ],
+  "files": ["dist", "README.md"],
+  "keywords": ["zen", "router", "preact", "hooks", "state management"],
   "homepage": "https://github.com/SylphxAI/zen/tree/main/packages/zen-router-preact#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/zen/issues"
