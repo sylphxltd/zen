@@ -117,13 +117,16 @@ function flushQueue(queue: EffectQueue, queueType: number) {
     let error: any;
 
     // 使用 while 循環處理 effect 執行期間新加入的 effects
+    let iteration = 0;
     while (queue._effects.length > 0) {
+      iteration++;
       const effects = queue._effects.slice();
       queue._effects.length = 0;
 
       for (let i = 0; i < effects.length; i++) {
         const effect = effects[i];
         if (effect._state !== STATE_DISPOSED) {
+          // 在執行前重置 queueSlot
           effect._queueSlot = -1;
           try {
             effect.update();
@@ -132,6 +135,7 @@ function flushQueue(queue: EffectQueue, queueType: number) {
           }
         }
       }
+
     }
 
     // 重置更新計數
@@ -402,7 +406,15 @@ class Computation<T> implements SourceType, ObserverType, Owner {
   }
 
   notify(state: number): void {
+    // 特殊情況：如果正在執行自己（currentObserver === this），
+    // 允許接受DIRTY通知以支持 effect 執行期間修改依賴的情況
+    const isExecutingSelf = currentObserver === this;
+
     if (this._state >= state || this._state === STATE_DISPOSED) {
+      // 但如果正在執行且收到 DIRTY，仍然調度
+      if (isExecutingSelf && state === STATE_DIRTY && this._effectType !== EFFECT_PURE) {
+        scheduleEffect(this, this._effectType);
+      }
       return;
     }
 
