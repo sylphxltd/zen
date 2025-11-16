@@ -1,7 +1,7 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.28.0",
-  "description": "Zen state management library - extreme minimalism, extreme speed. V3.28: Deep reactivity fix (Solid.js patterns - fixed infinite loop false positives).",
+  "version": "3.29.0",
+  "description": "Zen state management library - extreme minimalism, extreme speed. V3.29: Complete Solid.js algorithm absorption (track optimization, incremental sources, proper STATE_CHECK).",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
