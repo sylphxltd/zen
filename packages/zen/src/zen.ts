@@ -746,8 +746,14 @@ function flushBatchedUpdates(): void {
     for (let i = 0; i < dirtyEffects.length; i++) {
       dirtyEffects[i]!._flags &= ~FLAG_IN_EFFECT_QUEUE;
     }
+    // Clear pending notification flags (legacy listeners)
+    for (let i = 0; i < pendingNotifications.length; i++) {
+      pendingNotifications[i]![0]._flags &= ~FLAG_PENDING_NOTIFY;
+    }
 
     // Reset queues and state
+    pendingNotifications.length = 0;
+    pendingNotificationsHead = 0;
     dirtyNodes.length = 0;
     dirtyNodesHead = 0;
     dirtyComputeds.length = 0;
