@@ -1,5 +1,13 @@
 # @sylphx/zen-persistent
 
+## 15.0.26
+
+### Patch Changes
+
+- Updated dependencies [f8e4914]
+  - @sylphx/zen@3.38.0
+  - @sylphx/zen-patterns@12.0.26
+
 ## 15.0.25
 
 ### Patch Changes
