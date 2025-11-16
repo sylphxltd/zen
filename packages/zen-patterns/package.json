@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-patterns",
-  "version": "12.0.5",
+  "version": "12.0.6",
   "description": "Useful patterns and helpers for Zen state management",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.15.1",
+  "version": "3.16.0",
   "description": "Zen state management library - extreme minimalism, extreme speed. V3: Auto-tracking reactivity.",
   "type": "module",
   "main": "./dist/index.cjs",
