@@ -1,27 +1,37 @@
 /**
- * Zen v3.25.0 - Ultra-Optimized Reactivity System
+ * Zen v3.23.0 - Advanced Reactivity System
  *
- * OPTIMIZATION FOCUS:
- * 1. Fanout performance (1→N notification)
- * 2. Scheduler efficiency (reduced overhead)
- * 3. Batch updates (smart batching)
- * 4. Memory efficiency (reduced allocations)
+ * Core primitives:
+ * - zen(value) → Signal
+ * - computed(fn) → Computed
+ * - effect(fn) → Effect
+ * - subscribe(node, fn) → Subscribe
+ * - batch(fn) → Batch
  */
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export type Listener<T> = (value: T, oldValue: T | undefined) => void;
 export type Unsubscribe = () => void;
 
 // ============================================================================
-// CONSTANTS
+// STATE CONSTANTS
 // ============================================================================
 
-const STATE_CLEAN = 0;
-const STATE_CHECK = 1;
-const STATE_DIRTY = 2;
-const STATE_DISPOSED = 3;
+const STATE_CLEAN = 0; // 所有依賴都最新
+const STATE_CHECK = 1; // 可能有變更，需檢查
+const STATE_DIRTY = 2; // 確定有變更，必須更新
+const STATE_DISPOSED = 3; // 已釋放
 
-const EFFECT_PURE = 0;
-const EFFECT_USER = 2;
+// ============================================================================
+// EFFECT TYPES
+// ============================================================================
+
+const EFFECT_PURE = 0; // 純計算，立即執行
+const EFFECT_RENDER = 1; // 渲染效果
+const EFFECT_USER = 2; // 用戶效果
 
 // ============================================================================
 // GLOBALS
@@ -33,10 +43,7 @@ let batchDepth = 0;
 let globalClock = 0;
 let updateCount = 0;
 const MAX_UPDATES = 1e5;
-
-// OPTIMIZATION: Single unified queue instead of 3 separate ones
-const pendingEffects: Computation<any>[] = [];
-let isFlushScheduled = false;
+let isFlushing = false;
 
 // ============================================================================
 // INTERFACES
@@ -61,60 +68,127 @@ interface Owner {
   _parent: Owner | null;
   _context: Record<symbol, any> | null;
   _disposal: (() => void)[] | null;
+  _queue: EffectQueue | null;
+}
+
+interface EffectQueue {
+  _effects: Computation<any>[];
+  _scheduled: boolean;
 }
 
 // ============================================================================
-// SCHEDULER - OPTIMIZED
+// SCHEDULER
 // ============================================================================
 
-// OPTIMIZATION: Inline fast-path flush
-function scheduleEffect(effect: Computation<any>) {
-  if (!pendingEffects.includes(effect)) {
-    pendingEffects.push(effect);
+const queues: EffectQueue[] = [
+  { _effects: [], _scheduled: false }, // PURE
+  { _effects: [], _scheduled: false }, // RENDER
+  { _effects: [], _scheduled: false }, // USER
+];
+
+function scheduleEffect(effect: Computation<any>, queueType: number) {
+  const queue = queues[queueType];
+
+  if (effect._queueSlot === -1) {
+    effect._queueSlot = queue._effects.length;
+    queue._effects.push(effect);
+    // console.log('[scheduleEffect] Added to queue, slot=', effect._queueSlot, 'queueType=', queueType, 'isFlushing=', isFlushing);
   }
 
-  if (!isFlushScheduled && batchDepth === 0) {
-    isFlushScheduled = true;
-    flushEffects();
-  }
-}
-
-function flushEffects() {
-  isFlushScheduled = false;
-
-  if (pendingEffects.length === 0) return;
-
-  globalClock++;
-
-  let error: any;
-
-  // OPTIMIZATION: Use while loop to handle effects added during execution
-  let iteration = 0;
-  while (pendingEffects.length > 0) {
-    iteration++;
-    const effects = pendingEffects.slice();
-    pendingEffects.length = 0;
-
-    for (let i = 0; i < effects.length; i++) {
-      const effect = effects[i];
-      if (effect._state !== STATE_DISPOSED) {
-        try {
-          effect.update();
-        } catch (err) {
-          if (!error) error = err;
-        }
-      }
+  if (!queue._scheduled && !isFlushing) {
+    queue._scheduled = true;
+    if (batchDepth === 0) {
+      // 同步執行避免測試問題
+      flushQueue(queue, queueType);
     }
   }
+}
 
-  updateCount = 0;
+function flushQueue(queue: EffectQueue, queueType: number) {
+  if (!queue._scheduled) return;
 
-  if (error) throw error;
+  isFlushing = true;
+  try {
+    // EFFECT_PURE 後增加時鐘
+    if (queueType === EFFECT_PURE) {
+      globalClock++;
+    }
+
+    queue._scheduled = false;
+    let error: any;
+
+    // 使用 while 循環處理 effect 執行期間新加入的 effects
+    let iteration = 0;
+    while (queue._effects.length > 0) {
+      iteration++;
+      // console.log('[flushQueue] Iteration', iteration, 'effects.length=', queue._effects.length, 'queueType=', queueType);
+      const effects = queue._effects.slice();
+      queue._effects.length = 0;
+
+      for (let i = 0; i < effects.length; i++) {
+        const effect = effects[i];
+        if (effect._state !== STATE_DISPOSED) {
+          // 在執行前重置 queueSlot
+          effect._queueSlot = -1;
+          try {
+            effect.update();
+          } catch (err) {
+            if (!error) error = err;
+          }
+        }
+      }
+
+    }
+
+    // 重置更新計數
+    if (queueType === EFFECT_USER) {
+      updateCount = 0;
+    }
+
+    if (error) throw error;
+  } finally {
+    isFlushing = false;
+  }
+}
+
+function flush() {
+  // 按順序執行三個隊列
+  flushQueue(queues[EFFECT_PURE], EFFECT_PURE);
+  flushQueue(queues[EFFECT_RENDER], EFFECT_RENDER);
+  flushQueue(queues[EFFECT_USER], EFFECT_USER);
 }
 
 // ============================================================================
 // OWNER SYSTEM
 // ============================================================================
+
+function createOwner(parent: Owner | null, queue: EffectQueue | null = null): Owner {
+  return {
+    _parent: parent,
+    _context: parent?._context ?? null,
+    _disposal: null,
+    _queue: queue ?? parent?._queue ?? null,
+  };
+}
+
+function runWithOwner<T>(owner: Owner | null, fn: () => T): T {
+  const prevOwner = currentOwner;
+  currentOwner = owner;
+  try {
+    return fn();
+  } finally {
+    currentOwner = prevOwner;
+  }
+}
+
+function onCleanup(fn: () => void) {
+  if (currentOwner) {
+    if (!currentOwner._disposal) {
+      currentOwner._disposal = [];
+    }
+    currentOwner._disposal.push(fn);
+  }
+}
 
 function disposeOwner(owner: Owner) {
   if (owner._disposal) {
@@ -126,11 +200,9 @@ function disposeOwner(owner: Owner) {
 }
 
 // ============================================================================
-// DEPENDENCY TRACKING - OPTIMIZED
+// DEPENDENCY TRACKING
 // ============================================================================
 
-// OPTIMIZATION: No duplicate check - just add directly
-// The cost of checking > cost of duplicate subscriptions
 function addObserver(source: SourceType, observer: ObserverType) {
   const sourceSlot = source._observers.length;
   const observerSlot = observer._sources.length;
@@ -150,18 +222,21 @@ function removeObserver(source: SourceType, observerSlot: number) {
   const sourceIdx = source._observerSlots[observerSlot]!;
 
   if (observerSlot < lastIdx) {
+    // Swap with last
     const last = source._observers[lastIdx]!;
     const lastSourceIdx = source._observerSlots[lastIdx]!;
 
     source._observers[observerSlot] = last;
     source._observerSlots[observerSlot] = lastSourceIdx;
 
+    // Update swapped observer's slot
     last._sourceSlots[lastSourceIdx] = observerSlot;
   }
 
   source._observers.pop();
   source._observerSlots.pop();
 
+  // Clear observer's reference
   if (sourceIdx < observer._sources.length) {
     observer._sources[sourceIdx] = null as any;
     observer._sourceSlots[sourceIdx] = -1;
@@ -185,28 +260,37 @@ function clearObservers(observer: ObserverType) {
 }
 
 // ============================================================================
-// COMPUTATION - OPTIMIZED
+// COMPUTATION
 // ============================================================================
 
 class Computation<T> implements SourceType, ObserverType, Owner {
+  // Observer interface
   _sources: SourceType[] = [];
   _sourceSlots: number[] = [];
   _state = STATE_DIRTY;
   _epoch = 0;
 
+  // Source interface
   _observers: ObserverType[] = [];
   _observerSlots: number[] = [];
 
+  // Owner interface
   _parent: Owner | null;
   _context: Record<symbol, any> | null;
   _disposal: (() => void)[] | null = null;
+  _queue: EffectQueue | null;
 
+  // Computation
   _fn: () => T;
   _value: T;
   _oldValue: T | undefined = undefined;
   _error: any = undefined;
 
+  // Effect queue
+  _queueSlot = -1;
   _effectType: number;
+
+  // Cleanup
   _cleanup: (() => void) | null = null;
 
   constructor(fn: () => T, initialValue: T, effectType: number = EFFECT_PURE) {
@@ -215,14 +299,16 @@ class Computation<T> implements SourceType, ObserverType, Owner {
     this._effectType = effectType;
     this._parent = currentOwner;
     this._context = currentOwner?._context ?? null;
+    this._queue = currentOwner?._queue ?? queues[effectType];
   }
 
-  // OPTIMIZATION: Streamlined read path
   read(): T {
+    // 追蹤依賴
     if (currentObserver && currentObserver !== this) {
       addObserver(this, currentObserver);
     }
 
+    // 確保值最新
     if (this._state !== STATE_CLEAN) {
       this._updateIfNecessary();
     }
@@ -241,21 +327,25 @@ class Computation<T> implements SourceType, ObserverType, Owner {
     this._epoch = ++globalClock;
     this._state = STATE_CLEAN;
 
+    // 通知觀察者
     this._notifyObservers(STATE_DIRTY);
   }
 
   _updateIfNecessary(): void {
+    // 已釋放或已是最新
     if (this._state === STATE_DISPOSED || this._state === STATE_CLEAN) {
       return;
     }
 
+    // STATE_CHECK: 檢查父節點是否真的變了
     if (this._state === STATE_CHECK) {
       const sources = this._sources;
-      for (let i = 0, len = sources.length; i < len; i++) {
+      for (let i = 0; i < sources.length; i++) {
         const source = sources[i];
         if (source) {
           source._updateIfNecessary?.();
 
+          // 如果父節點 epoch 更新了，說明真的變了
           if (source._epoch > this._epoch) {
             this._state = STATE_DIRTY;
             break;
@@ -264,38 +354,46 @@ class Computation<T> implements SourceType, ObserverType, Owner {
       }
     }
 
+    // STATE_DIRTY: 必須重新計算
     if (this._state === STATE_DIRTY) {
       this.update();
     }
 
+    // 標記為最新
     this._state = STATE_CLEAN;
   }
 
   update(): void {
+    // 防止無限循環
     if (++updateCount > MAX_UPDATES) {
       throw new Error('[Zen] Potential infinite loop detected');
     }
 
+    // 運行 cleanup
     if (this._cleanup && typeof this._cleanup === 'function') {
       this._cleanup();
       this._cleanup = null;
     }
 
+    // 運行在自己的 owner context
     const prevOwner = currentOwner;
     const prevObserver = currentObserver;
     currentOwner = this;
     currentObserver = this;
 
+    // 清除舊依賴
     clearObservers(this);
 
     try {
       const newValue = this._fn();
 
+      // 更新值和 epoch
       if (!Object.is(this._value, newValue)) {
         this._oldValue = this._value;
         this._value = newValue;
         this._epoch = ++globalClock;
 
+        // 通知觀察者 (skip the observer that triggered this update)
         this._notifyObservers(STATE_DIRTY, prevObserver);
       }
 
@@ -312,34 +410,45 @@ class Computation<T> implements SourceType, ObserverType, Owner {
   }
 
   notify(state: number): void {
+    // 特殊情況：如果正在執行自己（currentObserver === this），
+    // 允許接受DIRTY通知以支持 effect 執行期間修改依賴的情況
     const isExecutingSelf = currentObserver === this;
 
     if (this._state >= state || this._state === STATE_DISPOSED) {
+      // 但如果正在執行且收到 DIRTY 或 CHECK，仍然調度
+      // 這支持 effect 執行期間修改依賴的情況
       if (isExecutingSelf && (state === STATE_DIRTY || state === STATE_CHECK) && this._effectType !== EFFECT_PURE) {
-        scheduleEffect(this);
+        scheduleEffect(this, this._effectType);
       }
       return;
     }
 
     this._state = state;
 
+    // 如果是 effect，調度執行
     if (this._effectType !== EFFECT_PURE) {
-      scheduleEffect(this);
+      scheduleEffect(this, this._effectType);
     }
 
+    // 傳播到觀察者
+    // DIRTY 傳播為 CHECK（子節點需要檢查是否真的變了）
+    // CHECK 也需要傳播（多層計算鏈需要）
     if (state === STATE_DIRTY || state === STATE_CHECK) {
       this._notifyObservers(STATE_CHECK);
     }
   }
 
-  // OPTIMIZATION: Inline notification loop
   _notifyObservers(state: number, skipObserver?: ObserverType | null): void {
     const observers = this._observers;
-    const len = observers.length;
 
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < observers.length; i++) {
       const observer = observers[i];
-      if (observer && observer !== skipObserver) {
+      if (observer) {
+        // Only skip if this observer is the one that triggered the update
+        // AND it's a direct observer of this computation
+        if (skipObserver && observer === skipObserver) {
+          continue;
+        }
         observer.notify(state);
       }
     }
@@ -349,25 +458,38 @@ class Computation<T> implements SourceType, ObserverType, Owner {
     if (this._state === STATE_DISPOSED) return;
 
     this._state = STATE_DISPOSED;
+
+    // 清除依賴
     clearObservers(this);
 
+    // 運行 cleanup
     if (this._cleanup && typeof this._cleanup === 'function') {
       this._cleanup();
       this._cleanup = null;
     }
 
+    // 運行 disposal
     disposeOwner(this);
 
-    // Remove from pending effects
-    const idx = pendingEffects.indexOf(this);
-    if (idx !== -1) {
-      pendingEffects.splice(idx, 1);
+    // 從隊列移除
+    if (this._queueSlot !== -1 && this._queue) {
+      const queue = this._queue._effects;
+      const lastIdx = queue.length - 1;
+
+      if (this._queueSlot < lastIdx) {
+        const last = queue[lastIdx]!;
+        queue[this._queueSlot] = last;
+        last._queueSlot = this._queueSlot;
+      }
+
+      queue.pop();
+      this._queueSlot = -1;
     }
   }
 }
 
 // ============================================================================
-// SIGNAL - ULTRA-OPTIMIZED
+// SIGNAL (ZenNode)
 // ============================================================================
 
 class Signal<T> implements SourceType {
@@ -381,37 +503,34 @@ class Signal<T> implements SourceType {
   }
 
   get value(): T {
+    // 追蹤依賴
     if (currentObserver) {
       addObserver(this, currentObserver);
     }
     return this._value;
   }
 
-  // OPTIMIZATION: Ultra-fast notification with minimal overhead
   set value(next: T) {
     if (Object.is(this._value, next)) return;
 
     this._value = next;
     this._epoch = ++globalClock;
 
-    // OPTIMIZATION: Direct inline notification
-    const observers = this._observers;
-    const len = observers.length;
-
-    // Fast path: no observers
-    if (len === 0) return;
-
-    // OPTIMIZATION: Batch all notifications before flushing
+    // 使用 batch 確保所有 observers 都被加入隊列後才執行
+    // 但使用特殊標誌來區分外層 batch 和 Signal.set 的內部 batch
     batchDepth++;
-    for (let i = 0; i < len; i++) {
-      observers[i]?.notify(STATE_DIRTY);
+    const observers = this._observers;
+    for (let i = 0; i < observers.length; i++) {
+      const observer = observers[i];
+      if (observer) {
+        observer.notify(STATE_DIRTY);
+      }
     }
     batchDepth--;
 
-    // Only flush if we're at top level
-    if (batchDepth === 0 && !isFlushScheduled) {
-      isFlushScheduled = true;
-      flushEffects();
+    // 只有在最外層（batchDepth === 0）時才 flush
+    if (batchDepth === 0) {
+      flush();
     }
   }
 }
@@ -442,6 +561,7 @@ export function computed<T>(fn: () => T): ComputedNode<T> {
     },
   } as any;
 
+  // 暴露內部 Computation 用於測試和調試
   node._computation = c;
 
   return node;
@@ -460,8 +580,10 @@ export function effect(fn: () => undefined | (() => void)): Unsubscribe {
     EFFECT_USER,
   );
 
+  // Effect 立即執行一次
+  // 但如果在 batch 中創建，延遲到 batch 結束
   if (batchDepth > 0) {
-    scheduleEffect(e);
+    scheduleEffect(e, EFFECT_USER);
   } else {
     e.update();
   }
@@ -476,9 +598,13 @@ export function subscribe<T>(
   let hasValue = false;
   let previousValue!: T;
 
+  // 如果在 batch 中創建 subscribe，嘗試獲取 oldValue
+  // 這樣當 batch 完成後，listener 會收到正確的新舊值
   if (batchDepth > 0) {
     const computation = (node as any)._computation;
     if (computation) {
+      // Computed node: if DIRTY, current _value is the old value
+      // If already updated, use _oldValue
       if (computation._state === STATE_DIRTY || computation._state === STATE_CHECK) {
         previousValue = computation._value;
         hasValue = true;
@@ -490,6 +616,7 @@ export function subscribe<T>(
         hasValue = true;
       }
     } else {
+      // Signal, read current value
       previousValue = untrack(() => (node as any).value);
       hasValue = true;
     }
@@ -515,9 +642,8 @@ export function batch<T>(fn: () => T): T {
     return fn();
   } finally {
     batchDepth--;
-    if (batchDepth === 0 && !isFlushScheduled && pendingEffects.length > 0) {
-      isFlushScheduled = true;
-      flushEffects();
+    if (batchDepth === 0) {
+      flush();
     }
   }
 }
@@ -541,5 +667,6 @@ export function peek<T>(node: ZenNode<T> | ComputedNode<T>): T {
 // ============================================================================
 
 export type { ZenNode as ZenCore, ComputedNode as ComputedCore };
+
 export type { ZenNode as Zen, ZenNode as ReadonlyZen, ComputedNode as ComputedZen };
 export type { Unsubscribe as AnyZen };
