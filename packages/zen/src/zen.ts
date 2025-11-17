@@ -253,13 +253,13 @@ class Computation<T> implements SourceType, ObserverType, Owner {
         newSources.push(this);
       }
 
-      // OPTIMIZATION: Only check state if necessary
+      // Only check if not CLEAN
       const state = this._state & 3;
       if (state !== STATE_CLEAN) {
         this._updateIfNecessary();
       }
     } else {
-      // OPTIMIZATION: No observer - only update if needed
+      // OPTIMIZATION: Fast path for untracked reads - check CLEAN first
       const state = this._state & 3;
       if (state !== STATE_CLEAN && state !== STATE_DISPOSED) {
         this._updateIfNecessary();
@@ -303,49 +303,29 @@ class Computation<T> implements SourceType, ObserverType, Owner {
       const sources = this._sources;
       if (sources) {
         const myTime = this._time;
-        // OPTIMIZATION: Unrolled loop for small source counts (common case)
         const len = sources.length;
 
-        if (len === 1) {
-          sources[0]._updateIfNecessary();
-          if (sources[0]._time > myTime) {
+        // OPTIMIZATION: Check all sources, early exit if any changed
+        for (let i = 0; i < len; i++) {
+          sources[i]._updateIfNecessary();
+
+          // Early exit optimization
+          if (sources[i]._time > myTime) {
             this._state = (this._state & ~3) | STATE_DIRTY;
-            this.update();
-            return;
-          }
-        } else if (len === 2) {
-          sources[0]._updateIfNecessary();
-          if (sources[0]._time > myTime) {
-            this._state = (this._state & ~3) | STATE_DIRTY;
-            this.update();
-            return;
-          }
-          sources[1]._updateIfNecessary();
-          if (sources[1]._time > myTime) {
-            this._state = (this._state & ~3) | STATE_DIRTY;
-            this.update();
-            return;
-          }
-        } else {
-          // General case for 3+ sources
-          for (let i = 0; i < len; i++) {
-            sources[i]._updateIfNecessary();
-            if (sources[i]._time > myTime) {
-              this._state = (this._state & ~3) | STATE_DIRTY;
-              this.update();
-              return;
-            }
+            break;
           }
         }
       }
 
       // After checking, if still CHECK, mark CLEAN
-      this._state = (this._state & ~3) | STATE_CLEAN;
-      return;
+      if ((this._state & 3) === STATE_CHECK) {
+        this._state = (this._state & ~3) | STATE_CLEAN;
+        return;
+      }
     }
 
     // Only update if DIRTY
-    if (state === STATE_DIRTY) {
+    if ((this._state & 3) === STATE_DIRTY) {
       this.update();
     }
   }
@@ -478,8 +458,8 @@ class Computation<T> implements SourceType, ObserverType, Owner {
       return;
     }
 
-    // OPTIMIZATION: Batch for fanout > 10 (lower threshold for better massive fanout)
-    if (len > 10) {
+    // OPTIMIZATION: Batch for large observer counts
+    if (len > 100) {
       batchDepth++;
       for (let i = 0; i < len; i++) {
         observers[i]._notify(state);
