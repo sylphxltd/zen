@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-router",
-  "version": "5.0.28",
+  "version": "5.0.29",
   "description": "Tiny URL router for zen state management.",
   "type": "module",
   "main": "./dist/index.cjs",
