@@ -1,5 +1,12 @@
 # @sylphx/zen-craft
 
+## 5.0.35
+
+### Patch Changes
+
+- Updated dependencies [719ccdf]
+  - @sylphx/zen@3.45.1
+
 ## 5.0.34
 
 ### Patch Changes
