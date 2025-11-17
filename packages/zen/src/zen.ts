@@ -51,6 +51,10 @@ const pendingEffects: Computation<any>[] = [];
 let pendingCount = 0;
 let isFlushScheduled = false;
 
+// OPTIMIZATION: Queue-based notification for massive fanouts (Solid.js pattern)
+const pendingUpdates: ObserverType[] = [];
+let pendingUpdateCount = 0;
+
 // ============================================================================
 // INTERFACES (from Solid.js)
 // ============================================================================
@@ -546,12 +550,55 @@ class Signal<T> implements SourceType {
       return;
     }
 
-    // Auto-batching for multiple observers
-    batchDepth++;
-    for (let i = 0; i < len; i++) {
-      observers[i]._notify(STATE_DIRTY);
+    // OPTIMIZATION: Queue-based notification for massive fanouts (100+)
+    // Solid.js pattern: mark as DIRTY + queue, avoid recursive _notify() calls
+    if (len >= 100) {
+      batchDepth++;
+
+      // Reset queue for this batch
+      pendingUpdateCount = 0;
+
+      // Queue all observers with inline state updates
+      for (let i = 0; i < len; i++) {
+        const obs = observers[i];
+        const currentState = obs._state & 3;
+
+        // Skip if already dirty or disposed
+        if (currentState >= STATE_DIRTY || currentState === STATE_DISPOSED) {
+          continue;
+        }
+
+        // Mark as DIRTY directly (inline, no function call)
+        obs._state = (obs._state & ~3) | STATE_DIRTY;
+
+        // Schedule effects
+        if ((obs as any)._effectType !== EFFECT_PURE) {
+          scheduleEffect(obs as Computation<any>);
+        }
+
+        // Queue for downstream propagation
+        pendingUpdates[pendingUpdateCount++] = obs;
+      }
+
+      // Process queue: propagate CHECK state to downstream observers
+      for (let i = 0; i < pendingUpdateCount; i++) {
+        const obs = pendingUpdates[i];
+        const obsObservers = obs._observers;
+
+        if (obsObservers && obsObservers.length > 0) {
+          (obs as any)._notifyObservers(STATE_CHECK);
+        }
+      }
+
+      batchDepth--;
+    } else {
+      // Standard path for moderate fanouts (<100)
+      batchDepth++;
+      for (let i = 0; i < len; i++) {
+        observers[i]._notify(STATE_DIRTY);
+      }
+      batchDepth--;
     }
-    batchDepth--;
 
     if (batchDepth === 0 && pendingCount > 0 && !isFlushScheduled) {
       isFlushScheduled = true;
