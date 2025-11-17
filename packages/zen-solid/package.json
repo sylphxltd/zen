@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen-solid",
-  "version": "5.0.31",
+  "version": "5.0.32",
   "description": "Solid.js integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",

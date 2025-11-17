@@ -1,5 +1,12 @@
 # @sylphx/zen-patterns
 
+## 12.0.32
+
+### Patch Changes
+
+- Updated dependencies [91c26fd]
+  - @sylphx/zen@3.44.1
+
 ## 12.0.31
 
 ### Patch Changes

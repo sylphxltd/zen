@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.44.0",
+  "version": "3.44.1",
   "description": "Zen state management library - extreme minimalism, extreme speed. V3.42: Chunked batching for massive fanouts (500+ observers).",
   "type": "module",
   "main": "./dist/index.cjs",
