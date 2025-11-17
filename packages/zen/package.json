@@ -1,7 +1,7 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.41.1",
-  "description": "Zen state management library - extreme minimalism, extreme speed. V3.41: Revert v3.40.0 regression + optimize untracked read path.",
+  "version": "3.42.0",
+  "description": "Zen state management library - extreme minimalism, extreme speed. V3.42: Chunked batching for massive fanouts (500+ observers).",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

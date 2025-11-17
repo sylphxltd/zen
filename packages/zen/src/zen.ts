@@ -458,6 +458,23 @@ class Computation<T> implements SourceType, ObserverType, Owner {
       return;
     }
 
+    // OPTIMIZATION: Massive fanout - chunked processing
+    if (len > 500) {
+      batchDepth++;
+
+      // Process in chunks to avoid stack overflow and improve cache locality
+      const CHUNK_SIZE = 100;
+      for (let chunk = 0; chunk < len; chunk += CHUNK_SIZE) {
+        const end = Math.min(chunk + CHUNK_SIZE, len);
+        for (let i = chunk; i < end; i++) {
+          observers[i]._notify(state);
+        }
+      }
+
+      batchDepth--;
+      return;
+    }
+
     // OPTIMIZATION: Batch for large observer counts
     if (len > 100) {
       batchDepth++;
