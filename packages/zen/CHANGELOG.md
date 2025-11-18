@@ -1,5 +1,33 @@
 # @sylphx/zen
 
+## 3.49.1 - Batch Deduplication Fix
+
+### Bug Fixes
+
+- **FIXED**: `batch()` now properly deduplicates listener calls within a batch
+  - Previously: Computed values recalculated 3x when depending on 3 updated signals in a batch
+  - Now: Computed values recalculate only 1x per batch (3x performance improvement)
+
+**Example:**
+```typescript
+const a = zen(0), b = zen(0), c = zen(0);
+const sum = computed(() => a.value + b.value + c.value, [a, b, c]);
+
+batch(() => {
+  a.value = 1;
+  b.value = 2;
+  c.value = 3;
+});
+// v3.49.0: sum recalculated 3 times ❌
+// v3.49.1: sum recalculated 1 time ✅
+```
+
+**Technical Details:**
+- Added listener deduplication in batch flush logic
+- Collects unique listeners across all pending notifications
+- Calls each listener only once with its first triggering signal's context
+- Maintains correct behavior for both computed values and effects
+
 ## 3.49.0 - Ultimate
 
 ### Major Changes

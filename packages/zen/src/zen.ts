@@ -194,17 +194,29 @@ export function batch<T>(fn: () => T): T {
     if (batchDepth === 0) {
       // Flush all pending notifications
       if (pendingNotifications.size > 0) {
-        // OPTIMIZATION: Inline notification loop
+        // OPTIMIZATION: Deduplicate listeners to avoid multiple updates
+        // Collect all unique listeners with their signal context
+        const listenerMap = new Map<any, { zen: any; oldValue: any }>();
+
         for (const [zen, oldValue] of pendingNotifications) {
           const listeners = zen._listeners;
           if (listeners) {
-            const newValue = zen._value;
             const len = listeners.length;
             for (let i = 0; i < len; i++) {
-              listeners[i](newValue, oldValue);
+              const listener = listeners[i];
+              // Only store first occurrence (first signal that changed)
+              if (!listenerMap.has(listener)) {
+                listenerMap.set(listener, { zen, oldValue });
+              }
             }
           }
         }
+
+        // Call each unique listener once with its original context
+        for (const [listener, { zen, oldValue }] of listenerMap) {
+          listener(zen._value, oldValue);
+        }
+
         pendingNotifications.clear();
       }
 
