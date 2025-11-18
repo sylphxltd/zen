@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
+    "@babel/standalone": "^7.28.5",
     "@biomejs/biome": "^1.9.4",
     "@changesets/cli": "^2.29.7",
     "@preact/signals-core": "^1.12.1",

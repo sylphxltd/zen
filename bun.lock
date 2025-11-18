@@ -11,6 +11,7 @@
       },
       "devDependencies": {
         "@babel/core": "^7.28.5",
+        "@babel/standalone": "^7.28.5",
         "@biomejs/biome": "^1.9.4",
         "@changesets/cli": "^2.29.7",
         "@preact/signals-core": "^1.12.1",
@@ -321,6 +322,8 @@
     "@babel/plugin-transform-react-jsx-source": ["@babel/plugin-transform-react-jsx-source@7.27.1", "", { "dependencies": { "@babel/helper-plugin-utils": "^7.27.1" }, "peerDependencies": { "@babel/core": "^7.0.0-0" } }, "sha512-zbwoTsBruTeKB9hSq73ha66iFeJHuaFkUbwvqElnygoNbj/jHRsSeokowZFN3CZ64IvEqcmmkVe89OPXc7ldAw=="],
 
     "@babel/runtime": ["@babel/runtime@7.28.4", "", {}, "sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ=="],
+
+    "@babel/standalone": ["@babel/standalone@7.28.5", "", {}, "sha512-1DViPYJpRU50irpGMfLBQ9B4kyfQuL6X7SS7pwTeWeZX0mNkjzPi0XFqxCjSdddZXUQy4AhnQnnesA/ZHnvAdw=="],
 
     "@babel/template": ["@babel/template@7.27.2", "", { "dependencies": { "@babel/code-frame": "^7.27.1", "@babel/parser": "^7.27.2", "@babel/types": "^7.27.1" } }, "sha512-LPDZ85aEJyYSd18/DkjNh4/y1ntkE5KwUHWTiqgRxruuZL2F1yuHligVHLvcHY2vMHXttKFpJn6LwfI7cw7ODw=="],
 

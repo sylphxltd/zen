@@ -1,36 +1,69 @@
-import { signal } from '@zen/zen';
+import { signal, Show } from '@zen/zen';
+import * as Babel from '@babel/standalone';
+import * as Zen from '@zen/zen';
+import * as ZenSignal from '@zen/signal';
 
 export function Playground() {
-  const code = signal(`import { signal, computed, render } from '@zen/zen';
+  const code = signal(`import { signal, computed } from '@zen/zen';
+import { jsx } from '@zen/zen/jsx-runtime';
 
 // Create reactive state
 const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
-// Render component
-render(() => (
+// Create component
+const app = (
   <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-    <h2>Counter: {count.value}</h2>
-    <p>Doubled: {doubled.value}</p>
+    <h2>Counter: {count}</h2>
+    <p>Doubled: {doubled}</p>
     <div style={{ display: 'flex', gap: '10px' }}>
       <button onClick={() => count.value--}>-</button>
       <button onClick={() => count.value++}>+</button>
       <button onClick={() => count.value = 0}>Reset</button>
     </div>
   </div>
-), document.getElementById('preview'));`);
+);
+
+// Render to preview
+const preview = document.getElementById('preview');
+preview.innerHTML = '';
+preview.appendChild(app);`);
+
+  const error = signal('');
 
   const runCode = () => {
     try {
+      error.value = '';
+      const previewEl = document.getElementById('preview');
+      if (!previewEl) return;
+
+      // Clear preview
+      previewEl.innerHTML = '';
+
+      // Transpile JSX to JavaScript
+      const transformed = Babel.transform(code.value, {
+        presets: [['react', { runtime: 'automatic', importSource: '@zen/zen' }]],
+        filename: 'playground.tsx',
+      });
+
+      // Create execution context with Zen API
+      const zenContext = {
+        ...Zen,
+        ...ZenSignal,
+        document,
+        console,
+      };
+
+      // Execute transpiled code
+      const fn = new Function(...Object.keys(zenContext), transformed.code);
+      fn(...Object.values(zenContext));
+    } catch (e: any) {
+      error.value = e.message || 'Unknown error';
       const previewEl = document.getElementById('preview');
       if (previewEl) {
-        previewEl.innerHTML = '';
-        // In a real playground, you'd transpile and execute the code
-        // For now, just show a message
-        previewEl.innerHTML =
-          '<div style="padding: 20px; color: #10b981;">Code would run here (requires runtime transpilation)</div>';
+        previewEl.innerHTML = `<div style="padding: 20px; color: #ef4444; font-family: monospace; white-space: pre-wrap;">${error.value}</div>`;
       }
-    } catch (_e) {}
+    }
   };
 
   return (
@@ -42,6 +75,24 @@ render(() => (
             ▶ Run Code
           </button>
         </div>
+
+        <Show when={error.value !== ''}>
+          <div
+            class="playground-error"
+            style={{
+              margin: '1rem 0',
+              padding: '1rem',
+              background: '#fee',
+              border: '1px solid #fcc',
+              borderRadius: '4px',
+              color: '#c33',
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            <strong>Error:</strong> {error}
+          </div>
+        </Show>
 
         <div class="playground-layout">
           <div class="playground-editor">
@@ -90,8 +141,8 @@ render(() => (
             <li>All Zen features are available: signal, computed, effect, components</li>
           </ul>
           <p class="note">
-            <strong>Note:</strong> This is a demo playground. A full implementation would require
-            runtime transpilation (Babel/SWC) to execute JSX code dynamically.
+            <strong>Note:</strong> This playground uses Babel Standalone for runtime JSX transpilation.
+            Your code runs directly in the browser with access to all Zen APIs.
           </p>
         </div>
       </div>
