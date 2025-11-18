@@ -118,6 +118,32 @@ const zenProto = {
       notifyListeners(this, newValue, oldValue);
       batchDepth--;
 
+      // Flush computed notifications that were queued during micro-batch
+      if (pendingNotifications.size > 0) {
+        // Deduplicate listeners to avoid multiple updates
+        const listenerMap = new Map<any, { zen: any; oldValue: any }>();
+
+        for (const [zen, oldVal] of pendingNotifications) {
+          const listeners = zen._listeners;
+          if (listeners) {
+            const len = listeners.length;
+            for (let i = 0; i < len; i++) {
+              const listener = listeners[i];
+              if (!listenerMap.has(listener)) {
+                listenerMap.set(listener, { zen, oldValue: oldVal });
+              }
+            }
+          }
+        }
+
+        // Call each unique listener once
+        for (const [listener, { zen, oldValue: oldVal }] of listenerMap) {
+          listener(zen._value, oldVal);
+        }
+
+        pendingNotifications.clear();
+      }
+
       // Flush any effects that were queued during micro-batch
       if (pendingEffects.length > 0) {
         const len = pendingEffects.length;

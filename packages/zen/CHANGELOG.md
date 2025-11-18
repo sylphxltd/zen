@@ -1,5 +1,38 @@
 # @sylphx/zen
 
+## 3.49.2 - Critical: Effect-Computed Dependency Fix
+
+### Bug Fixes
+
+- **CRITICAL FIX**: Effects depending on computed values now properly re-run when computed changes
+  - Issue: Micro-batch wasn't flushing `pendingNotifications` for computed values
+  - Result: Effects subscribed to computeds would never update after initial run
+  - Fix: Added pendingNotifications flush to micro-batch (same as explicit batch)
+
+**Example of bug:**
+```typescript
+const base = zen(0);
+const doubled = computed(() => base.value * 2, [base]);
+
+effect(() => {
+  console.log(doubled.value); // Would never update!
+}, [doubled]);
+
+base.value = 5; // Computed recalculated, but effect didn't re-run ❌
+```
+
+**After fix:**
+```typescript
+base.value = 5; // Computed recalculates AND effect re-runs ✅
+```
+
+**Test Results:**
+- ✅ Effect → Computed (no batch): PASS
+- ✅ Effect → Computed (with batch): PASS
+- ✅ Effect → Computed (multiple changes): PASS
+
+**Impact:** This was a breaking bug introduced in v3.49.0 that made effects completely non-functional when depending on computed values.
+
 ## 3.49.1 - Batch Deduplication Fix
 
 ### Bug Fixes

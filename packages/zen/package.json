@@ -1,7 +1,7 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.49.1",
-  "description": "Zen state management library - extreme minimalism, extreme speed. V3.49.1 Ultimate: Combining best techniques from 56 versions - 42x faster on reactive patterns, improved batch() deduplication, zero timestamp overhead.",
+  "version": "3.49.2",
+  "description": "Zen state management library - extreme minimalism, extreme speed. V3.49.2: Fixed critical effect-computed dependency bug, proper micro-batch notification flushing.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
