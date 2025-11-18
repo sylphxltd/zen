@@ -32,7 +32,16 @@
     "format": "biome format --write .",
     "demo": "cd demo-app && bun dev"
   },
-  "keywords": ["framework", "reactive", "fine-grained", "no-vdom", "jsx", "performance", "ui", "signals"],
+  "keywords": [
+    "framework",
+    "reactive",
+    "fine-grained",
+    "no-vdom",
+    "jsx",
+    "performance",
+    "ui",
+    "signals"
+  ],
   "author": "ZenJS Team",
   "license": "MIT",
   "devDependencies": {

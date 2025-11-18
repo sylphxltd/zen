@@ -5,6 +5,9 @@
  * Powered by @zen/signal reactive core.
  */
 
+// Import JSX types (global augmentation)
+import './jsx-types.js';
+
 // Re-export core primitives from @zen/signal
 export {
   signal,
