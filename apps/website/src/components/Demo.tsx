@@ -31,8 +31,8 @@ export function Demo() {
             <h3 class="demo-title">Counter</h3>
             <div class="demo-content">
               <div class="demo-display">
-                <div class="demo-value">{count.value}</div>
-                <div class="demo-computed">Doubled: {doubled.value}</div>
+                <div class="demo-value">{count}</div>
+                <div class="demo-computed">Doubled: {doubled}</div>
               </div>
               <div class="demo-actions">
                 <button type="button" class="btn" onClick={() => count.value--}>
