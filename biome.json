@@ -18,7 +18,14 @@
   },
   "overrides": [
     {
-      "include": ["packages/zen/**", "packages/zen-signal/**", "packages/zen-router/**", "packages/zen-router-preact/**", "packages/zen-router-react/**", "packages/zen-signal-patterns/**"],
+      "include": [
+        "packages/zen/**",
+        "packages/zen-signal/**",
+        "packages/zen-router/**",
+        "packages/zen-router-preact/**",
+        "packages/zen-router-react/**",
+        "packages/zen-signal-patterns/**"
+      ],
       "linter": {
         "rules": {
           "suspicious": {
