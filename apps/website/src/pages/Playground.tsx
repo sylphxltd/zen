@@ -4,6 +4,30 @@ import { Show, signal } from '@zen/zen';
 import * as Zen from '@zen/zen';
 import { Fragment, jsx } from '@zen/zen/jsx-runtime';
 
+// Simple syntax highlighter
+function highlightCode(code: string): string {
+  return code
+    // Keywords
+    .replace(
+      /\b(const|let|var|function|return|if|else|for|while|import|from|export|default|class|extends|async|await|try|catch|finally|throw|new)\b/g,
+      '<span style="color: #c678dd">$1</span>',
+    )
+    // Strings
+    .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '<span style="color: #98c379">$&</span>')
+    // Comments
+    .replace(/\/\/.*/g, '<span style="color: #5c6370; font-style: italic">$&</span>')
+    .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #5c6370; font-style: italic">$&</span>')
+    // Numbers
+    .replace(/\b(\d+)\b/g, '<span style="color: #d19a66">$1</span>')
+    // Functions
+    .replace(/\b(signal|computed|effect|render)\b/g, '<span style="color: #61afef">$1</span>')
+    // JSX tags
+    .replace(/&lt;(\/?[\w-]+)/g, '&lt;<span style="color: #e06c75">$1</span>')
+    // HTML escape
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 export function Playground() {
   const code = signal(`console.log('Code is running!');
 
@@ -41,8 +65,12 @@ if (preview) {
 }`);
 
   const error = signal('');
+  const executeTime = signal(0);
+  const renderTime = signal(0);
+  const opsPerSecond = signal(0);
 
   const runCode = () => {
+    const startTime = performance.now();
     try {
       error.value = '';
       const previewEl = document.getElementById('preview');
@@ -91,8 +119,25 @@ if (preview) {
       };
 
       // Execute transpiled code
+      const execStart = performance.now();
       const fn = new Function(...Object.keys(zenContext), transformed.code);
       fn(...Object.values(zenContext));
+      const execEnd = performance.now();
+
+      executeTime.value = execEnd - execStart;
+      renderTime.value = execEnd - startTime;
+
+      // Calculate rough ops/sec (simple benchmark)
+      const iterations = 1000;
+      const benchStart = performance.now();
+      const testSignal = signal(0);
+      for (let i = 0; i < iterations; i++) {
+        testSignal.value = i;
+      }
+      const benchEnd = performance.now();
+      const timePerOp = (benchEnd - benchStart) / iterations;
+      opsPerSecond.value = Math.round(1000 / timePerOp);
+
     } catch (e: unknown) {
       error.value = (e as Error).message || 'Unknown error';
       const previewEl = document.getElementById('preview');
@@ -106,15 +151,37 @@ if (preview) {
     <div class="min-h-screen bg-bg py-8">
       <div class="max-w-screen-2xl mx-auto px-6">
         <div class="flex items-center justify-between mb-8">
-          <h1 class="text-4xl font-bold text-text">Interactive Playground</h1>
-          <button
-            type="button"
-            onClick={runCode}
-            class="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-zen shadow-zen transition-colors flex items-center gap-2"
-          >
-            <span>▶</span>
-            Run Code
-          </button>
+          <div>
+            <h1 class="text-4xl font-bold text-text mb-2">Interactive Playground</h1>
+            <p class="text-text-muted">Edit code and see instant results</p>
+          </div>
+          <div class="flex items-center gap-4">
+            {/* Performance Metrics */}
+            <Show when={executeTime.value > 0}>
+              <div class="flex gap-4 px-4 py-2 bg-bg-light border border-border rounded-zen">
+                <div class="text-center">
+                  <div class="text-sm text-text-muted">Execute</div>
+                  <div class="text-lg font-bold text-success">{executeTime.value.toFixed(2)}ms</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-sm text-text-muted">Total</div>
+                  <div class="text-lg font-bold text-primary">{renderTime.value.toFixed(2)}ms</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-sm text-text-muted">Ops/sec</div>
+                  <div class="text-lg font-bold text-secondary">{opsPerSecond.value.toLocaleString()}</div>
+                </div>
+              </div>
+            </Show>
+            <button
+              type="button"
+              onClick={runCode}
+              class="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-zen shadow-zen transition-colors flex items-center gap-2"
+            >
+              <span>▶</span>
+              Run Code
+            </button>
+          </div>
         </div>
 
         <Show when={error.value !== ''}>
@@ -134,14 +201,21 @@ if (preview) {
                 <option>Async Data</option>
               </select>
             </div>
-            <textarea
-              class="flex-1 min-h-[500px] p-4 bg-bg-lighter border border-t-0 border-border rounded-b-zen text-text font-mono text-sm resize-none focus:outline-none focus:border-primary"
-              value={code.value}
-              onInput={(e) => {
-                code.value = (e.target as HTMLTextAreaElement).value;
-              }}
-              spellcheck={false}
-            />
+            <div class="flex-1 min-h-[500px] relative">
+              <textarea
+                class="absolute inset-0 p-4 bg-transparent border-0 text-transparent caret-text font-mono text-sm resize-none focus:outline-none z-10"
+                value={code.value}
+                onInput={(e) => {
+                  code.value = (e.target as HTMLTextAreaElement).value;
+                }}
+                spellcheck={false}
+                style={{ caretColor: '#6366f1' }}
+              />
+              <pre
+                class="absolute inset-0 p-4 bg-bg-lighter border border-t-0 border-border rounded-b-zen font-mono text-sm overflow-auto pointer-events-none"
+                innerHTML={highlightCode(code.value)}
+              />
+            </div>
           </div>
 
           <div class="flex flex-col">
@@ -159,7 +233,7 @@ if (preview) {
             </div>
             <div
               id="preview"
-              class="flex-1 min-h-[500px] p-4 bg-white border border-t-0 border-border rounded-b-zen overflow-auto"
+              class="flex-1 min-h-[500px] p-4 bg-bg-lighter border border-t-0 border-border rounded-b-zen overflow-auto"
             />
           </div>
         </div>
