@@ -4,10 +4,7 @@ import { Show, signal } from '@zen/zen';
 import * as Zen from '@zen/zen';
 
 export function Playground() {
-  const code = signal(`import { signal, computed } from '@zen/zen';
-import { jsx } from '@zen/zen/jsx-runtime';
-
-// Create reactive state
+  const code = signal(`// Create reactive state
 const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
@@ -40,8 +37,11 @@ preview.appendChild(app);`);
       // Clear preview
       previewEl.innerHTML = '';
 
+      // Remove import statements (Zen API is provided via context)
+      const codeWithoutImports = code.value.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '');
+
       // Transpile JSX to JavaScript
-      const transformed = Babel.transform(code.value, {
+      const transformed = Babel.transform(codeWithoutImports, {
         presets: [['react', { runtime: 'automatic', importSource: '@zen/zen' }]],
         filename: 'playground.tsx',
       });
