@@ -170,6 +170,186 @@ function track(source: SourceType) {
 }
 
 /**
+ * OPTIMIZATION: Standalone update check function for better V8 inlining
+ */
+function updateIfNecessary(computation: Computation<any>): void {
+  // OPTIMIZATION: Fast exit for CLEAN or DISPOSED
+  if (computation._state === STATE_CLEAN || computation._state === STATE_DISPOSED) return;
+
+  if (computation._state === STATE_CHECK) {
+    const sources = computation._sources;
+    if (sources) {
+      const myTime = computation._time;
+      const len = sources.length;
+
+      // OPTIMIZATION: Check all sources, early exit if any changed
+      for (let i = 0; i < len; i++) {
+        sources[i]._updateIfNecessary();
+
+        // Early exit optimization
+        if (sources[i]._time > myTime) {
+          computation._state = STATE_DIRTY;
+          break;
+        }
+      }
+    }
+
+    // After checking, if still CHECK, mark CLEAN
+    if (computation._state === STATE_CHECK) {
+      computation._state = STATE_CLEAN;
+      return;
+    }
+  }
+
+  // Only update if DIRTY
+  if (computation._state === STATE_DIRTY) {
+    runUpdate(computation);
+  }
+}
+
+/**
+ * OPTIMIZATION: Standalone update function for better V8 inlining
+ */
+function runUpdate(computation: Computation<any>): void {
+  // Clear error at START (allow recovery)
+  computation._error = undefined;
+
+  if (computation._cleanup && typeof computation._cleanup === 'function') {
+    computation._cleanup();
+    computation._cleanup = null;
+  }
+
+  // Save previous context
+  const prevOwner = currentOwner;
+  const prevObserver = currentObserver;
+
+  // Set new context
+  currentOwner = computation;
+  currentObserver = computation;
+  computation._trackingSources = null;
+  computation._trackingIndex = 0;
+
+  try {
+    const newValue = computation._fn();
+
+    const valueChanged = !Object.is(computation._value, newValue);
+
+    if (valueChanged) {
+      computation._oldValue = computation._value;
+      computation._value = newValue;
+    }
+
+    // SOLID.JS PATTERN: Update sources incrementally
+    if (computation._trackingSources) {
+      // Remove old observers from tail
+      if (computation._sources) {
+        removeSourceObservers(computation, computation._trackingIndex);
+      }
+
+      // Update sources array
+      if (computation._sources && computation._trackingIndex > 0) {
+        computation._sources.length = computation._trackingIndex + computation._trackingSources.length;
+        const newLen = computation._trackingSources.length;
+        for (let i = 0; i < newLen; i++) {
+          computation._sources[computation._trackingIndex + i] = computation._trackingSources[i];
+        }
+      } else {
+        computation._sources = computation._trackingSources;
+      }
+
+      // Add this observer to new sources
+      const sourcesLen = computation._sources.length;
+      for (let i = computation._trackingIndex; i < sourcesLen; i++) {
+        const source = computation._sources[i];
+        if (!source._observers) {
+          source._observers = [computation];
+        } else {
+          source._observers.push(computation);
+        }
+      }
+    } else if (computation._sources && computation._trackingIndex < computation._sources.length) {
+      // Sources array shrunk
+      removeSourceObservers(computation, computation._trackingIndex);
+      computation._sources.length = computation._trackingIndex;
+    }
+
+    // Update time and notify AFTER sources are updated (Solid.js pattern)
+    computation._time = clock + 1;
+    computation._state = STATE_CLEAN;
+
+    // Only notify if value actually changed
+    if (valueChanged) {
+      notifyObservers(computation, STATE_DIRTY);
+    }
+  } catch (err) {
+    computation._error = err;
+    computation._state = STATE_CLEAN;
+    throw err;
+  } finally {
+    // Restore context
+    currentObserver = prevObserver;
+    currentOwner = prevOwner;
+  }
+}
+
+/**
+ * OPTIMIZATION: Standalone notify function for better V8 inlining
+ */
+function notifyObservers(computation: Computation<any>, state: number): void {
+  const observers = computation._observers;
+  if (!observers) return;
+
+  const len = observers.length;
+
+  // OPTIMIZATION: Single observer fast path
+  if (len === 1) {
+    notifyComputation(observers[0] as Computation<any>, state);
+    return;
+  }
+
+  // OPTIMIZATION: Batch for large observer counts
+  if (len > 100) {
+    batchDepth++;
+    for (let i = 0; i < len; i++) {
+      notifyComputation(observers[i] as Computation<any>, state);
+    }
+    batchDepth--;
+  } else {
+    for (let i = 0; i < len; i++) {
+      notifyComputation(observers[i] as Computation<any>, state);
+    }
+  }
+}
+
+/**
+ * OPTIMIZATION: Standalone notify function for better V8 inlining
+ */
+function notifyComputation(computation: Computation<any>, state: number): void {
+  // OPTIMIZATION: Fast path - already at or past this state
+  if (computation._state >= state || computation._state === STATE_DISPOSED) {
+    // Special handling for self-executing effects
+    if (currentObserver === computation && state >= STATE_CHECK && computation._effectType !== EFFECT_PURE) {
+      computation._pending = true;
+      pendingEffects[pendingCount++] = computation;
+    }
+    return;
+  }
+
+  // Update state
+  computation._state = state;
+
+  // Schedule user effects
+  if (computation._effectType !== EFFECT_PURE) {
+    scheduleEffect(computation);
+  }
+
+  // Propagate CHECK to observers
+  if (state >= STATE_CHECK) {
+    notifyObservers(computation, STATE_CHECK);
+  }
+}
+
+/**
  * Remove observer from sources starting at fromIndex.
  * This is called when sources array shrinks.
  */
@@ -261,12 +441,12 @@ class Computation<T> implements SourceType, ObserverType, Owner {
 
       // Only check if not CLEAN
       if (this._state !== STATE_CLEAN) {
-        this._updateIfNecessary();
+        updateIfNecessary(this);
       }
     } else {
       // OPTIMIZATION: Fast path for untracked reads - check CLEAN first
       if (this._state !== STATE_CLEAN && this._state !== STATE_DISPOSED) {
-        this._updateIfNecessary();
+        updateIfNecessary(this);
       }
     }
 
@@ -284,188 +464,24 @@ class Computation<T> implements SourceType, ObserverType, Owner {
     this._time = ++clock;
     this._state = STATE_CLEAN;
 
-    this._notifyObservers(STATE_DIRTY);
+    notifyObservers(this, STATE_DIRTY);
   }
 
-  /**
-   * SOLID.JS CORE: This is the critical algorithm
-   *
-   * STATE_CHECK means a grandparent *might* have changed.
-   * We recursively call _updateIfNecessary() on ALL sources first,
-   * then check if ANY of them changed (by comparing _time).
-   *
-   * This is MORE CORRECT than our old approach which would
-   * break the loop early.
-   */
+  // OPTIMIZATION: Delegate to standalone functions for better V8 inlining
   _updateIfNecessary(): void {
-    // OPTIMIZATION: Fast exit for CLEAN or DISPOSED
-    if (this._state === STATE_CLEAN || this._state === STATE_DISPOSED) return;
-
-    if (this._state === STATE_CHECK) {
-      const sources = this._sources;
-      if (sources) {
-        const myTime = this._time;
-        const len = sources.length;
-
-        // OPTIMIZATION: Check all sources, early exit if any changed
-        for (let i = 0; i < len; i++) {
-          sources[i]._updateIfNecessary();
-
-          // Early exit optimization
-          if (sources[i]._time > myTime) {
-            this._state = STATE_DIRTY;
-            break;
-          }
-        }
-      }
-
-      // After checking, if still CHECK, mark CLEAN
-      if (this._state === STATE_CHECK) {
-        this._state = STATE_CLEAN;
-        return;
-      }
-    }
-
-    // Only update if DIRTY
-    if (this._state === STATE_DIRTY) {
-      this.update();
-    }
+    updateIfNecessary(this);
   }
 
-  /**
-   * SOLID.JS PATTERN: Re-run computation using proper context management
-   */
   update(): void {
-    // Clear error at START (allow recovery)
-    this._error = undefined;
-
-    if (this._cleanup && typeof this._cleanup === 'function') {
-      this._cleanup();
-      this._cleanup = null;
-    }
-
-    // Save previous context
-    const prevOwner = currentOwner;
-    const prevObserver = currentObserver;
-
-    // Set new context
-    currentOwner = this;
-    currentObserver = this;
-    this._trackingSources = null;
-    this._trackingIndex = 0;
-
-    try {
-      const newValue = this._fn();
-
-      const valueChanged = !Object.is(this._value, newValue);
-
-      if (valueChanged) {
-        this._oldValue = this._value;
-        this._value = newValue;
-      }
-
-      // SOLID.JS PATTERN: Update sources incrementally
-      if (this._trackingSources) {
-        // Remove old observers from tail
-        if (this._sources) {
-          removeSourceObservers(this, this._trackingIndex);
-        }
-
-        // Update sources array
-        if (this._sources && this._trackingIndex > 0) {
-          this._sources.length = this._trackingIndex + this._trackingSources.length;
-          const newLen = this._trackingSources.length;
-          for (let i = 0; i < newLen; i++) {
-            this._sources[this._trackingIndex + i] = this._trackingSources[i];
-          }
-        } else {
-          this._sources = this._trackingSources;
-        }
-
-        // Add this observer to new sources
-        const sourcesLen = this._sources.length;
-        for (let i = this._trackingIndex; i < sourcesLen; i++) {
-          const source = this._sources[i];
-          if (!source._observers) {
-            source._observers = [this];
-          } else {
-            source._observers.push(this);
-          }
-        }
-      } else if (this._sources && this._trackingIndex < this._sources.length) {
-        // Sources array shrunk
-        removeSourceObservers(this, this._trackingIndex);
-        this._sources.length = this._trackingIndex;
-      }
-
-      // Update time and notify AFTER sources are updated (Solid.js pattern)
-      this._time = clock + 1;
-      this._state = STATE_CLEAN;
-
-      // Only notify if value actually changed
-      if (valueChanged) {
-        this._notifyObservers(STATE_DIRTY);
-      }
-    } catch (err) {
-      this._error = err;
-      this._state = STATE_CLEAN;
-      throw err;
-    } finally {
-      // Restore context
-      currentObserver = prevObserver;
-      currentOwner = prevOwner;
-    }
+    runUpdate(this);
   }
 
   _notify(state: number): void {
-    // OPTIMIZATION: Fast path - already at or past this state
-    if (this._state >= state || this._state === STATE_DISPOSED) {
-      // Special handling for self-executing effects
-      if (currentObserver === this && state >= STATE_CHECK && this._effectType !== EFFECT_PURE) {
-        this._pending = true;
-        pendingEffects[pendingCount++] = this;
-      }
-      return;
-    }
-
-    // Update state
-    this._state = state;
-
-    // Schedule user effects
-    if (this._effectType !== EFFECT_PURE) {
-      scheduleEffect(this);
-    }
-
-    // Propagate CHECK to observers
-    if (state >= STATE_CHECK) {
-      this._notifyObservers(STATE_CHECK);
-    }
+    notifyComputation(this, state);
   }
 
   _notifyObservers(state: number): void {
-    const observers = this._observers;
-    if (!observers) return;
-
-    const len = observers.length;
-
-    // OPTIMIZATION: Single observer fast path
-    if (len === 1) {
-      observers[0]._notify(state);
-      return;
-    }
-
-    // OPTIMIZATION: Batch for large observer counts
-    if (len > 100) {
-      batchDepth++;
-      for (let i = 0; i < len; i++) {
-        observers[i]._notify(state);
-      }
-      batchDepth--;
-    } else {
-      for (let i = 0; i < len; i++) {
-        observers[i]._notify(state);
-      }
-    }
+    notifyObservers(this, state);
   }
 
   dispose(): void {
@@ -577,7 +593,7 @@ class Signal<T> implements SourceType {
         const obsObservers = obs._observers;
 
         if (obsObservers && obsObservers.length > 0) {
-          (obs as any)._notifyObservers(STATE_CHECK);
+          notifyObservers(obs as Computation<any>, STATE_CHECK);
         }
       }
 
