@@ -54,10 +54,11 @@ function notifyListeners<T>(zen: ZenCore<T>, newValue: T, oldValue: T): void {
   const listeners = zen._listeners;
   if (!listeners) return;
 
-  // OPTIMIZATION: Cache length and inline loop
-  const len = listeners.length;
+  // Copy listeners array to avoid issues when listeners modify the array during iteration
+  const listenersCopy = listeners.slice();
+  const len = listenersCopy.length;
   for (let i = 0; i < len; i++) {
-    listeners[i](newValue, oldValue);
+    listenersCopy[i](newValue, oldValue);
   }
 }
 
@@ -169,7 +170,10 @@ export type Signal<T> = ReturnType<typeof signal<T>>;
 // SUBSCRIBE
 // ============================================================================
 
-export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<A>>): Unsubscribe {
+export function subscribe<A extends AnyZen>(
+  zen: A,
+  listener: Listener<ZenValue<A>>,
+): Unsubscribe {
   const zenData = zen._kind === 'zen' ? zen : zen;
 
   // Add listener
@@ -281,10 +285,7 @@ function updateComputed<T>(c: ComputedCore<T>): void {
     }
 
     // OPTIMIZATION: Inline Object.is check
-    if (
-      c._value !== null &&
-      (newValue === c._value || (newValue !== newValue && c._value !== c._value))
-    ) {
+    if (c._value !== null && (newValue === c._value || (newValue !== newValue && c._value !== c._value))) {
       return;
     }
 
