@@ -1,4 +1,4 @@
-import { type Zen, subscribe } from '@zen/zen';
+import { type Zen, subscribe } from '@zen/signal';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 /**
@@ -11,7 +11,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
  *
  * @example
  * ```tsx
- * import { zen } from '@zen/zen';
+ * import { zen } from '@zen/signal';
  * import { useStore } from '@zen/zen-react';
  *
  * const count = zen(0);

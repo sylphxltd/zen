@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { subscribe } from '@zen/zen';
+import { subscribe } from '@zen/signal';
 import { map, listenKeys, setKey } from './map';
 
 describe('map', () => {

@@ -1,5 +1,5 @@
 import { map } from './src/map.js';
-import { subscribe } from '@zen/zen';
+import { subscribe } from '@zen/signal';
 
 const form = map({ name: '', email: '' });
 

@@ -1,5 +1,5 @@
-import { effect, zen } from '@zen/zen';
-import type { Zen } from '@zen/zen';
+import { effect, zen } from '@zen/signal';
+import type { Zen } from '@zen/signal';
 
 export interface AsyncState<T> {
   loading: boolean;

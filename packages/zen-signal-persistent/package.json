@@ -21,7 +21,7 @@
     "validate": "bun run check-format && bun run lint && bun run typecheck && bun run test"
   },
   "dependencies": {
-    "@zen/zen": "workspace:*",
+    "@zen/signal": "workspace:*",
     "@zen/zen-patterns": "workspace:*"
   },
   "devDependencies": {

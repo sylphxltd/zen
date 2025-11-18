@@ -1,4 +1,4 @@
-import { subscribe } from '@zen/zen';
+import { subscribe } from '@zen/signal';
 import { $router, type RouterState } from '@zen/zen-router';
 import { useEffect, useState } from 'react';
 

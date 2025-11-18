@@ -1,4 +1,4 @@
-import type { Unsubscribe } from '@zen/zen'; // Import from core
+import type { Unsubscribe } from '@zen/signal'; // Import from core
 import { vi } from 'vitest';
 import type { RouterState } from '../src/index'; // Import real types from actual source
 

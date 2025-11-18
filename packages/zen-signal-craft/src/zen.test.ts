@@ -1,4 +1,4 @@
-import { zen as atom, subscribe } from '@zen/zen';
+import { zen as atom, subscribe } from '@zen/signal';
 import { describe, expect, it, vi } from 'vitest';
 import type { Patch } from './types';
 import { craftZen } from './zen';

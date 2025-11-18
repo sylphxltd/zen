@@ -1,4 +1,4 @@
-import type { Unsubscribe } from '@zen/zen';
+import type { Unsubscribe } from '@zen/signal';
 
 /** Router interface with generic state type */
 export type Router<S> = {

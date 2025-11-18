@@ -19,7 +19,7 @@
     "build": "bunup --format esm,cjs --dts --target node --minify"
   },
   "dependencies": {
-    "@zen/zen": "workspace:*"
+    "@zen/signal": "workspace:*"
   },
   "peerDependencies": {
     "solid-js": "^1.0.0"

@@ -1,4 +1,4 @@
-import { type Zen, subscribe } from '@zen/zen';
+import { type Zen, subscribe } from '@zen/signal';
 import { createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 
 /**
@@ -11,7 +11,7 @@ import { createMemo, createSignal, onCleanup, onMount } from 'solid-js';
  *
  * @example
  * ```tsx
- * import { zen } from '@zen/zen';
+ * import { zen } from '@zen/signal';
  * import { useStore } from '@zen/zen-solid';
  *
  * const count = zen(0);
@@ -52,7 +52,7 @@ export function useStore<Value>(store: Zen<Value>): () => Value {
  *
  * @example
  * ```tsx
- * import { zen } from '@zen/zen';
+ * import { zen } from '@zen/signal';
  * import { fromStore } from '@zen/zen-solid';
  *
  * const count = zen(0);

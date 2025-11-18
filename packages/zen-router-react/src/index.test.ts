@@ -1,5 +1,5 @@
 // Import subscribe normally - they will be mocked by vi.mock below
-import { type MapZen, type Unsubscribe, map, subscribe } from '@zen/zen';
+import { type MapZen, type Unsubscribe, map, subscribe } from '@zen/signal';
 import { $router, type RouterState } from '@zen/zen-router'; // Import real $router
 import { setKey } from '@zen/zen-patterns';
 import { act, renderHook } from '@testing-library/react';
@@ -7,8 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRouter } from './index'; // Import the hook
 
 // Mock the core subscribe function
-vi.mock('@zen/zen', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@zen/zen')>();
+vi.mock('@zen/signal', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@zen/signal')>();
   return {
     ...actual,
     subscribe: vi.fn(),

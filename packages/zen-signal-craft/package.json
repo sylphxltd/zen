@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@sylphx/craft": "^1.0.0",
-    "@zen/zen": "workspace:*"
+    "@zen/signal": "workspace:*"
   },
   "devDependencies": {
     "bunup": "^0.15.13",

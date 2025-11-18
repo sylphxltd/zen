@@ -31,7 +31,7 @@
     "clean": "bun rimraf dist .turbo"
   },
   "dependencies": {
-    "@zen/zen": "workspace:*",
+    "@zen/signal": "workspace:*",
     "@zen/zen-router": "workspace:*"
   },
   "peerDependencies": {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { zen } from '@zen/zen';
+import { zen } from '@zen/signal';
 import { store } from './store';
 
 describe('store', () => {

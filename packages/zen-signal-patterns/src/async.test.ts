@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { zen } from '@zen/zen';
+import { zen } from '@zen/signal';
 import { computedAsync } from './async';
 
 describe('computedAsync', () => {

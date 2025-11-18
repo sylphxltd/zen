@@ -1,4 +1,4 @@
-import { type Zen, subscribe } from '@zen/zen';
+import { type Zen, subscribe } from '@zen/signal';
 import { useEffect, useState } from 'preact/hooks';
 
 /**
@@ -11,7 +11,7 @@ import { useEffect, useState } from 'preact/hooks';
  *
  * @example
  * ```tsx
- * import { zen } from '@zen/zen';
+ * import { zen } from '@zen/signal';
  * import { useStore } from '@zen/zen-preact';
  *
  * const count = zen(0);

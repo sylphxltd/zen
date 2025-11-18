@@ -1,23 +1,31 @@
 /**
- * Zen - Ultra-Performance Reactivity
- * Auto-tracking signals, computed, and effects
+ * ZenJS - Ultra-fast, ultra-lightweight reactive framework
+ *
+ * Beyond SolidJS in performance and simplicity.
+ * Powered by @zen/signal reactive core.
  */
 
-// Core Types
-export type { Listener, Unsubscribe, AnyZen } from './zen';
-
-// Core Primitives
+// Re-export core primitives from @zen/signal
 export {
   signal,
   computed,
-  batch,
-  subscribe,
   effect,
+  batch,
   untrack,
   peek,
-} from './zen';
+  subscribe,
+} from '@zen/signal';
 
-export type { Signal, ReadonlyZen, ComputedZen } from './zen';
+// Components
+export { For } from './components/For.js';
+export { Show } from './components/Show.js';
+export { Switch, Match } from './components/Switch.js';
+export { Portal } from './components/Portal.js';
+export { ErrorBoundary } from './components/ErrorBoundary.js';
+export { Router, Link, navigate, currentRoute } from './components/Router.js';
 
-// Legacy compatibility exports
-export type { ZenValue } from './types';
+// JSX
+export { render, Fragment } from './jsx-runtime.js';
+
+// Types
+export type { Signal, ComputedZen as Computed } from '@zen/signal';

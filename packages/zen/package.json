@@ -1,60 +1,49 @@
 {
   "name": "@zen/zen",
   "version": "0.0.0",
-  "description": "Zen state management library - extreme minimalism, extreme speed. V3.49.2: Fixed critical effect-computed dependency bug, proper micro-batch notification flushing.",
+  "description": "Ultra-fast, ultra-lightweight reactive framework. Beyond SolidJS.",
   "type": "module",
-  "main": "./dist/index.cjs",
+  "workspaces": ["demo-app"],
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "import": "./dist/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "import": "./dist/jsx-runtime.js"
     }
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
-    "size": "bun size-limit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "echo 'Lint script not implemented yet'"
+    "dev": "bun run --watch src/index.ts",
+    "build": "tsup",
+    "test": "bun test",
+    "bench": "bun test --preload ./src/**/*.bench.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "demo": "cd demo-app && bun dev"
   },
-  "size-limit": [
-    {
-      "name": "zen v3 (full)",
-      "path": "dist/index.js",
-      "import": "{ zen, computed, effect, subscribe, batch }",
-      "limit": "1.75 kB"
-    }
-  ],
-  "keywords": [
-    "state",
-    "store",
-    "state management",
-    "atom",
-    "reactive",
-    "minimal",
-    "tiny",
-    "nanostores"
-  ],
-  "author": "Sylphx <hi@sylphx.com>",
+  "keywords": ["reactive", "signals", "fine-grained", "performance", "framework", "ui"],
+  "author": "ZenJS Team",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/zen.git"
-  },
-  "homepage": "https://github.com/SylphxAI/zen#readme",
-  "bugs": {
-    "url": "https://github.com/SylphxAI/zen/issues"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
-    "bunup": "^0.15.13",
-    "solid-js": "^1.9.10",
-    "typescript": "^5.8.3"
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "^1.1.15",
+    "solid-js": "^1.9.3",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^7.2.2"
+  },
+  "dependencies": {
+    "@zen/signal": "workspace:*"
   }
 }

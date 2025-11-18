@@ -34,7 +34,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@zen/zen": "workspace:*"
+    "@zen/signal": "workspace:*"
   },
   "devDependencies": {
     "bunup": "^0.15.13",

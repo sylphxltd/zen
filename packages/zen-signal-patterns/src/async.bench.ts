@@ -1,4 +1,4 @@
-import { zen } from '@zen/zen';
+import { zen } from '@zen/signal';
 import { bench, describe } from 'vitest';
 import { computedAsync } from './async';
 

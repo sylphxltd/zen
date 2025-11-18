@@ -1,5 +1,5 @@
-import { computed, subscribe, zen } from '@zen/zen';
-import type { ComputedZen, Unsubscribe, Zen } from '@zen/zen';
+import { computed, subscribe, zen } from '@zen/signal';
+import type { ComputedZen, Unsubscribe, Zen } from '@zen/signal';
 
 export interface MapStore<T extends object> {
   readonly value: T;

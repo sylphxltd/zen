@@ -12,7 +12,7 @@ import * as matcher from './matcher'; // To mock matchRoutes
 import * as routes from './routes'; // To mock getRoutes
 import * as utils from './utils'; // To mock parseQuery
 
-import * as core from '@zen/zen'; // Import actual core functions
+import * as core from '@zen/signal'; // Import actual core functions
 
 // Define mockRouterStore *before* vi.mock uses it
 // Note: map() moved to @zen/zen-patterns

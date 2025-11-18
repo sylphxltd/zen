@@ -1,0 +1,15 @@
+{
+  "name": "zenjs-demo-app",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.7",
+    "typescript": "^5.7.2"
+  }
+}

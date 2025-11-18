@@ -1,4 +1,4 @@
-import { type Zen, zen } from '@zen/zen';
+import { type Zen, zen } from '@zen/signal';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { defineComponent, nextTick } from 'vue';

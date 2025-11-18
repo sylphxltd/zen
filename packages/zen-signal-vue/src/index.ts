@@ -1,4 +1,4 @@
-import { type Zen, subscribe } from '@zen/zen';
+import { type Zen, subscribe } from '@zen/signal';
 import { type Ref, onMounted, onUnmounted, ref } from 'vue';
 
 /**

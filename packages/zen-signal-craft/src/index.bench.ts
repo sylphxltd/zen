@@ -1,5 +1,5 @@
 // Import zen atom factory
-import { zen } from '@zen/zen';
+import { zen } from '@zen/signal';
 import { bench, describe } from 'vitest';
 import { craftZen, produce } from './index';
 

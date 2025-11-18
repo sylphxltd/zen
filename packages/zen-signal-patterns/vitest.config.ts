@@ -17,7 +17,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@zen/zen': path.resolve(__dirname, '../zen/src/index.ts'),
+      '@zen/signal': path.resolve(__dirname, '../zen/src/index.ts'),
     },
   },
 });
