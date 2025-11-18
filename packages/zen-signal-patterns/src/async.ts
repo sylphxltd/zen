@@ -33,7 +33,10 @@ export interface AsyncStore<T> {
  * ```
  */
 // biome-ignore lint/suspicious/noExplicitAny: Generic dependency tracking requires any type
-export function computedAsync<T>(asyncFn: () => Promise<T>, deps: Signal<any>[] = []): AsyncStore<T> {
+export function computedAsync<T>(
+  asyncFn: () => Promise<T>,
+  deps: Signal<any>[] = [],
+): AsyncStore<T> {
   const state = signal<AsyncState<T>>({
     loading: false,
     data: undefined,

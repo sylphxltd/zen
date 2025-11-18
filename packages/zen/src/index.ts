@@ -36,7 +36,7 @@ export type { Context } from './components/Context.js';
 export { render, Fragment } from './jsx-runtime.js';
 
 // Lifecycle
-export { onMount, onCleanup, createEffect, disposeNode, getOwner } from './lifecycle.js';
+export { onMount, onCleanup, createEffect, createRoot, disposeNode, getOwner } from './lifecycle.js';
 export type { Owner } from './lifecycle.js';
 
 // Utilities

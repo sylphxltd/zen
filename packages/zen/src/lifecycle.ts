@@ -223,3 +223,51 @@ export function disposeNode(node: Node): void {
     nodeOwners.delete(node);
   }
 }
+
+/**
+ * Create an isolated reactive scope with manual cleanup
+ *
+ * Unlike components, reactive logic in createRoot is not tied to the DOM.
+ * Useful for:
+ * - Testing (create/dispose reactive contexts)
+ * - Global state management (long-lived reactive logic)
+ * - Manual control over cleanup timing
+ *
+ * @example
+ * ```tsx
+ * // Testing
+ * test('reactive logic', () => {
+ *   const dispose = createRoot((dispose) => {
+ *     const count = signal(0);
+ *     const double = computed(() => count.value * 2);
+ *
+ *     count.value = 5;
+ *     expect(double.value).toBe(10);
+ *
+ *     return dispose;
+ *   });
+ *
+ *   dispose(); // Manual cleanup
+ * });
+ *
+ * // Global store
+ * const store = createRoot(() => {
+ *   const user = signal(null);
+ *   const isLoggedIn = computed(() => !!user.value);
+ *
+ *   return { user, isLoggedIn };
+ * });
+ * ```
+ */
+export function createRoot<T>(fn: (dispose: () => void) => T): T {
+  const owner = createOwner();
+  const prev = currentOwner;
+  currentOwner = owner;
+
+  try {
+    const dispose = () => disposeOwner(owner);
+    return fn(dispose);
+  } finally {
+    currentOwner = prev;
+  }
+}
