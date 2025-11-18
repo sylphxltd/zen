@@ -80,7 +80,7 @@ const doubled = computed(() => count.value * 2);
                 </button>
               </div>
               <ul class="todo-list">
-                <For each={todos.value}>
+                <For each={todos}>
                   {(todo, index) => (
                     <li class="todo-item">
                       <span>{todo}</span>

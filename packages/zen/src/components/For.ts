@@ -40,7 +40,16 @@ export function For<T, U extends Node>(props: ForProps<T, U>): Node {
 
   // Effect to update list
   const dispose = effect(() => {
-    const array = typeof each === 'function' ? each() : each;
+    // Handle signal, function, or plain array
+    let array: T[];
+    if (typeof each === 'function') {
+      array = each();
+    } else if (each && typeof each === 'object' && '_value' in each && '_kind' in each) {
+      // It's a signal
+      array = (each as any).value;
+    } else {
+      array = each as T[];
+    }
 
     // Show fallback if empty
     if (array.length === 0 && fallback) {

@@ -170,10 +170,7 @@ export type Signal<T> = ReturnType<typeof signal<T>>;
 // SUBSCRIBE
 // ============================================================================
 
-export function subscribe<A extends AnyZen>(
-  zen: A,
-  listener: Listener<ZenValue<A>>,
-): Unsubscribe {
+export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<A>>): Unsubscribe {
   const zenData = zen._kind === 'zen' ? zen : zen;
 
   // Add listener
@@ -285,7 +282,10 @@ function updateComputed<T>(c: ComputedCore<T>): void {
     }
 
     // OPTIMIZATION: Inline Object.is check
-    if (c._value !== null && (newValue === c._value || (newValue !== newValue && c._value !== c._value))) {
+    if (
+      c._value !== null &&
+      (newValue === c._value || (newValue !== newValue && c._value !== c._value))
+    ) {
       return;
     }
 
