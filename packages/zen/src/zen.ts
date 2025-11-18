@@ -45,7 +45,8 @@ function flushEffects() {
     clock++;
     const count = pendingCount;
     pendingCount = 0;
-    for (let i = 0; i < count; i++) {
+    let i = 0;
+    while (i < count) {
       const effect = pendingEffects[i];
       effect._pending = false;
       if (effect._state !== STATE_DISPOSED) {
@@ -56,6 +57,7 @@ function flushEffects() {
         }
       }
       pendingEffects[i] = null as any;
+      i++;
     }
   }
   if (error) throw error;
@@ -84,11 +86,9 @@ class Computation<T> implements SourceType, ObserverType {
   get value(): T {
     if (currentObserver) {
       const obs = currentObserver;
-      if (!obs._newSources) {
-        obs._newSources = [this];
-      } else if (this !== obs._newSources[obs._newSources.length - 1]) {
-        obs._newSources.push(this);
-      }
+      const sources = obs._newSources;
+      if (sources) sources.push(this);
+      else obs._newSources = [this];
     }
     if (this._state === STATE_DIRTY) this._update();
     if (this._error !== undefined) throw this._error;
@@ -109,20 +109,21 @@ class Computation<T> implements SourceType, ObserverType {
 
   _update(): void {
     if (this._state !== STATE_DIRTY) return;
-    if (this._sources) {
-      const myTime = this._time;
-      const len = this._sources.length;
-      for (let i = 0; i < len; i++) {
-        this._sources[i]._update();
-        if (this._sources[i]._time > myTime) {
-          this._run();
-          return;
-        }
-      }
-      this._state = STATE_CLEAN;
+    const sources = this._sources;
+    if (!sources) {
+      this._run();
       return;
     }
-    this._run();
+    const myTime = this._time;
+    let i = sources.length;
+    while (i--) {
+      sources[i]._update();
+      if (sources[i]._time > myTime) {
+        this._run();
+        return;
+      }
+    }
+    this._state = STATE_CLEAN;
   }
 
   _run(): void {
@@ -131,15 +132,17 @@ class Computation<T> implements SourceType, ObserverType {
       this._cleanup();
       this._cleanup = null;
     }
-    if (this._sources) {
-      const len = this._sources.length;
-      for (let i = 0; i < len; i++) {
-        const obs = this._sources[i]._observers;
+    const oldSources = this._sources;
+    if (oldSources) {
+      let i = oldSources.length;
+      while (i--) {
+        const obs = oldSources[i]._observers;
         if (obs) {
-          const obsLen = obs.length;
-          for (let j = 0; j < obsLen; j++) {
+          let j = obs.length;
+          while (j--) {
             if (obs[j] === this) {
-              if (j < obsLen - 1) obs[j] = obs[obsLen - 1];
+              const last = obs.length - 1;
+              if (j < last) obs[j] = obs[last];
               obs.pop();
               break;
             }
@@ -155,17 +158,31 @@ class Computation<T> implements SourceType, ObserverType {
       const newValue = this._fn();
       const valueChanged = !Object.is(this._value, newValue);
       if (valueChanged) this._value = newValue;
-      if (this._newSources) {
-        this._sources = this._newSources;
-        const len = this._sources.length;
+      const newSources = this._newSources;
+      if (newSources) {
+        const len = newSources.length;
+        const unique: SourceType[] = [];
+        let uniqueCount = 0;
         for (let i = 0; i < len; i++) {
-          const source = this._sources[i];
-          if (!source._observers) {
-            source._observers = [this];
-          } else {
-            source._observers.push(this);
+          const source = newSources[i];
+          let isDupe = false;
+          for (let j = 0; j < uniqueCount; j++) {
+            if (unique[j] === source) {
+              isDupe = true;
+              break;
+            }
+          }
+          if (!isDupe) {
+            unique[uniqueCount++] = source;
+            const obs = source._observers;
+            if (!obs) {
+              source._observers = [this];
+            } else {
+              obs.push(this);
+            }
           }
         }
+        this._sources = unique;
       }
       this._time = ++clock;
       this._state = STATE_CLEAN;
@@ -190,22 +207,24 @@ class Computation<T> implements SourceType, ObserverType {
   _notifyObservers(): void {
     const observers = this._observers;
     if (!observers) return;
-    const len = observers.length;
-    for (let i = 0; i < len; i++) observers[i]._notify();
+    let i = observers.length;
+    while (i--) observers[i]._notify();
   }
 
   dispose(): void {
     if (this._state === STATE_DISPOSED) return;
     this._state = STATE_DISPOSED;
-    if (this._sources) {
-      const len = this._sources.length;
-      for (let i = 0; i < len; i++) {
-        const obs = this._sources[i]._observers;
+    const sources = this._sources;
+    if (sources) {
+      let i = sources.length;
+      while (i--) {
+        const obs = sources[i]._observers;
         if (obs) {
-          const obsLen = obs.length;
-          for (let j = 0; j < obsLen; j++) {
+          let j = obs.length;
+          while (j--) {
             if (obs[j] === this) {
-              if (j < obsLen - 1) obs[j] = obs[obsLen - 1];
+              const last = obs.length - 1;
+              if (j < last) obs[j] = obs[last];
               obs.pop();
               break;
             }
@@ -234,11 +253,9 @@ class Signal<T> implements SourceType {
   get value(): T {
     if (currentObserver) {
       const obs = currentObserver;
-      if (!obs._newSources) {
-        obs._newSources = [this];
-      } else if (this !== obs._newSources[obs._newSources.length - 1]) {
-        obs._newSources.push(this);
-      }
+      const sources = obs._newSources;
+      if (sources) sources.push(this);
+      else obs._newSources = [this];
     }
     return this._value;
   }
@@ -250,8 +267,8 @@ class Signal<T> implements SourceType {
     const observers = this._observers;
     if (!observers) return;
     batchDepth++;
-    const len = observers.length;
-    for (let i = 0; i < len; i++) observers[i]._notify();
+    let i = observers.length;
+    while (i--) observers[i]._notify();
     batchDepth--;
     if (batchDepth === 0 && pendingCount > 0 && !isFlushScheduled) {
       isFlushScheduled = true;

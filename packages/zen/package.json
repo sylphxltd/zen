@@ -1,7 +1,7 @@
 {
   "name": "@sylphx/zen",
-  "version": "3.47.0",
-  "description": "Zen state management library - extreme minimalism, extreme speed. V3.47: Major simplification - removed Solid.js complexity (2-state, direct tracking, ~700 bytes smaller).",
+  "version": "3.48.0",
+  "description": "Zen state management library - extreme minimalism, extreme speed. V3.48: Micro-optimizations - hot path dedup removal, while loops, cached vars for maximum read/write speed.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
