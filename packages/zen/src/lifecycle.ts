@@ -37,7 +37,7 @@ let currentCleanups: CleanupFunction[] | null = null;
  * }
  * ```
  */
-export function onMount(callback: () => void | CleanupFunction): void {
+export function onMount(callback: () => undefined | CleanupFunction): void {
   // Use queueMicrotask to ensure DOM is inserted
   queueMicrotask(() => {
     const cleanup = callback();
@@ -98,8 +98,8 @@ export function onCleanup(cleanup: CleanupFunction): void {
  * }
  * ```
  */
-export function createEffect(effectFn: () => void | CleanupFunction): void {
-  let cleanup: CleanupFunction | void;
+export function createEffect(effectFn: () => undefined | CleanupFunction): void {
+  let cleanup: CleanupFunction | undefined;
 
   // Run effect after mount
   onMount(() => {

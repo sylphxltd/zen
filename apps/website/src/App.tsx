@@ -1,10 +1,10 @@
 import { Router } from '@zen/zen';
-import { Footer } from './components/Footer';
-import { Header } from './components/Header';
-import { Docs } from './pages/Docs';
-import { Examples } from './pages/Examples';
-import { Home } from './pages/Home';
-import { Playground } from './pages/Playground';
+import { Footer } from './components/Footer.tsx';
+import { Header } from './components/Header.tsx';
+import { Docs } from './pages/Docs.tsx';
+import { Examples } from './pages/Examples.tsx';
+import { Home } from './pages/Home.tsx';
+import { Playground } from './pages/Playground.tsx';
 
 export function App() {
   return (

@@ -1,9 +1,9 @@
-import { Comparison } from '../components/Comparison';
-import { Demo } from '../components/Demo';
-import { Features } from '../components/Features';
-import { GetStarted } from '../components/GetStarted';
-import { Hero } from '../components/Hero';
-import { Packages } from '../components/Packages';
+import { Comparison } from '../components/Comparison.tsx';
+import { Demo } from '../components/Demo.tsx';
+import { Features } from '../components/Features.tsx';
+import { GetStarted } from '../components/GetStarted.tsx';
+import { Hero } from '../components/Hero.tsx';
+import { Packages } from '../components/Packages.tsx';
 
 export function Home() {
   return (
