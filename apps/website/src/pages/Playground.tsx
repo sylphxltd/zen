@@ -69,27 +69,31 @@ if (preview) {
         filename: 'playground.tsx',
       });
 
-      console.log('Transpiled code:', transformed.code);
+      // Create React-style createElement wrapper for Zen's jsx
+      // Babel classic runtime calls: jsx(type, props, ...children)
+      // But Zen expects: jsx(type, { children: [...], ...props })
+      const createElement = (type: any, props: any, ...children: any[]) => {
+        const allProps = props || {};
+        if (children.length > 0) {
+          allProps.children = children.length === 1 ? children[0] : children;
+        }
+        return jsx(type, allProps);
+      };
 
       // Create execution context with Zen API
       const zenContext = {
         ...Zen,
         ...ZenSignal,
-        jsx,
+        jsx: createElement, // Use adapted createElement
         Fragment,
         document,
         console,
       };
 
-      console.log('Execution context keys:', Object.keys(zenContext));
-
       // Execute transpiled code
       const fn = new Function(...Object.keys(zenContext), transformed.code);
       fn(...Object.values(zenContext));
-
-      console.log('Code executed successfully');
     } catch (e: unknown) {
-      console.error('Execution error:', e);
       error.value = (e as Error).message || 'Unknown error';
       const previewEl = document.getElementById('preview');
       if (previewEl) {
