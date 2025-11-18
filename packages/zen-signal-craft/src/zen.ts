@@ -1,4 +1,4 @@
-import { craft, craftWithPatches } from '@zen/craft';
+import { craft, craftWithPatches } from '@sylphx/craft';
 import type { Zen } from '@zen/signal';
 import type { CraftOptions, Patch } from './types';
 

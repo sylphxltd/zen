@@ -1,7 +1,7 @@
 {
   "name": "@zen/signal",
   "version": "0.0.0",
-  "description": "Zen state management library - extreme minimalism, extreme speed. V3.49.2: Fixed critical effect-computed dependency bug, proper micro-batch notification flushing.",
+  "description": "Zen Signal - Ultra-fast reactive primitives with auto-tracking. The foundation for @zen/zen framework.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -23,21 +23,22 @@
   },
   "size-limit": [
     {
-      "name": "zen v3 (full)",
+      "name": "zen-signal (full)",
       "path": "dist/index.js",
-      "import": "{ zen, computed, effect, subscribe, batch }",
+      "import": "{ signal, computed, effect, subscribe, batch }",
       "limit": "1.75 kB"
     }
   ],
   "keywords": [
-    "state",
-    "store",
-    "state management",
-    "atom",
+    "signal",
     "reactive",
+    "state",
+    "computed",
+    "effect",
+    "fine-grained",
+    "auto-tracking",
     "minimal",
-    "tiny",
-    "nanostores"
+    "tiny"
   ],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",

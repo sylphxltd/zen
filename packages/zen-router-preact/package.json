@@ -1,7 +1,7 @@
 {
-  "name": "@zen/zen-router-preact",
+  "name": "@zen/router-preact",
   "version": "0.0.0",
-  "description": "Preact integration for @zen/zen-router",
+  "description": "Preact hooks integration for Zen Router",
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
@@ -21,7 +21,7 @@
     }
   },
   "files": ["dist", "README.md"],
-  "keywords": ["zen", "router", "preact", "hooks", "state management"],
+  "keywords": ["zen", "router", "routing", "preact", "hooks"],
   "homepage": "https://github.com/SylphxAI/zen/tree/main/packages/zen-router-preact#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/zen/issues"
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@zen/signal": "workspace:*",
-    "@zen/zen-router": "workspace:*"
+    "@zen/router": "workspace:*"
   },
   "peerDependencies": {
     "preact": "^10.0.0"

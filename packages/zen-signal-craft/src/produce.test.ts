@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { produce } from './produce';
 import type { Patch } from './types';
-import { nothing } from '@zen/craft';
+import { nothing } from '@sylphx/craft';
 
 // Define interfaces for common test states to help TS
 interface SimpleState {

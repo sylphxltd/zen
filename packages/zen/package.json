@@ -1,7 +1,7 @@
 {
   "name": "@zen/zen",
   "version": "0.0.0",
-  "description": "Ultra-fast, ultra-lightweight reactive framework. Beyond SolidJS.",
+  "description": "Ultra-fast, ultra-lightweight reactive framework with no virtual DOM and fine-grained reactivity. Powered by @zen/signal.",
   "type": "module",
   "workspaces": ["demo-app"],
   "main": "./dist/index.js",
@@ -32,7 +32,7 @@
     "format": "biome format --write .",
     "demo": "cd demo-app && bun dev"
   },
-  "keywords": ["reactive", "signals", "fine-grained", "performance", "framework", "ui"],
+  "keywords": ["framework", "reactive", "fine-grained", "no-vdom", "jsx", "performance", "ui", "signals"],
   "author": "ZenJS Team",
   "license": "MIT",
   "devDependencies": {

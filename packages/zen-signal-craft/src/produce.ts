@@ -1,4 +1,4 @@
-import { craft, craftWithPatches } from '@zen/craft';
+import { craft, craftWithPatches } from '@sylphx/craft';
 import type { CraftOptions, CraftResult } from './types';
 import { isDraftable } from './utils';
 

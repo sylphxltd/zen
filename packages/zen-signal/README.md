@@ -1,4 +1,4 @@
-# @sylphx/zen
+# @zen/signal
 
 **The tiniest, fastest reactive state library with auto-tracking magic** ✨
 
@@ -38,15 +38,15 @@ const sum = computed(() => a.value + b.value);
 ## Installation
 
 ```bash
-npm install @sylphx/zen
+npm install @zen/signal
 ```
 
 ```bash
-pnpm add @sylphx/zen
+pnpm add @zen/signal
 ```
 
 ```bash
-bun add @sylphx/zen
+bun add @zen/signal
 ```
 
 ---
@@ -54,10 +54,10 @@ bun add @sylphx/zen
 ## Quick Start
 
 ```typescript
-import { zen, computed, subscribe } from '@sylphx/zen';
+import { signal, computed, subscribe } from '@zen/signal';
 
 // Create reactive state
-const count = zen(0);
+const count = signal(0);
 
 // Read & write with .value
 console.log(count.value); // 0
@@ -83,14 +83,14 @@ unsub();
 
 ## Core API
 
-### `zen(initialValue)`
+### `signal(initialValue)`
 
 Create a reactive signal.
 
 ```typescript
-const count = zen(0);
-const name = zen('Alice');
-const user = zen({ id: 1, name: 'Bob' });
+const count = signal(0);
+const name = signal('Alice');
+const user = signal({ id: 1, name: 'Bob' });
 
 // Read
 console.log(count.value); // 0
@@ -107,8 +107,8 @@ count.value = count.value + 1;
 Create a computed value with **auto-tracking**.
 
 ```typescript
-const firstName = zen('John');
-const lastName = zen('Doe');
+const firstName = signal('John');
+const lastName = signal('Doe');
 
 // Auto-tracks firstName and lastName
 const fullName = computed(() =>
@@ -126,8 +126,8 @@ console.log(fullName.value); // "Jane Doe"
 For performance-critical code, you can specify dependencies explicitly:
 
 ```typescript
-const a = zen(1);
-const b = zen(2);
+const a = signal(1);
+const b = signal(2);
 
 // Explicit deps (slightly faster, but more verbose)
 const sum = computed(() => a.value + b.value, [a, b]);
@@ -148,9 +148,9 @@ const sum = computed(() => a.value + b.value, [a, b]);
 Run side effects with auto-tracking dependencies.
 
 ```typescript
-const userId = zen(1);
-const user = zen(null);
-const loading = zen(false);
+const userId = signal(1);
+const user = signal(null);
+const loading = signal(false);
 
 // Auto-tracks userId and runs when it changes
 effect(() => {
@@ -183,7 +183,7 @@ userId.value = 2; // Triggers effect again
 Subscribe to signal changes.
 
 ```typescript
-const count = zen(0);
+const count = signal(0);
 
 const unsub = subscribe(count, (newValue, oldValue) => {
   console.log(`${oldValue} → ${newValue}`);
@@ -203,8 +203,8 @@ unsub();
 Batch multiple updates into a single notification.
 
 ```typescript
-const a = zen(1);
-const b = zen(2);
+const a = signal(1);
+const b = signal(2);
 const sum = computed(() => a.value + b.value);
 
 subscribe(sum, (value) => {
@@ -231,9 +231,9 @@ batch(() => {
 Auto-tracking shines with conditional logic:
 
 ```typescript
-const mode = zen<'light' | 'dark'>('light');
-const lightBg = zen('#ffffff');
-const darkBg = zen('#000000');
+const mode = signal<'light' | 'dark'>('light');
+const lightBg = signal('#ffffff');
+const darkBg = signal('#000000');
 
 // Only subscribes to the active branch!
 const background = computed(() =>
@@ -252,9 +252,9 @@ mode.value = 'dark'; // Now subscribes to darkBg
 ### Nested Computed
 
 ```typescript
-const price = zen(100);
-const quantity = zen(2);
-const taxRate = zen(0.1);
+const price = signal(100);
+const quantity = signal(2);
+const taxRate = signal(0.1);
 
 const subtotal = computed(() => price.value * quantity.value);
 const tax = computed(() => subtotal.value * taxRate.value);
@@ -269,9 +269,9 @@ console.log(total.value); // 440 (auto-updates entire chain)
 ### Form Validation
 
 ```typescript
-const email = zen('');
-const password = zen('');
-const confirmPassword = zen('');
+const email = signal('');
+const password = signal('');
+const confirmPassword = signal('');
 
 const emailValid = computed(() =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)
@@ -299,8 +299,8 @@ subscribe(formValid, (valid) => {
 ### Async Data Fetching
 
 ```typescript
-const query = zen('');
-const debouncedQuery = zen('');
+const query = signal('');
+const debouncedQuery = signal('');
 
 // Debounce input
 let timeout: any;
@@ -312,9 +312,9 @@ subscribe(query, (q) => {
 });
 
 // Auto-fetch when query changes
-const results = zen([]);
-const loading = zen(false);
-const error = zen(null);
+const results = signal([]);
+const loading = signal(false);
+const error = signal(null);
 
 effect(() => {
   const q = debouncedQuery.value;
@@ -354,10 +354,10 @@ subscribe(error, (err) => {
 ### React
 
 ```tsx
-import { zen, computed } from '@sylphx/zen';
+import { signal, computed } from '@zen/signal';
 import { useEffect, useState } from 'react';
 
-const count = zen(0);
+const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
 function Counter() {
@@ -396,10 +396,10 @@ function Counter() {
 
 ```vue
 <script setup>
-import { zen, computed } from '@sylphx/zen';
+import { signal, computed } from '@zen/signal';
 import { ref, onMounted, onUnmounted } from 'vue';
 
-const count = zen(0);
+const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
 const displayCount = ref(count.value);
@@ -429,10 +429,10 @@ onUnmounted(() => {
 ### Solid
 
 ```tsx
-import { zen, computed } from '@sylphx/zen';
+import { signal, computed } from '@zen/signal';
 import { createSignal, onCleanup } from 'solid-js';
 
-const count = zen(0);
+const count = signal(0);
 
 function Counter() {
   const [value, setValue] = createSignal(count.value);
@@ -482,8 +482,8 @@ Zen is the **smallest reactive library** with auto-tracking!
 Zen is written in TypeScript and provides excellent type inference:
 
 ```typescript
-const count = zen(0);        // Zen<number>
-const name = zen('Alice');   // Zen<string>
+const count = signal(0);        // Zen<number>
+const name = signal('Alice');   // Zen<string>
 
 const doubled = computed(() => count.value * 2);  // ComputedZen<number>
 
@@ -507,9 +507,9 @@ const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
 // Zen (same API!)
-import { zen, computed } from '@sylphx/zen';
+import { signal, computed } from '@zen/signal';
 
-const count = zen(0);
+const count = signal(0);
 const doubled = computed(() => count.value * 2);
 ```
 
@@ -529,9 +529,9 @@ const [count, setCount] = createSignal(0);
 const doubled = createMemo(() => count() * 2);
 
 // Zen
-import { zen, computed } from '@sylphx/zen';
+import { signal, computed } from '@zen/signal';
 
-const count = zen(0);
+const count = signal(0);
 const doubled = computed(() => count.value * 2);
 count.value++; // Simpler updates!
 ```
@@ -552,9 +552,9 @@ const state = observable({ count: 0 });
 const doubled = computed(() => state.count * 2);
 
 // Zen
-import { zen, computed } from '@sylphx/zen';
+import { signal, computed } from '@zen/signal';
 
-const count = zen(0);
+const count = signal(0);
 const doubled = computed(() => count.value * 2);
 ```
 
@@ -623,17 +623,17 @@ MIT © [Sylphx](https://github.com/SylphxAI)
 
 ## Related Packages
 
-- **[@sylphx/zen-patterns](../zen-patterns)** - Useful patterns (store, async, map, deepMap) - **NEW v2.0!**
-- **[@sylphx/zen-react](../zen-react)** - React hooks integration
-- **[@sylphx/zen-persistent](../zen-persistent)** - localStorage/sessionStorage persistence
-- **[@sylphx/zen-craft](../zen-craft)** - Immutable state updates (1.4-35x faster than immer)
-- **[@sylphx/zen-router](../zen-router)** - Type-safe routing
+- **[@zen/signal-patterns](../zen-patterns)** - Useful patterns (store, async, map, deepMap) - **NEW v2.0!**
+- **[@zen/signal-react](../zen-react)** - React hooks integration
+- **[@zen/signal-persistent](../zen-persistent)** - localStorage/sessionStorage persistence
+- **[@zen/signal-craft](../zen-craft)** - Immutable state updates (1.4-35x faster than immer)
+- **[@zen/signal-router](../zen-router)** - Type-safe routing
 
 ## Links
 
 - [Website](https://zen.sylphx.com/)
 - [GitHub](https://github.com/SylphxAI/zen)
-- [NPM](https://www.npmjs.com/package/@sylphx/zen)
+- [NPM](https://www.npmjs.com/package/@zen/signal)
 - [Documentation](https://zen.sylphx.com/)
 
 ---

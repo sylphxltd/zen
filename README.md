@@ -1,8 +1,8 @@
 <div align="center">
 
-# Zen - Reactive State Management 🧘
+# Zen Ecosystem 🧘
 
-**The tiniest, fastest reactive state library with auto-tracking magic**
+**Ultra-fast reactive primitives (@zen/signal) and fine-grained framework (@zen/zen)**
 
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](https://github.com/SylphxAI/zen/blob/main/LICENSE)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff?style=flat-square&logo=pnpm)](https://pnpm.io/)
@@ -64,57 +64,63 @@ Zen:
 
 ## 📦 Packages
 
-### 🎯 Core Package
+### 🎯 Core Packages
 
-**[@sylphx/zen](packages/zen)**
-- Core reactive state library
-- Auto-tracking computed values
-- Minimal API surface
-- Framework-agnostic
+**[@zen/signal](packages/zen-signal)**
+- Core reactive primitives (signal, computed, effect)
+- Auto-tracking dependency system
+- Ultra-tiny bundle (1.75 KB)
+- Foundation for Zen ecosystem
+
+**[@zen/zen](packages/zen)**
+- Fine-grained reactive framework
+- No virtual DOM - direct DOM updates
+- Component render once, signals auto-update
+- JSX with automatic signal unwrapping
 
 ```bash
-npm install @sylphx/zen
+npm install @zen/signal
 ```
 
 ---
 
 ### 🎨 Framework Integrations
 
-**[@sylphx/zen-react](packages/zen-react)**
+**[@zen/signal-react](packages/zen-signal-react)**
 - React hooks integration
 - Automatic re-renders
 - Concurrent mode compatible
 
-**[@sylphx/zen-vue](packages/zen-vue)**
+**[@zen/signal-vue](packages/zen-signal-vue)**
 - Vue 3 composition API
 - Seamless integration
 
-**[@sylphx/zen-svelte](packages/zen-svelte)**
+**[@zen/signal-svelte](packages/zen-signal-svelte)**
 - Svelte stores compatibility
 - Reactive bindings
 
-**[@sylphx/zen-preact](packages/zen-preact)**
+**[@zen/signal-preact](packages/zen-signal-preact)**
 - Preact signals integration
 - Lightweight alternative to React
 
-**[@sylphx/zen-solid](packages/zen-solid)**
+**[@zen/signal-solid](packages/zen-signal-solid)**
 - SolidJS primitives
 - Fine-grained reactivity
 
 ```bash
 # Install framework integration
-npm install @sylphx/zen-react
+npm install @zen/signal-react
 # or
-npm install @sylphx/zen-vue
+npm install @zen/signal-vue
 # or
-npm install @sylphx/zen-svelte
+npm install @zen/signal-svelte
 ```
 
 ---
 
 ### 🛠️ Utilities
 
-**[@sylphx/zen-patterns](packages/zen-patterns)** - **NEW v2.0** 🎉
+**[@zen/signal-patterns](packages/zen-signal-patterns)** - **NEW v2.0** 🎉
 - Useful patterns built on zen core APIs
 - Store pattern (Zustand-style)
 - Async state management
@@ -122,27 +128,27 @@ npm install @sylphx/zen-svelte
 - DeepMap pattern (path-level reactivity)
 - Only **936 B gzipped**
 
-**[@sylphx/zen-craft](packages/zen-craft)**
+**[@zen/signal-craft](packages/zen-signal-craft)**
 - Immutable state updates
 - 1.4-35x faster than immer
 - Type-safe mutations
 
-**[@sylphx/zen-persistent](packages/zen-persistent)**
+**[@zen/signal-persistent](packages/zen-signal-persistent)**
 - LocalStorage/SessionStorage persistence
 - Automatic synchronization
 - Debounced writes
 
-**[@sylphx/zen-router](packages/zen-router)** & **[@sylphx/zen-router-react](packages/zen-router-react)** & **[@sylphx/zen-router-preact](packages/zen-router-preact)**
+**[@zen/router](packages/zen-router)** & **[@zen/router-react](packages/zen-router-react)** & **[@zen/router-preact](packages/zen-router-preact)**
 - Type-safe routing
 - Nested routes support
 - Framework-specific bindings
 
 ```bash
 # Install utilities
-npm install @sylphx/zen-patterns  # NEW! Useful patterns
-npm install @sylphx/zen-craft
-npm install @sylphx/zen-persistent
-npm install @sylphx/zen-router-react
+npm install @zen/signal-patterns  # NEW! Useful patterns
+npm install @zen/signal-craft
+npm install @zen/signal-persistent
+npm install @zen/router-react
 ```
 
 ---
@@ -152,10 +158,10 @@ npm install @sylphx/zen-router-react
 ### Basic Usage
 
 ```typescript
-import { zen, computed } from '@sylphx/zen';
+import { signal, computed } from '@zen/signal';
 
 // Create reactive state
-const count = zen(0);
+const count = signal(0);
 
 // Auto-tracked computed value (no manual dependencies!)
 const double = computed(() => count.value * 2);
@@ -168,10 +174,10 @@ console.log(double.value); // 2
 ### With React
 
 ```tsx
-import { useZen } from '@sylphx/zen-react';
-import { zen } from '@sylphx/zen';
+import { useZen } from '@zen/signal-react';
+import { signal } from '@zen/signal';
 
-const counter = zen(0);
+const counter = signal(0);
 
 function Counter() {
   const count = useZen(counter);
@@ -188,11 +194,12 @@ function Counter() {
 ### With Patterns
 
 ```typescript
-import { store, computedAsync, map } from '@sylphx/zen-patterns';
+import { store, computedAsync, map } from '@zen/signal-patterns';
+import { signal } from '@zen/signal';
 
 // Zustand-style store pattern
 const counter = store(() => {
-  const count = zen(0);
+  const count = signal(0);
   return {
     count,
     increase: () => count.value++,
@@ -217,7 +224,7 @@ const form = map({
 ### With Persistence
 
 ```typescript
-import { persistent } from '@sylphx/zen-persistent';
+import { persistent } from '@zen/signal-persistent';
 
 // Automatically synced with localStorage
 const settings = persistent('user-settings', {
@@ -260,18 +267,20 @@ settings.value.theme = 'light';
 ```
 zen/
 ├── packages/
-│   ├── zen/                  # Core library
-│   ├── zen-react/            # React integration
-│   ├── zen-vue/              # Vue integration
-│   ├── zen-svelte/           # Svelte integration
-│   ├── zen-preact/           # Preact integration
-│   ├── zen-solid/            # SolidJS integration
-│   ├── zen-craft/            # Immutable utilities
-│   ├── zen-persistent/       # Persistence utilities
-│   ├── zen-router/           # Core routing
-│   ├── zen-router-react/     # React router
-│   └── zen-router-preact/    # Preact router
-├── docs/                     # Documentation site
+│   ├── zen-signal/             # @zen/signal - Reactive primitives
+│   ├── zen/                    # @zen/zen - Fine-grained framework
+│   ├── zen-signal-react/       # @zen/signal-react - React integration
+│   ├── zen-signal-vue/         # @zen/signal-vue - Vue integration
+│   ├── zen-signal-svelte/      # @zen/signal-svelte - Svelte integration
+│   ├── zen-signal-preact/      # @zen/signal-preact - Preact integration
+│   ├── zen-signal-solid/       # @zen/signal-solid - SolidJS integration
+│   ├── zen-signal-craft/       # @zen/signal-craft - Immutable utilities
+│   ├── zen-signal-patterns/    # @zen/signal-patterns - Useful patterns
+│   ├── zen-signal-persistent/  # @zen/signal-persistent - Persistence
+│   ├── zen-router/             # @zen/router - Core routing
+│   ├── zen-router-react/       # @zen/router-react - React router
+│   └── zen-router-preact/      # @zen/router-preact - Preact router
+├── docs/                       # Documentation site
 ├── package.json
 └── README.md
 ```
@@ -284,36 +293,33 @@ zen/
 
 ```bash
 # Install dependencies
-pnpm install
+bun install
 
 # Build all packages
-pnpm build
+bun run build
 
 # Run tests
-pnpm test
+bun test
 
 # Watch mode
-pnpm test:watch
-
-# Type checking
-pnpm typecheck
+bun test:watch
 
 # Linting
-pnpm lint
-pnpm lint:fix
+bun run lint
+bun run lint:fix
 ```
 
 ### Workspace Commands
 
 ```bash
 # Build specific package
-pnpm --filter @sylphx/zen build
+bun run build --filter @zen/signal
 
 # Test specific package
-pnpm --filter @sylphx/zen test
+bun test --filter @zen/signal
 
 # Dev mode for all packages
-pnpm dev
+bun run dev
 ```
 
 ---
@@ -344,7 +350,7 @@ See individual package READMEs for detailed documentation.
 ### Application State
 
 ```typescript
-import { state, computed } from '@sylphx/zen';
+import { state, computed } from '@zen/signal';
 
 const user = state({ name: 'Alice', age: 30 });
 const isAdult = computed(() => user.value.age >= 18);

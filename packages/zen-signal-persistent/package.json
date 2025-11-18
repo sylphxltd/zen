@@ -1,7 +1,7 @@
 {
-  "name": "@zen/zen-persistent",
+  "name": "@zen/signal-persistent",
   "version": "0.0.0",
-  "description": "Persistent store for Zen state manager (localStorage/sessionStorage sync)",
+  "description": "Persistent storage adapter for Zen Signal (localStorage/sessionStorage sync)",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@zen/signal": "workspace:*",
-    "@zen/zen-patterns": "workspace:*"
+    "@zen/signal-patterns": "workspace:*"
   },
   "devDependencies": {
     "bunup": "^0.15.13",
@@ -31,9 +31,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/SylphxAI/zen.git",
-    "directory": "packages/zen-persistent"
+    "directory": "packages/zen-signal-persistent"
   },
-  "keywords": ["zen", "state manager", "persistent", "localstorage", "sessionstorage"],
+  "keywords": ["zen", "signal", "persistent", "localstorage", "sessionstorage"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {

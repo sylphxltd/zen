@@ -4,7 +4,7 @@ import { bench, describe } from 'vitest';
 import { craftZen, produce } from './index';
 
 // --- produce Benchmarks ---
-// Note: produce() internally uses @zen/craft, these benchmarks measure the overhead
+// Note: produce() internally uses @sylphx/craft, these benchmarks measure the overhead
 describe('produce: Simple Object Replace', () => {
   const base = { value: 1 };
   bench('zen-craft', () => {

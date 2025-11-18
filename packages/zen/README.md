@@ -1,6 +1,6 @@
-# ZenJS
+# signal
 
-> Ultra-fast, ultra-lightweight reactive framework. **Powered by [@sylphx/zen](https://github.com/SylphxAI/zen).**
+> Ultra-fast, ultra-lightweight reactive framework. **Powered by [@zen/signal](https://github.com/SylphxAI/zen).**
 
 ## Features
 
@@ -8,21 +8,21 @@
 - 🪶 **Tiny**: <5KB gzipped (includes reactive core)
 - 🎯 **Fine-grained**: Only changed DOM nodes update
 - ✨ **Simple API**: `.value` for everything, auto-unwrap in JSX
-- 🔋 **Proven Core**: Built on [@sylphx/zen](https://github.com/SylphxAI/zen) reactive primitives
-- 🎨 **Unified Ecosystem**: Compatible with zen-patterns, zen-persistent, zen-router
+- 🔋 **Proven Core**: Built on [@zen/signal](https://github.com/SylphxAI/zen) reactive primitives
+- 🎨 **Unified Ecosystem**: Compatible with @zen/signal-patterns, @zen/signal-persistent, @zen/router
 
 ## Quick Start
 
 ### Installation
 
 ```bash
-npm install zenjs
+npm install signal
 ```
 
 ### Your First Component
 
 ```tsx
-import { signal, render } from 'zenjs';
+import { signal, render } from '@zen/zen';
 
 function Counter() {
   const count = signal(0);
@@ -47,7 +47,7 @@ render(() => <Counter />, document.getElementById('root')!);
 Reactive state that automatically updates the UI:
 
 ```tsx
-import { signal } from 'zenjs';
+import { signal } from '@zen/zen';
 
 const count = signal(0);
 
@@ -64,7 +64,7 @@ count.value++;
 Run side effects when dependencies change:
 
 ```tsx
-import { effect } from 'zenjs';
+import { effect } from '@zen/zen';
 
 const count = signal(0);
 
@@ -80,7 +80,7 @@ count.value = 1; // Logs: "Count is: 1"
 Derived state that auto-updates:
 
 ```tsx
-import { computed } from 'zenjs';
+import { computed } from '@zen/zen';
 
 const count = signal(0);
 const doubled = computed(() => count.value * 2);
@@ -106,7 +106,7 @@ createEffect(() => {
 
 return <div>{count()}</div>;
 
-// ZenJS - 全部用 .value (Vue 3 / Preact 風格)
+// @zen/zen - 全部用 .value (Vue 3 / Preact 風格)
 const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
@@ -125,7 +125,7 @@ return <div>{count}</div>; // JSX 自動 unwrap
 
 ## Performance
 
-Real benchmark results with [@sylphx/zen](https://github.com/SylphxAI/zen) core on Apple Silicon (M1/M2):
+Real benchmark results with [@zen/signal](https://github.com/SylphxAI/zen) core on Apple Silicon (M1/M2):
 
 | Metric | Performance |
 |--------|-------------|
@@ -143,13 +143,13 @@ Real benchmark results with [@sylphx/zen](https://github.com/SylphxAI/zen) core 
 
 ### Architecture
 
-**Reactive Core:** [@sylphx/zen](https://github.com/SylphxAI/zen)
+**Reactive Core:** [@zen/signal](https://github.com/SylphxAI/zen)
 - Proven, battle-tested reactive primitives (1.75 KB)
 - Optimized for performance and memory efficiency
 - Auto-tracking dependency system
 - Synchronous batch execution + microtask auto-batching
 
-**JSX Runtime:** ZenJS
+**JSX Runtime:** signal
 - No Virtual DOM - direct DOM manipulation
 - Fine-grained reactivity - only changed nodes update
 - Components run once, effects handle updates
@@ -159,7 +159,7 @@ Run benchmarks: `bun test ./src/benchmarks/`
 
 ## JSX
 
-ZenJS works with standard JSX:
+@zen/zen works with standard JSX:
 
 ```tsx
 function App() {
@@ -184,7 +184,7 @@ function App() {
 export default {
   esbuild: {
     jsx: 'automatic',
-    jsxImportSource: 'zenjs',
+    jsxImportSource: 'signal',
   },
 };
 ```
@@ -194,7 +194,7 @@ export default {
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "zenjs"
+    "jsxImportSource": "@zen/zen"
   }
 }
 ```
@@ -206,7 +206,7 @@ export default {
 Batch multiple updates:
 
 ```tsx
-import { batch } from 'zenjs';
+import { batch } from '@zen/zen';
 
 const a = signal(1);
 const b = signal(2);
@@ -223,7 +223,7 @@ batch(() => {
 Read signals without tracking:
 
 ```tsx
-import { untrack } from 'zenjs';
+import { untrack } from '@zen/zen';
 
 const a = signal(1);
 const b = signal(2);
@@ -254,7 +254,7 @@ effect(() => {
 
 ### No Virtual DOM
 
-ZenJS compiles JSX to **direct DOM operations**:
+@zen/zen compiles JSX to **direct DOM operations**:
 
 ```tsx
 // Your code
@@ -317,7 +317,7 @@ function App() {
 - [ ] DevTools support
 - [ ] Migration guide from SolidJS
 
-## Why ZenJS?
+## Why @zen/zen?
 
 ### 技術特點 (Technical Features)
 - ⚡ **極致性能**: 111M signal updates/sec
@@ -332,7 +332,7 @@ function App() {
 - **自動依賴追蹤**: Effect 自動追蹤 Signal 讀取
 - **100% 緩存命中**: Computed 完美緩存策略
 
-**注意**: 未有實際對比其他框架的 benchmark。以上數據為 ZenJS 獨立測試結果。
+**注意**: 未有實際對比其他框架的 benchmark。以上數據為 @zen/zen 獨立測試結果。
 
 ## Contributing
 
@@ -340,7 +340,7 @@ We welcome contributions!
 
 ```bash
 # Clone
-git clone https://github.com/zenjs/zenjs.git
+git clone https://github.com/signal/signal.git
 
 # Install
 pnpm install

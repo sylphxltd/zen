@@ -1,7 +1,7 @@
 {
-  "name": "@zen/zen-react",
+  "name": "@zen/signal-react",
   "version": "0.0.0",
-  "description": "React integration for Zen state manager",
+  "description": "React hooks integration for Zen Signal reactive primitives",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -33,9 +33,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/SylphxAI/zen.git",
-    "directory": "packages/zen-react"
+    "directory": "packages/zen-signal-react"
   },
-  "keywords": ["zen", "state manager", "react", "hooks"],
+  "keywords": ["zen", "signal", "reactive", "react", "hooks"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "publishConfig": {

@@ -1,7 +1,7 @@
 {
-  "name": "@zen/zen-router",
+  "name": "@zen/router",
   "version": "0.0.0",
-  "description": "Tiny URL router for zen state management.",
+  "description": "Tiny URL router built on Zen Signal reactive primitives",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "keywords": ["zen", "router", "routing", "state management", "minimal", "tiny"],
+  "keywords": ["zen", "router", "routing", "signal", "reactive", "minimal", "tiny"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@zen/signal": "workspace:*",
-    "@zen/zen-patterns": "workspace:*"
+    "@zen/signal-patterns": "workspace:*"
   },
   "devDependencies": {
     "bunup": "^0.15.13",

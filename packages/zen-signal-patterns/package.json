@@ -1,7 +1,7 @@
 {
-  "name": "@zen/zen-patterns",
+  "name": "@zen/signal-patterns",
   "version": "0.0.0",
-  "description": "Useful patterns and helpers for Zen state management",
+  "description": "Useful patterns and helpers built on Zen Signal reactive primitives (store, async, map, deepMap)",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

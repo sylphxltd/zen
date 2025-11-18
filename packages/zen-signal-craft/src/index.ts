@@ -13,6 +13,6 @@ export { applyPatches } from './patch';
 export { craftZen } from './zen';
 
 // Re-export craft's nothing symbol for property deletion
-export { nothing } from '@zen/craft';
+export { nothing } from '@sylphx/craft';
 
 // Note: Internal utilities from utils.ts are not exported
