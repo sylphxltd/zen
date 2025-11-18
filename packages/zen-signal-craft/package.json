@@ -1,6 +1,6 @@
 {
   "name": "@zen/signal-craft",
-  "version": "5.0.35",
+  "version": "0.0.0",
   "description": "Craft immutable state updates with JSON Patches for Zen",
   "type": "module",
   "source": "./src/index.ts",

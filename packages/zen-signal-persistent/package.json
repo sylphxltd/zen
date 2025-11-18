@@ -1,6 +1,6 @@
 {
   "name": "@zen/zen-persistent",
-  "version": "15.0.35",
+  "version": "0.0.0",
   "description": "Persistent store for Zen state manager (localStorage/sessionStorage sync)",
   "type": "module",
   "main": "./dist/index.cjs",

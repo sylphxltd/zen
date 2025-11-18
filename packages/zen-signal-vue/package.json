@@ -1,6 +1,6 @@
 {
   "name": "@zen/zen-vue",
-  "version": "5.0.35",
+  "version": "0.0.0",
   "description": "Vue integration for Zen state manager",
   "type": "module",
   "main": "./dist/index.cjs",

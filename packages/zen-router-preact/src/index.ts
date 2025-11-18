@@ -29,7 +29,8 @@ export function useRouter(): RouterState {
 
     // Unsubscribe on component unmount
     return unsubscribe;
-  }, []); // Empty dependency array: subscribe only on mount, unsubscribe on unmount.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: $router is stable, state comparison intentional
+  }, []);
 
   return state;
 }
