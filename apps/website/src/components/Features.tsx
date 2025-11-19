@@ -1,34 +1,35 @@
 import { For } from '@zen/zen';
+import { Icon } from './Icon.tsx';
 
 export function Features() {
   const features = [
     {
-      icon: '⚡',
+      icon: 'lucide:zap',
       title: 'Extreme Performance',
       description: '150M+ signal updates/sec. Fine-grained reactivity with zero overhead.',
     },
     {
-      icon: '🪶',
+      icon: 'lucide:feather',
       title: 'Ultra Lightweight',
       description: 'Signal core: 1.75 KB. Full framework: <5 KB. Smaller than most libraries.',
     },
     {
-      icon: '🎯',
+      icon: 'lucide:target',
       title: 'No Virtual DOM',
       description: 'Direct DOM updates. Components render once. Signals handle all changes.',
     },
     {
-      icon: '🔧',
+      icon: 'lucide:wrench',
       title: 'Simple API',
       description: 'signal(), computed(), effect(). Consistent .value API. Auto-tracking.',
     },
     {
-      icon: '📦',
+      icon: 'lucide:package',
       title: 'Rich Ecosystem',
       description: 'React, Vue, Svelte, Solid integrations. Patterns, persistence, routing.',
     },
     {
-      icon: '🚀',
+      icon: 'lucide:rocket',
       title: 'TypeScript First',
       description: 'Full type inference. Zero runtime overhead. Developer experience first.',
     },
@@ -42,7 +43,9 @@ export function Features() {
           <For each={features}>
             {(feature) => (
               <div class="bg-bg-light border border-border rounded-zen p-8 hover:border-primary transition-colors">
-                <div class="text-5xl mb-4">{feature.icon}</div>
+                <div class="mb-4">
+                  <Icon icon={feature.icon} width="48" height="48" class="text-primary" />
+                </div>
                 <h3 class="text-xl font-semibold mb-3 text-text">{feature.title}</h3>
                 <p class="text-text-muted leading-relaxed">{feature.description}</p>
               </div>
