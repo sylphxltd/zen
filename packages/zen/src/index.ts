@@ -36,7 +36,14 @@ export type { Context } from './components/Context.js';
 export { render, Fragment } from './jsx-runtime.js';
 
 // Lifecycle
-export { onMount, onCleanup, createEffect, createRoot, disposeNode, getOwner } from './lifecycle.js';
+export {
+  onMount,
+  onCleanup,
+  createEffect,
+  createRoot,
+  disposeNode,
+  getOwner,
+} from './lifecycle.js';
 export type { Owner } from './lifecycle.js';
 
 // Utilities
@@ -44,6 +51,9 @@ export { lazy } from './lazy.js';
 export { mergeProps, splitProps } from './utils/props.js';
 export { selector } from './utils/selector.js';
 export { runWithOwner } from './utils/runWithOwner.js';
+
+// Server utilities
+export { isServer, createUniqueId, setServerIdPrefix, resetIdCounter } from './server-utils.js';
 
 // Types
 export type { Signal, Computed } from '@zen/signal';

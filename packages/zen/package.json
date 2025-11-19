@@ -13,12 +13,24 @@
       "import": "./dist/index.js"
     },
     "./jsx-runtime": {
+      "react-server": {
+        "types": "./dist/jsx-runtime-server.d.ts",
+        "import": "./dist/jsx-runtime-server.js"
+      },
       "types": "./dist/jsx-runtime.d.ts",
       "import": "./dist/jsx-runtime.js"
     },
     "./jsx-dev-runtime": {
+      "react-server": {
+        "types": "./dist/jsx-runtime-server.d.ts",
+        "import": "./dist/jsx-runtime-server.js"
+      },
       "types": "./dist/jsx-runtime.d.ts",
       "import": "./dist/jsx-runtime.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
     }
   },
   "files": ["dist"],

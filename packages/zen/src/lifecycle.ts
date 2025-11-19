@@ -23,8 +23,20 @@ export type Owner = {
 // Current owner context (set during component rendering)
 let currentOwner: Owner | null = null;
 
+// Server mode flag (disables effects/mounts during SSR)
+let isServerMode = false;
+
 // Map DOM nodes to their owners for cleanup tracking
 const nodeOwners = new WeakMap<Node, Owner>();
+
+/**
+ * Set server rendering mode
+ * When true, effects and mounts are skipped
+ * @internal Used by renderToString
+ */
+export function setServerMode(mode: boolean): void {
+  isServerMode = mode;
+}
 
 /**
  * Run callback after component is mounted (inserted into DOM)
@@ -54,6 +66,9 @@ const nodeOwners = new WeakMap<Node, Owner>();
  * ```
  */
 export function onMount(callback: () => undefined | CleanupFunction): void {
+  // Skip in server mode (no DOM)
+  if (isServerMode) return;
+
   // Capture owner synchronously (before queueMicrotask)
   const owner = currentOwner;
 
@@ -116,6 +131,9 @@ export function onCleanup(cleanup: CleanupFunction): void {
  * ```
  */
 export function createEffect(effectFn: () => undefined | CleanupFunction): void {
+  // Skip in server mode
+  if (isServerMode) return;
+
   let cleanup: CleanupFunction | undefined;
 
   // Run effect after mount
