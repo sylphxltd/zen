@@ -92,7 +92,7 @@ export function transformReact(code: string, s: MagicString, _id: string, debug:
       if (!componentSignals.has(key)) {
         componentSignals.set(key, new Map());
       }
-      componentSignals.get(key)!.set(signalName, usage);
+      componentSignals.get(key)?.set(signalName, usage);
     }
   }
 
