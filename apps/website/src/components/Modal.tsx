@@ -11,6 +11,7 @@ export function Modal(props: ModalProps) {
   // Handle ESC key to close modal
   // Cleanup is automatically registered by lifecycle-aware effect()
   effect(() => {
+    console.log('[Modal] Effect running - setting overflow hidden');
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         props.onClose();
@@ -22,6 +23,7 @@ export function Modal(props: ModalProps) {
     document.body.style.overflow = 'hidden';
 
     return () => {
+      console.log('[Modal] Cleanup running - restoring scroll');
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };

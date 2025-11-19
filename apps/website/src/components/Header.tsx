@@ -59,11 +59,13 @@ export function Header() {
       </header>
 
       <Show when={() => isSearchOpen.value}>
-        <SearchModal
-          onClose={() => {
-            isSearchOpen.value = false;
-          }}
-        />
+        {() => (
+          <SearchModal
+            onClose={() => {
+              isSearchOpen.value = false;
+            }}
+          />
+        )}
       </Show>
     </>
   );
