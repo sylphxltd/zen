@@ -1,0 +1,81 @@
+{
+  "name": "unplugin-zen-signal",
+  "version": "0.1.0",
+  "description": "Universal plugin for using Zen Signals across all frameworks with unified syntax",
+  "author": "Sylphx <hi@sylphx.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SylphxAI/zen.git",
+    "directory": "packages/unplugin-zen-signal"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js",
+      "require": "./dist/vite.cjs"
+    },
+    "./webpack": {
+      "types": "./dist/webpack.d.ts",
+      "import": "./dist/webpack.js",
+      "require": "./dist/webpack.cjs"
+    },
+    "./rollup": {
+      "types": "./dist/rollup.d.ts",
+      "import": "./dist/rollup.js",
+      "require": "./dist/rollup.cjs"
+    },
+    "./esbuild": {
+      "types": "./dist/esbuild.d.ts",
+      "import": "./dist/esbuild.js",
+      "require": "./dist/esbuild.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "keywords": [
+    "zen",
+    "signal",
+    "reactive",
+    "unplugin",
+    "vite",
+    "webpack",
+    "rollup",
+    "react",
+    "vue",
+    "svelte"
+  ],
+  "scripts": {
+    "build": "bunup --format esm,cjs --dts --target node --minify",
+    "dev": "bunup --format esm,cjs --dts --target node --watch",
+    "clean": "bun rimraf dist .turbo"
+  },
+  "dependencies": {
+    "unplugin": "^1.16.0",
+    "@rollup/pluginutils": "^5.1.4",
+    "magic-string": "^0.30.18"
+  },
+  "peerDependencies": {
+    "@zen/signal": "workspace:*"
+  },
+  "devDependencies": {
+    "bunup": "^0.15.13",
+    "@types/node": "^22.14.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.4.0",
+    "webpack": "^5.95.0",
+    "rollup": "^4.29.0",
+    "esbuild": "^0.24.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

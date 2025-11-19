@@ -85,9 +85,6 @@ export function jsx(type: string | Function, props: Props | null): Node {
 
     // Mismatch warning in dev only
     if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
-      console.warn(
-        `Hydration mismatch: expected <${type}> but found ${node?.nodeName || 'null'}`
-      );
     }
   }
 
@@ -230,9 +227,6 @@ function appendChild(parent: Element, child: any, hydrating: boolean): void {
       process.env?.NODE_ENV === 'development' &&
       (!node || node.nodeType !== Node.TEXT_NODE)
     ) {
-      console.warn(
-        `Hydration mismatch: expected text node "${String(child)}" but found ${node?.nodeName || 'null'}`
-      );
     }
   } else {
     parent.appendChild(document.createTextNode(String(child)));
