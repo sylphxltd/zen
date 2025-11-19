@@ -4,7 +4,7 @@
  * Render Zen components to HTML strings for SSR
  */
 
-import { createOwner, setOwner, getOwner, setServerMode } from './lifecycle.js';
+import { createOwner, getOwner, setOwner, setServerMode } from './lifecycle.js';
 import { resetIdCounter } from './server-utils.js';
 
 /**
@@ -32,7 +32,7 @@ import { resetIdCounter } from './server-utils.js';
  * });
  * ```
  */
-export function renderToString(fn: () => string): string {
+export function renderToString(fn: () => any): string {
   // Reset ID counter for deterministic IDs
   resetIdCounter();
 
@@ -46,9 +46,16 @@ export function renderToString(fn: () => string): string {
 
   try {
     // Execute component tree
-    // (jsx-runtime-server will return HTML strings)
-    const html = fn();
-    return html;
+    // (jsx-runtime-server will return SafeHtml objects)
+    const result = fn();
+
+    // Extract HTML string from SafeHtml wrapper
+    if (result && typeof result === 'object' && 'html' in result) {
+      return result.html;
+    }
+
+    // Fallback for plain strings
+    return String(result);
   } finally {
     setOwner(prev);
     setServerMode(false);

@@ -5,7 +5,23 @@
  * Used automatically when bundling for server environments.
  */
 
-import { createOwner, setOwner, getOwner } from './lifecycle.js';
+import { createOwner, getOwner, setOwner } from './lifecycle.js';
+
+// Symbol to mark safe HTML strings
+const SAFE_HTML = Symbol('SAFE_HTML');
+
+type SafeHtml = {
+  [SAFE_HTML]: true;
+  html: string;
+};
+
+function isSafeHtml(value: any): value is SafeHtml {
+  return value && typeof value === 'object' && value[SAFE_HTML] === true;
+}
+
+function createSafeHtml(html: string): SafeHtml {
+  return { [SAFE_HTML]: true, html };
+}
 
 // Void elements that don't have closing tags
 const VOID_ELEMENTS = new Set([
@@ -86,7 +102,7 @@ function renderAttributes(props: Record<string, any>): string {
     attrs.push(`${attrName}="${escapeHtml(String(value))}"`);
   }
 
-  return attrs.length > 0 ? ' ' + attrs.join(' ') : '';
+  return attrs.length > 0 ? ` ${attrs.join(' ')}` : '';
 }
 
 /**
@@ -96,7 +112,10 @@ function renderChildren(children: any): string {
   // Null/undefined
   if (children == null) return '';
 
-  // String/number
+  // Safe HTML (from jsx() calls)
+  if (isSafeHtml(children)) return children.html;
+
+  // String/number (escape for XSS protection)
   if (typeof children === 'string') return escapeHtml(children);
   if (typeof children === 'number') return String(children);
   if (typeof children === 'boolean') return '';
@@ -111,9 +130,6 @@ function renderChildren(children: any): string {
     return renderChildren(children());
   }
 
-  // Already rendered string (from components)
-  if (typeof children === 'string') return children;
-
   // DOM Comment nodes (from Show, For, etc.)
   // These are marker comments, skip them in SSR
   return '';
@@ -122,7 +138,7 @@ function renderChildren(children: any): string {
 /**
  * JSX factory function for SSR
  */
-export function jsx(type: any, props: any): string {
+export function jsx(type: any, props: any): SafeHtml {
   const { children, ...restProps } = props || {};
 
   // Component function
@@ -135,7 +151,8 @@ export function jsx(type: any, props: any): string {
     try {
       // Execute component
       const result = type({ ...restProps, children });
-      return renderChildren(result);
+      const html = renderChildren(result);
+      return createSafeHtml(html);
     } finally {
       setOwner(prev);
     }
@@ -147,11 +164,11 @@ export function jsx(type: any, props: any): string {
 
   // Void elements (self-closing)
   if (VOID_ELEMENTS.has(type)) {
-    return `<${type}${attrs} />`;
+    return createSafeHtml(`<${type}${attrs} />`);
   }
 
   // Regular element
-  return `<${type}${attrs}>${childrenHtml}</${type}>`;
+  return createSafeHtml(`<${type}${attrs}>${childrenHtml}</${type}>`);
 }
 
 // Aliases for different JSX modes
@@ -161,8 +178,9 @@ export const jsxDEV = jsx;
 /**
  * Fragment component
  */
-export function Fragment(props: { children?: any }): string {
-  return renderChildren(props.children);
+export function Fragment(props: { children?: any }): SafeHtml {
+  const html = renderChildren(props.children);
+  return createSafeHtml(html);
 }
 
 /**
