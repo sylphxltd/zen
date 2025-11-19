@@ -1,4 +1,4 @@
-import { map, setKey } from '@zen/zen-patterns';
+import { map, setKey } from '@zen/signal-extensions/patterns';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   handleLinkClick,
@@ -15,7 +15,7 @@ import * as utils from './utils'; // To mock parseQuery
 import * as core from '@zen/signal'; // Import actual core functions
 
 // Define mockRouterStore *before* vi.mock uses it
-// Note: map() moved to @zen/zen-patterns
+// Note: map() moved to @zen/signal-extensions/patterns
 
 // No longer mocking './index' directly
 

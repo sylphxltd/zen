@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@zen/signal": "workspace:*",
-    "@zen/signal-patterns": "workspace:*"
+    "@zen/signal-extensions": "workspace:*"
   },
   "devDependencies": {
     "bunup": "^0.15.13",

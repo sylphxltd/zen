@@ -1,4 +1,4 @@
-import { setKey } from '@zen/zen-patterns';
+import { setKey } from '@zen/signal-extensions/patterns';
 import { $router } from './index'; // Removed unused RouterState
 import { matchRoutes } from './matcher'; // Import matcher, removed unused RouteConfig
 import { getRoutes } from './routes'; // Import route getter

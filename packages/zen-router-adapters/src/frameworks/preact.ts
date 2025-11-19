@@ -14,10 +14,10 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import {
-  createUseRouter,
-  createUseParams,
-  createUseSearchParams,
   createUseNavigate,
+  createUseParams,
+  createUseRouter,
+  createUseSearchParams,
 } from '../core/create-hooks';
 
 // Create Preact-specific hooks

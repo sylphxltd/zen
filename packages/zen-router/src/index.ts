@@ -3,8 +3,8 @@
 // TODO: Implement router logic inspired by @nanostores/router
 // Goals: Tiny size, high performance, zen/FP principles
 
-import { map } from '@zen/zen-patterns';
-import type { MapStore } from '@zen/zen-patterns';
+import { map } from '@zen/signal-extensions/patterns';
+import type { MapStore } from '@zen/signal-extensions/patterns';
 
 /** Route type placeholder (extend as needed) */
 export type Route = string;

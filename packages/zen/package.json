@@ -74,6 +74,7 @@
   },
   "dependencies": {
     "@zen/signal": "workspace:*",
-    "@zen/signal-zen": "workspace:*"
+    "@zen/signal-zen": "workspace:*",
+    "@zen/signal-extensions": "workspace:*"
   }
 }

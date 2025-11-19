@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@zen/signal': path.resolve(__dirname, '../zen/src/index.ts'),
-      '@zen/zen-patterns': path.resolve(__dirname, '../zen-patterns/src/index.ts'),
+      '@zen/signal-extensions/patterns': path.resolve(__dirname, '../zen-patterns/src/index.ts'),
     },
   },
 });

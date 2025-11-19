@@ -19,10 +19,10 @@
 
 import type { ReactiveHooks } from './core/create-hooks';
 import {
-  createUseRouter,
-  createUseParams,
-  createUseSearchParams,
   createUseNavigate,
+  createUseParams,
+  createUseRouter,
+  createUseSearchParams,
 } from './core/create-hooks';
 
 // Auto-detect framework
@@ -58,10 +58,10 @@ function detectFramework(): ReactiveHooks {
   // No compatible framework found
   throw new Error(
     '@zen/router-adapters: No compatible framework detected. ' +
-    'Install react or preact, or use explicit import:\n' +
-    '  import { useRouter } from "@zen/router-adapters/react"\n' +
-    '  import { useRouter } from "@zen/router-adapters/preact"\n' +
-    '  import { useRouter } from "@zen/router-adapters/zen"'
+      'Install react or preact, or use explicit import:\n' +
+      '  import { useRouter } from "@zen/router-adapters/react"\n' +
+      '  import { useRouter } from "@zen/router-adapters/preact"\n' +
+      '  import { useRouter } from "@zen/router-adapters/zen"',
   );
 }
 

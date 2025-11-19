@@ -14,7 +14,7 @@
  * ```
  */
 
-import { computedAsync } from '@zen/signal-patterns';
+import { computedAsync } from '@zen/signal-extensions/patterns';
 
 type Component<P = any> = (props: P) => Node;
 type ComponentModule<P = any> = { default: Component<P> };

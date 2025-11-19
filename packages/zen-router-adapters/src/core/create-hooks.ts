@@ -5,15 +5,15 @@
  * by abstracting the common subscription pattern.
  */
 
-import { subscribe } from '@zen/signal';
 import { $router, type RouterState } from '@zen/router';
+import { subscribe } from '@zen/signal';
 
 /**
  * Hooks interface that all React-like frameworks must implement
  */
 export interface ReactiveHooks {
   useState: <T>(initialState: T) => [T, (newState: T) => void];
-  useEffect: (effect: () => void | (() => void), deps?: any[]) => void;
+  useEffect: (effect: () => undefined | (() => void), deps?: any[]) => void;
 }
 
 /**
