@@ -4,7 +4,7 @@
 import type { Plugin } from 'vite';
 import type { CompilerOptions } from '../core/types.js';
 
-export default function zenCompiler(options: CompilerOptions = {}): Plugin {
+export default function zenCompiler(_options: CompilerOptions = {}): Plugin {
   return {
     name: 'zen-compiler',
 

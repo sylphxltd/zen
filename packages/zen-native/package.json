@@ -25,14 +25,7 @@
     "dev": "bun run --watch src/index.ts",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "zen",
-    "native",
-    "react-native",
-    "ios",
-    "android",
-    "mobile"
-  ],
+  "keywords": ["zen", "native", "react-native", "ios", "android", "mobile"],
   "author": "Zen Team",
   "license": "MIT",
   "repository": {

@@ -31,16 +31,7 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "zen",
-    "compiler",
-    "jsx",
-    "transform",
-    "vite",
-    "webpack",
-    "metro",
-    "plugin"
-  ],
+  "keywords": ["zen", "compiler", "jsx", "transform", "vite", "webpack", "metro", "plugin"],
   "author": "Zen Team",
   "license": "MIT",
   "repository": {

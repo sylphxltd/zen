@@ -25,13 +25,7 @@
     "dev": "bun run --watch src/index.ts",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "zen",
-    "tui",
-    "terminal",
-    "cli",
-    "ink"
-  ],
+  "keywords": ["zen", "tui", "terminal", "cli", "ink"],
   "author": "Zen Team",
   "license": "MIT",
   "repository": {

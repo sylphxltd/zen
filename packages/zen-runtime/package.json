@@ -20,14 +20,7 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "zen",
-    "runtime",
-    "reactive",
-    "components",
-    "platform-agnostic",
-    "cross-platform"
-  ],
+  "keywords": ["zen", "runtime", "reactive", "components", "platform-agnostic", "cross-platform"],
   "author": "Zen Team",
   "license": "MIT",
   "repository": {

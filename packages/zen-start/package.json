@@ -29,14 +29,7 @@
     "dev": "bun run --watch src/index.ts",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "zen",
-    "fullstack",
-    "meta-framework",
-    "ssr",
-    "routing",
-    "server-functions"
-  ],
+  "keywords": ["zen", "fullstack", "meta-framework", "ssr", "routing", "server-functions"],
   "author": "Zen Team",
   "license": "MIT",
   "repository": {
