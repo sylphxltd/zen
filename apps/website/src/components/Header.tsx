@@ -1,5 +1,5 @@
-import { signal } from '@zen/signal';
 import { Link } from '@zen/router';
+import { signal } from '@zen/signal';
 import { Show } from '@zen/zen';
 import { Icon } from './Icon.tsx';
 import { SearchModal } from './SearchModal.tsx';
@@ -59,13 +59,11 @@ export function Header() {
       </header>
 
       <Show when={() => isSearchOpen.value}>
-        {() => (
-          <SearchModal
-            onClose={() => {
-              isSearchOpen.value = false;
-            }}
-          />
-        )}
+        <SearchModal
+          onClose={() => {
+            isSearchOpen.value = false;
+          }}
+        />
       </Show>
     </>
   );
