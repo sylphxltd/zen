@@ -12,14 +12,46 @@ export {
   effect,
   batch,
   untrack,
+  peek,
+  subscribe,
   onMount,
   onCleanup,
+  createRoot,
+  disposeNode,
+  getOwner,
+  // Components from runtime
+  For,
+  Show,
+  Switch,
+  Match,
+  ErrorBoundary,
+  Suspense,
+  Dynamic,
+  // Context
+  createContext,
+  useContext,
+  // Utilities
+  lazy,
+  resolve,
+  isSignal,
+  mergeProps,
+  splitProps,
+  selector,
+  runWithOwner,
+  // Server utils
+  isServer,
+  createUniqueId,
 } from '@zen/runtime';
 
-// TODO: Terminal renderer
-// export { render } from './render.js';
+export type { Signal, Computed, Owner, Context, Reactive, MaybeReactive } from '@zen/runtime';
 
-// TODO: TUI components
-// export { Box } from './components/Box.js';
-// export { Text } from './components/Text.js';
-// export { Input } from './components/Input.js';
+// TUI-specific: Renderer
+export { render, renderToTerminal } from './render.js';
+export { Fragment } from './jsx-runtime.js';
+
+// TUI-specific: Components
+export { Box } from './components/Box.js';
+export { Text } from './components/Text.js';
+
+// TUI-specific: Types
+export type { TUINode, TUIStyle, RenderOutput } from './types.js';
