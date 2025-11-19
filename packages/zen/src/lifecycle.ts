@@ -18,6 +18,7 @@ export type Owner = {
   children: Owner[];
   parent: Owner | null;
   disposed: boolean;
+  node?: Node; // Track the DOM node for this owner
 };
 
 // Current owner context (set during component rendering)
@@ -40,6 +41,10 @@ export function setServerMode(mode: boolean): void {
 
 /**
  * Run callback after component is mounted (inserted into DOM)
+ *
+ * IMPORTANT: Due to Zen's eager JSX evaluation, onMount() verifies the component
+ * is actually in the document before running the callback. This prevents side
+ * effects from running on components that are created but never mounted.
  *
  * Critical for:
  * - DOM measurements (offsetWidth, getBoundingClientRect)
@@ -74,6 +79,14 @@ export function onMount(callback: () => undefined | CleanupFunction): void {
 
   // Use queueMicrotask to ensure DOM is inserted
   queueMicrotask(() => {
+    // Verify the component's node is actually in the document
+    // This is critical for Zen's eager JSX evaluation where components
+    // may be created but not mounted (e.g., in Show when condition is false)
+    if (!owner || !owner.node) return;
+
+    // Only run callback if the component is actually mounted in the document
+    if (!document.contains(owner.node)) return;
+
     const cleanup = callback();
 
     // Track cleanup function in captured owner
@@ -221,6 +234,7 @@ export function disposeOwner(owner: Owner): void {
  */
 export function attachNodeToOwner(node: Node, owner: Owner): void {
   nodeOwners.set(node, owner);
+  owner.node = node; // Store node reference for onMount verification
 }
 
 /**

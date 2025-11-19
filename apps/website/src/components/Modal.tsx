@@ -9,7 +9,6 @@ export interface ModalProps {
 
 export function Modal(props: ModalProps) {
   // Handle ESC key to close modal
-  // Use onMount for DOM side effects - only runs when component is mounted to DOM
   onMount(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -18,18 +17,15 @@ export function Modal(props: ModalProps) {
     };
 
     document.addEventListener('keydown', handleEscape);
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
 
     onCleanup(() => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
     });
   });
 
   return (
     <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
       onClick={props.onClose}
       onKeyDown={(e: KeyboardEvent) => {
         if (e.key === 'Enter' || e.key === ' ') {
