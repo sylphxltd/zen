@@ -4,8 +4,8 @@
  * Render Zen components to HTML strings for SSR
  */
 
-import { createOwner, getOwner, setOwner, setServerMode } from '@zen/signal';
 import { resetIdCounter } from '@zen/runtime';
+import { createOwner, getOwner, setOwner, setServerMode } from '@zen/signal';
 
 /**
  * Render component tree to HTML string

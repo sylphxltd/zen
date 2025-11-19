@@ -58,7 +58,7 @@ export function Suspense(props: SuspenseProps): Node {
   const { fallback, children } = props;
   const container = document.createDocumentFragment();
   const isLoading = signal(false);
-  const marker = document.createComment('suspense');
+  const _marker = document.createComment('suspense');
 
   // Append children
   const childArray = Array.isArray(children) ? children : [children];

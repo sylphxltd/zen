@@ -3,8 +3,9 @@
  */
 import type { Plugin } from 'vite';
 import type { CompilerOptions } from '../core/types.js';
+import { transformZenJSX } from '../core/transform.js';
 
-export default function zenCompiler(_options: CompilerOptions = {}): Plugin {
+export default function zenCompiler(options: CompilerOptions = {}): Plugin {
   return {
     name: 'zen-compiler',
 
@@ -16,16 +17,27 @@ export default function zenCompiler(_options: CompilerOptions = {}): Plugin {
         return null;
       }
 
-      // TODO: Implement JSX transformation
-      // 1. Parse JSX with Babel
-      // 2. Transform lazy children
-      // 3. Transform signal unwrap
-      // 4. Generate code
+      // Skip node_modules
+      if (id.includes('node_modules')) {
+        return null;
+      }
 
-      return {
-        code,
-        map: null,
-      };
+      try {
+        const result = transformZenJSX(code, id, options);
+
+        if (!result) {
+          return null;
+        }
+
+        return {
+          code: result.code,
+          map: result.map,
+        };
+      } catch (error) {
+        // Log error but don't fail the build
+        console.error(`[zen-compiler] Error transforming ${id}:`, error);
+        return null;
+      }
     },
   };
 }

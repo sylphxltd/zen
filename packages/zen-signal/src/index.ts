@@ -56,6 +56,11 @@ export {
   createRoot,
   disposeNode,
   getOwner,
+  // Internal functions needed by @zen/runtime and @zen/web
+  setOwner,
+  createOwner,
+  attachNodeToOwner,
+  setServerMode,
 } from './lifecycle.js';
 export type { Owner } from './lifecycle.js';
 

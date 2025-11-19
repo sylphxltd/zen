@@ -11,8 +11,8 @@
 
 import { effect } from '@zen/signal';
 import type { AnyZen } from '@zen/signal';
-import { enterHydrateParent, getNextHydrateNode, isHydrating } from './hydrate.js';
 import { attachNodeToOwner, createOwner, setOwner } from '@zen/signal';
+import { enterHydrateParent, getNextHydrateNode, isHydrating } from './hydrate.js';
 
 export { Fragment } from './core/fragment.js';
 
