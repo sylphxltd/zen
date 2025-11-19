@@ -193,7 +193,7 @@ export function Dropdown({ items }) {
       <button onClick={() => isOpen.value = !isOpen.value}>
         Menu
       </button>
-      <Show when={isOpen.value}>
+      <Show when={() => isOpen.value}>
         <div class="absolute mt-2 bg-white shadow-lg">
           {items.map(item => (
             <a href={item.href}>{item.label}</a>

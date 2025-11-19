@@ -130,7 +130,7 @@ export function SearchModal(props: SearchModalProps) {
 
       {/* Results */}
       <div class="space-y-2">
-        <Show when={results.value.length > 0}>
+        <Show when={() => results.value.length > 0}>
           <For each={results.value}>
             {(result) => (
               <button
@@ -164,7 +164,7 @@ export function SearchModal(props: SearchModalProps) {
           </For>
         </Show>
 
-        <Show when={results.value.length === 0}>
+        <Show when={() => results.value.length === 0}>
           <div class="text-center py-8">
             <Icon
               icon="lucide:search-x"

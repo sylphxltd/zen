@@ -107,7 +107,7 @@ const doubled = computed(() => count.value * 2);
                   )}
                 </For>
               </ul>
-              <Show when={todos.value.length === 0}>
+              <Show when={() => todos.value.length === 0}>
                 <div class="text-center text-text-muted py-8">No todos yet. Add one above!</div>
               </Show>
             </div>

@@ -299,7 +299,7 @@ export function Playground() {
                 <p class="text-sm text-text-muted">{selectedExample.value.description}</p>
               </div>
               {/* Performance Metrics */}
-              <Show when={executeTime.value > 0}>
+              <Show when={() => executeTime.value > 0}>
                 <div class="flex gap-3 text-xs">
                   <div class="text-center">
                     <div class="text-text-muted">Execute</div>
@@ -317,7 +317,7 @@ export function Playground() {
               </Show>
             </div>
 
-            <Show when={error.value !== ''}>
+            <Show when={() => error.value !== ''}>
               <div class="mb-4 p-4 bg-red-900/20 border border-red-500/50 rounded-zen text-red-400 font-mono whitespace-pre-wrap">
                 <strong>Error:</strong> {error}
               </div>
