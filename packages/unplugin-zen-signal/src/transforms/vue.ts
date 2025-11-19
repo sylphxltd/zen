@@ -43,17 +43,23 @@ export function transformVue(code: string, s: MagicString, _id: string, debug: b
     return;
   }
 
-  // Step 2: Find all .value accesses
+  // Step 2: Find all .value accesses in template {{ }} context only
   const usages = new Map<string, SignalUsage>();
 
   for (const signalName of signals) {
-    const regex = new RegExp(`\\b${signalName}\\.value\\b`, 'g');
+    // Only match {{ signal.value }} in templates (Vue interpolation syntax)
+    const regex = new RegExp(`\\{\\{\\s*(${signalName}\\.value)\\s*\\}\\}`, 'g');
     const positions: number[] = [];
-    const matches = scriptContent.matchAll(regex);
+    const matches = code.matchAll(regex);
 
     for (const match of matches) {
-      // Adjust position to account for script tag offset
-      positions.push(scriptStart + match.index);
+      const fullMatch = match[0];
+      const valueExpr = match[1];
+      const startPos = match.index;
+
+      // Find position of signal.value within the braces
+      const valueStart = startPos + fullMatch.indexOf(valueExpr);
+      positions.push(valueStart);
     }
 
     if (positions.length > 0) {

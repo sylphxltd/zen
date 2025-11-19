@@ -41,17 +41,29 @@ export function transformSvelte(code: string, s: MagicString, _id: string, debug
     return;
   }
 
-  // Step 2: Find all .value accesses
+  // Step 2: Find all .value accesses in template {expression} context only
+  // Match {signal.value} but exclude event handlers and script section
   const usages = new Map<string, SignalUsage>();
 
+  // Get template section (everything after </script>)
+  const scriptEnd = scriptIndex + scriptMatch[0].length;
+  const templateSection = code.slice(scriptEnd);
+
   for (const signalName of signals) {
-    const regex = new RegExp(`\\b${signalName}\\.value\\b`, 'g');
+    // Only match {signal.value} in template (Svelte interpolation syntax)
+    // This excludes event handlers like on:click={() => signal.value++}
+    const regex = new RegExp(`\\{\\s*(${signalName}\\.value)\\s*\\}`, 'g');
     const positions: number[] = [];
-    const matches = scriptContent.matchAll(regex);
+    const matches = templateSection.matchAll(regex);
 
     for (const match of matches) {
-      // Adjust position to account for script tag offset
-      positions.push(scriptStart + match.index);
+      const fullMatch = match[0];
+      const valueExpr = match[1];
+      const startPos = match.index;
+
+      // Adjust position to account for script section
+      const valueStart = scriptEnd + startPos + fullMatch.indexOf(valueExpr);
+      positions.push(valueStart);
     }
 
     if (positions.length > 0) {

@@ -16,11 +16,18 @@ import type MagicString from 'magic-string';
 interface SignalUsage {
   name: string;
   positions: number[];
+  declarationEnd: number;
+}
+
+interface SignalInfo {
+  name: string;
+  start: number;
+  end: number;
 }
 
 export function transformReact(code: string, s: MagicString, _id: string, debug: boolean): void {
-  // Step 1: Find all signal variables
-  const signals = findSignalVariables(code);
+  // Step 1: Find all signal variables with their positions
+  const signals = findSignalVariablesWithPositions(code);
 
   if (signals.size === 0) {
     if (debug) {
@@ -31,20 +38,29 @@ export function transformReact(code: string, s: MagicString, _id: string, debug:
   if (debug) {
   }
 
-  // Step 2: Find all .value accesses in JSX
+  // Step 2: Find all .value accesses in JSX children context only
+  // Match {signal.value} patterns (similar to Zen transformer)
   const usages = new Map<string, SignalUsage>();
 
-  for (const signalName of signals) {
-    const regex = new RegExp(`\\b${signalName}\\.value\\b`, 'g');
+  for (const [signalName, signalInfo] of signals) {
+    // Match {signal.value} in JSX (with curly braces)
+    const regex = new RegExp(`\\{\\s*(${signalName}\\.value)\\s*\\}`, 'g');
     const positions: number[] = [];
     const matches = code.matchAll(regex);
 
     for (const match of matches) {
-      positions.push(match.index);
+      const fullMatch = match[0];
+      const valueExpr = match[1];
+      const startPos = match.index;
+
+      // Find the actual position of signal.value within the braces
+      const valueStart = startPos + fullMatch.indexOf(valueExpr);
+
+      positions.push(valueStart);
     }
 
     if (positions.length > 0) {
-      usages.set(signalName, { name: signalName, positions });
+      usages.set(signalName, { name: signalName, positions, declarationEnd: signalInfo.end });
     }
   }
 
@@ -62,40 +78,67 @@ export function transformReact(code: string, s: MagicString, _id: string, debug:
     addUseStoreImport(code, s);
   }
 
-  // Step 4: Find component function boundaries
+  // Step 4: Group signals by component and find insertion point
   const componentBodies = findComponentBodies(code);
 
-  // Step 5: For each component, add useStore hooks
-  for (const [signalName, usage] of usages) {
-    const storeName = `${signalName}$`;
+  // For each component, collect all signals and add hooks after the last signal declaration
+  const componentSignals = new Map<string, Map<string, SignalUsage>>();
 
-    // Find which component this signal is used in
+  for (const [signalName, usage] of usages) {
     const componentBody = findContainingComponent(usage.positions[0], componentBodies);
 
     if (componentBody) {
-      // Insert useStore hook at the start of component body
-      const hookCode = `  const ${storeName} = useStore(${signalName});\n`;
-      s.appendLeft(componentBody.start, hookCode);
+      const key = `${componentBody.start}-${componentBody.end}`;
+      if (!componentSignals.has(key)) {
+        componentSignals.set(key, new Map());
+      }
+      componentSignals.get(key)!.set(signalName, usage);
+    }
+  }
 
-      // Replace all signal.value with signal$
+  // Step 5: Add hooks and replace values
+  for (const [_componentKey, signals] of componentSignals) {
+    // Find the last signal declaration position
+    let lastDeclarationEnd = 0;
+    for (const [_signalName, usage] of signals) {
+      if (usage.declarationEnd > lastDeclarationEnd) {
+        lastDeclarationEnd = usage.declarationEnd;
+      }
+    }
+
+    // Insert all useStore hooks after the last signal declaration
+    let hooksCode = '\n';
+    for (const [signalName, usage] of signals) {
+      const storeName = `${signalName}$`;
+      hooksCode += `  const ${storeName} = useStore(${signalName});\n`;
+
+      // Replace signal.value with signal$ in JSX
       for (const pos of usage.positions) {
         s.overwrite(pos, pos + signalName.length + 6, storeName); // +6 for '.value'
       }
     }
+
+    // Insert hooks after last signal declaration
+    s.appendLeft(lastDeclarationEnd, hooksCode);
   }
 }
 
 /**
- * Find all signal variable declarations
+ * Find all signal variable declarations with their positions
  * Matches: const x = signal(...)
+ * Returns Map of signal name to { name, start, end }
  */
-function findSignalVariables(code: string): Set<string> {
-  const signals = new Set<string>();
-  const regex = /const\s+(\w+)\s*=\s*signal\(/g;
+function findSignalVariablesWithPositions(code: string): Map<string, SignalInfo> {
+  const signals = new Map<string, SignalInfo>();
+  const regex = /const\s+(\w+)\s*=\s*signal\([^)]*\);?/g;
   const matches = code.matchAll(regex);
 
   for (const match of matches) {
-    signals.add(match[1]);
+    const name = match[1];
+    const start = match.index;
+    const end = start + match[0].length;
+
+    signals.set(name, { name, start, end });
   }
 
   return signals;
