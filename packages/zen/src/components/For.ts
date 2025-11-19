@@ -11,7 +11,7 @@
 
 import { effect } from '@zen/signal';
 import { disposeNode, onCleanup } from '../lifecycle.js';
-import { resolve, type MaybeReactive } from '../reactive-utils.js';
+import { type MaybeReactive, resolve } from '../reactive-utils.js';
 
 interface ForProps<T, U extends Node> {
   each: MaybeReactive<T[]>;

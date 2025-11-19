@@ -1,4 +1,4 @@
-import { Show, signal, computed } from '@zen/zen';
+import { Show, computed, signal } from '@zen/zen';
 
 export function Docs() {
   const activeSection = signal('intro');
