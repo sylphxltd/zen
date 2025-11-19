@@ -4,7 +4,7 @@
  */
 
 // Core Types
-export type { Listener, Unsubscribe, AnyZen } from './zen';
+export type { Listener, Unsubscribe, AnyZen } from './signal';
 
 // Core Primitives
 export {
@@ -15,9 +15,9 @@ export {
   effect,
   untrack,
   peek,
-} from './zen';
+} from './signal';
 
-export type { Signal, ReadonlySignal, Computed } from './zen';
+export type { Signal, ReadonlySignal, Computed } from './signal';
 
 // Legacy compatibility exports
 export type { ZenValue } from './types';

@@ -20,9 +20,15 @@ import * as core from '@zen/signal'; // Import actual core functions
 // No longer mocking './index' directly
 
 // Mock matcher and routes
-vi.mock('./matcher');
-vi.mock('./routes');
-vi.mock('./utils');
+vi.mock('./matcher', () => ({
+  matchRoutes: vi.fn(),
+}));
+vi.mock('./routes', () => ({
+  getRoutes: vi.fn(),
+}));
+vi.mock('./utils', () => ({
+  parseQuery: vi.fn(),
+}));
 
 // Mock window/history/location/document/console
 const mockAddEventListener = vi.fn();

@@ -1,20 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
-import { zen, computed, effect, subscribe, batch, untrack, peek } from './zen';
+import { signal, computed, effect, subscribe, batch, untrack, peek } from './signal';
 
-describe('zen', () => {
-  it('should create a zen signal with initial value', () => {
-    const count = zen(0);
+describe('signal', () => {
+  it('should create a signal with initial value', () => {
+    const count = signal(0);
     expect(count.value).toBe(0);
   });
 
   it('should update value', () => {
-    const count = zen(0);
+    const count = signal(0);
     count.value = 5;
     expect(count.value).toBe(5);
   });
 
   it('should not trigger on same value', () => {
-    const count = zen(0);
+    const count = signal(0);
     const listener = vi.fn();
     subscribe(count, listener);
 
@@ -24,7 +24,7 @@ describe('zen', () => {
   });
 
   it('should handle +0 vs -0 as different', () => {
-    const num = zen(+0);
+    const num = signal(+0);
     const listener = vi.fn();
     subscribe(num, listener);
 
@@ -34,7 +34,7 @@ describe('zen', () => {
   });
 
   it('should handle NaN as same value', () => {
-    const num = zen(NaN);
+    const num = signal(NaN);
     const listener = vi.fn();
     subscribe(num, listener);
 
@@ -46,16 +46,16 @@ describe('zen', () => {
 });
 
 describe('computed', () => {
-  it('should compute from zen values', () => {
-    const count = zen(5);
+  it('should compute from signal values', () => {
+    const count = signal(5);
     const doubled = computed(() => count.value * 2);
 
     expect(doubled.value).toBe(10);
   });
 
   it('should auto-track dependencies', () => {
-    const a = zen(2);
-    const b = zen(3);
+    const a = signal(2);
+    const b = signal(3);
     const sum = computed(() => a.value + b.value);
 
     expect(sum.value).toBe(5);
@@ -68,7 +68,7 @@ describe('computed', () => {
   });
 
   it('should only recompute when dependencies change', () => {
-    const count = zen(1);
+    const count = signal(1);
     let computeCount = 0;
     const doubled = computed(() => {
       computeCount++;
@@ -88,7 +88,7 @@ describe('computed', () => {
   });
 
   it('should support computed chains for reading', () => {
-    const count = zen(2);
+    const count = signal(2);
     const doubled = computed(() => count.value * 2);
     const quadrupled = computed(() => doubled.value * 2);
 
@@ -102,9 +102,9 @@ describe('computed', () => {
   });
 
   it('should support dynamic dependencies', () => {
-    const toggle = zen(true);
-    const a = zen(1);
-    const b = zen(10);
+    const toggle = signal(true);
+    const a = signal(1);
+    const b = signal(10);
 
     const dynamic = computed(() =>
       toggle.value ? a.value : b.value
@@ -129,9 +129,9 @@ describe('computed', () => {
   });
 
   it('should unsubscribe from old dependencies on dynamic change', () => {
-    const toggle = zen(true);
-    const a = zen(1);
-    const b = zen(10);
+    const toggle = signal(true);
+    const a = signal(1);
+    const b = signal(10);
 
     const dynamic = computed(() => toggle.value ? a.value : b.value);
 
@@ -148,7 +148,7 @@ describe('computed', () => {
   });
 
   it('should mark as stale but not recompute immediately', () => {
-    const count = zen(1);
+    const count = signal(1);
     const doubled = computed(() => count.value * 2);
 
     // Initial access
@@ -170,7 +170,7 @@ describe('computed', () => {
 
 describe('subscribe', () => {
   it('should NOT call listener immediately (effect-based, no initial call)', () => {
-    const count = zen(5);
+    const count = signal(5);
     const listener = vi.fn();
 
     subscribe(count, listener);
@@ -180,7 +180,7 @@ describe('subscribe', () => {
   });
 
   it('should call listener on updates', () => {
-    const count = zen(0);
+    const count = signal(0);
     const listener = vi.fn();
 
     subscribe(count, listener);
@@ -190,7 +190,7 @@ describe('subscribe', () => {
   });
 
   it('should support unsubscribe', () => {
-    const count = zen(0);
+    const count = signal(0);
     const listener = vi.fn();
 
     const unsub = subscribe(count, listener);
@@ -205,7 +205,7 @@ describe('subscribe', () => {
   });
 
   it('should support multiple subscribers', () => {
-    const count = zen(0);
+    const count = signal(0);
     const listener1 = vi.fn();
     const listener2 = vi.fn();
 
@@ -219,29 +219,29 @@ describe('subscribe', () => {
   });
 
   it('should handle undefined initial value correctly', () => {
-    const signal = zen<number | undefined>(undefined);
+    const sig = signal<number | undefined>(undefined);
     const listener = vi.fn();
 
-    subscribe(signal, listener);
+    subscribe(sig, listener);
 
     // First update: undefined -> 1
-    signal.value = 1;
+    sig.value = 1;
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveBeenCalledWith(1, undefined);
 
     // Second update: 1 -> undefined
-    signal.value = undefined;
+    sig.value = undefined;
     expect(listener).toHaveBeenCalledTimes(2);
     expect(listener).toHaveBeenCalledWith(undefined, 1);
 
     // Third update: undefined -> 2
-    signal.value = 2;
+    sig.value = 2;
     expect(listener).toHaveBeenCalledTimes(3);
     expect(listener).toHaveBeenCalledWith(2, undefined);
   });
 
   it('should subscribe to computed and trigger initial evaluation', () => {
-    const count = zen(2);
+    const count = signal(2);
     let computeCount = 0;
     const doubled = computed(() => {
       computeCount++;
@@ -264,7 +264,7 @@ describe('subscribe', () => {
   });
 
   it('should support manual subscription to computed', () => {
-    const count = zen(2);
+    const count = signal(2);
     const doubled = computed(() => count.value * 2);
     const listener = vi.fn();
 
@@ -283,7 +283,7 @@ describe('subscribe', () => {
   });
 
   it('should cleanup computed subscriptions when no listeners', () => {
-    const count = zen(1);
+    const count = signal(1);
     const doubled = computed(() => count.value * 2);
 
     const unsub = subscribe(doubled, vi.fn());
@@ -300,7 +300,7 @@ describe('subscribe', () => {
   });
 
   it('should notify computed subscribers when upstream signal changes (Bug 1.4)', () => {
-    const count = zen(1);
+    const count = signal(1);
     const doubled = computed(() => count.value * 2);
     const listener = vi.fn();
 
@@ -314,7 +314,7 @@ describe('subscribe', () => {
   });
 
   it('should notify computed subscribers in batched mode (Bug 1.4)', () => {
-    const count = zen(1);
+    const count = signal(1);
     const doubled = computed(() => count.value * 2);
     const listener = vi.fn();
 
@@ -331,7 +331,7 @@ describe('subscribe', () => {
   });
 
   it('should notify computed subscribers in multi-level chains (Bug 1.4)', () => {
-    const count = zen(1);
+    const count = signal(1);
     const doubled = computed(() => count.value * 2);
     const quadrupled = computed(() => doubled.value * 2);
     const listener = vi.fn();
@@ -346,7 +346,7 @@ describe('subscribe', () => {
   });
 
   it('should not steal batched notifications when subscribing mid-batch', () => {
-    const count = zen(1);
+    const count = signal(1);
     const doubled = computed(() => count.value * 2);
     const listenerA = vi.fn();
     const listenerB = vi.fn();
@@ -380,7 +380,7 @@ describe('effect', () => {
   });
 
   it('should auto-track dependencies', () => {
-    const count = zen(0);
+    const count = signal(0);
     const spy = vi.fn(() => {
       count.value; // track dependency
     });
@@ -394,7 +394,7 @@ describe('effect', () => {
 
   it('should support cleanup function', () => {
     const cleanup = vi.fn();
-    const count = zen(0);
+    const count = signal(0);
 
     effect(() => {
       count.value; // track
@@ -419,9 +419,9 @@ describe('effect', () => {
   });
 
   it('should support dynamic dependencies', () => {
-    const toggle = zen(true);
-    const a = zen(1);
-    const b = zen(10);
+    const toggle = signal(true);
+    const a = signal(1);
+    const b = signal(10);
     const spy = vi.fn();
 
     effect(() => {
@@ -449,7 +449,7 @@ describe('effect', () => {
   });
 
   it('should propagate effect errors to app (production optimization)', () => {
-    const count = zen(0);
+    const count = signal(0);
 
     effect(() => {
       if (count.value > 0) throw new Error('Test error');
@@ -462,7 +462,7 @@ describe('effect', () => {
   });
 
   it('should propagate cleanup errors to app (production optimization)', () => {
-    const count = zen(0);
+    const count = signal(0);
 
     effect(() => {
       count.value;
@@ -480,8 +480,8 @@ describe('effect', () => {
 
 describe('batch', () => {
   it('should defer notifications until batch completes', () => {
-    const a = zen(1);
-    const b = zen(2);
+    const a = signal(1);
+    const b = signal(2);
     const listener = vi.fn();
 
     subscribe(a, listener);
@@ -501,7 +501,7 @@ describe('batch', () => {
   });
 
   it('should coalesce multiple updates to same signal', () => {
-    const count = zen(0);
+    const count = signal(0);
     const listener = vi.fn();
 
     subscribe(count, listener);
@@ -519,7 +519,7 @@ describe('batch', () => {
   });
 
   it('should support nested batches', () => {
-    const count = zen(0);
+    const count = signal(0);
     const listener = vi.fn();
 
     subscribe(count, listener);
@@ -549,7 +549,7 @@ describe('batch', () => {
   });
 
   it('should handle errors and still notify', () => {
-    const count = zen(0);
+    const count = signal(0);
     const listener = vi.fn();
 
     subscribe(count, listener);
@@ -567,9 +567,9 @@ describe('batch', () => {
   });
 
   it('should dedup computed recomputes when multiple sources change in batch', () => {
-    const a = zen(1);
-    const b = zen(2);
-    const c = zen(3);
+    const a = signal(1);
+    const b = signal(2);
+    const c = signal(3);
     let computeCount = 0;
 
     const sum = computed(() => {
@@ -596,8 +596,8 @@ describe('batch', () => {
   });
 
   it('should batch computed stale marking', () => {
-    const a = zen(1);
-    const b = zen(2);
+    const a = signal(1);
+    const b = signal(2);
     const sum = computed(() => a.value + b.value);
 
     // Initial access
@@ -612,8 +612,8 @@ describe('batch', () => {
   });
 
   it('should handle signal updates during effect execution in batch (Bug 1.5)', () => {
-    const a = zen(1);
-    const b = zen(2);
+    const a = signal(1);
+    const b = signal(2);
     const sum = computed(() => a.value + b.value);
     const results: number[] = [];
 
@@ -644,7 +644,7 @@ describe('batch', () => {
 
 describe('integration', () => {
   it('should handle simple reactive patterns', () => {
-    const count = zen(1);
+    const count = signal(1);
     const doubled = computed(() => count.value * 2);
 
     expect(doubled.value).toBe(2);
@@ -657,7 +657,7 @@ describe('integration', () => {
   });
 
   it('should track zen signal changes in effects', () => {
-    const count = zen(1);
+    const count = signal(1);
     const values: number[] = [];
 
     effect(() => {
@@ -671,7 +671,7 @@ describe('integration', () => {
   });
 
   it('should optimize with lazy computed evaluation', () => {
-    const count = zen(1);
+    const count = signal(1);
     let computeCount = 0;
 
     const expensive = computed(() => {
@@ -695,7 +695,7 @@ describe('integration', () => {
   });
 
   it('should handle memory cleanup', () => {
-    const count = zen(0);
+    const count = signal(0);
     const doubled = computed(() => count.value * 2);
 
     const unsub1 = subscribe(doubled, vi.fn());
@@ -715,23 +715,23 @@ describe('integration', () => {
   });
 
   it('should handle 3+ listeners without double-calling (Bug: inline → array transition)', () => {
-    const signal = zen(0);
+    const sig = signal(0);
     const calls: number[][] = [[], [], []];
 
-    const unsub1 = subscribe(signal, (v) => calls[0]!.push(v));
-    const unsub2 = subscribe(signal, (v) => calls[1]!.push(v));
-    const unsub3 = subscribe(signal, (v) => calls[2]!.push(v));
+    const unsub1 = subscribe(sig, (v) => calls[0]!.push(v));
+    const unsub2 = subscribe(sig, (v) => calls[1]!.push(v));
+    const unsub3 = subscribe(sig, (v) => calls[2]!.push(v));
 
     // BREAKING CHANGE: subscribe now uses EffectNodes subscribed via _observers
     // Each subscribe creates an EffectNode
-    expect((signal as any)._observers.length).toBe(3);
+    expect((sig as any)._observers.length).toBe(3);
 
     // Clear initial calls
     calls[0]!.length = 0;
     calls[1]!.length = 0;
     calls[2]!.length = 0;
 
-    signal.value = 10;
+    sig.value = 10;
 
     // Each listener should be called exactly once
     expect(calls[0]).toEqual([10]);
@@ -746,7 +746,7 @@ describe('integration', () => {
 
 describe('utility helpers', () => {
   it('untrack should prevent dependency tracking', () => {
-    const count = zen(0);
+    const count = signal(0);
     let runs = 0;
 
     effect(() => {
@@ -760,7 +760,7 @@ describe('utility helpers', () => {
   });
 
   it('peek should read without tracking', () => {
-    const count = zen(0);
+    const count = signal(0);
     let runs = 0;
 
     effect(() => {
@@ -774,8 +774,8 @@ describe('utility helpers', () => {
   });
 
   it('untrack should allow normal tracking outside', () => {
-    const a = zen(1);
-    const b = zen(2);
+    const a = signal(1);
+    const b = signal(2);
     let runs = 0;
 
     effect(() => {
@@ -793,7 +793,7 @@ describe('utility helpers', () => {
 
   it('slot-based unsubscribe should handle swap-and-pop correctly', () => {
     // New architecture: cleanup via dispose(), testing observer removal
-    const source = zen(1);
+    const source = signal(1);
     const effectA = effect(() => source.value * 1);
     const effectB = effect(() => source.value * 2);
     const effectC = effect(() => source.value * 3);

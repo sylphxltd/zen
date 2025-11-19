@@ -33,6 +33,7 @@ type ComputedCore<T> = ZenCore<T | null> & {
   _unsubs?: Unsubscribe[];
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: Union type for any signal or computed value
 export type AnyZen = ZenCore<any> | ComputedCore<any>;
 export type ZenValue<A extends AnyZen> = A extends ZenCore<infer V> ? V : never;
 
@@ -182,8 +183,15 @@ export function subscribe<A extends AnyZen>(zen: A, listener: Listener<ZenValue<
     subscribeToSources(zen as any);
   }
 
+  // For computed values, ensure they're computed before initial notification
+  let initialValue = zenData._value;
+  if (zen._kind === 'computed' && zen._dirty) {
+    // Trigger computation by accessing value
+    initialValue = (zen as any).value;
+  }
+
   // Initial notification
-  listener(zenData._value as any, undefined);
+  listener(initialValue as any, undefined);
 
   // Return unsubscribe
   return () => {
