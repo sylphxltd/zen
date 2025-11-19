@@ -4,19 +4,19 @@
  * @see https://github.com/unplugin/unplugin-icons
  */
 
+import IconHeroiconsUser from '~icons/heroicons/user';
+import IconLucideFileText from '~icons/lucide/file-text';
+import IconLucideInfo from '~icons/lucide/info';
+import IconLucideMoon from '~icons/lucide/moon';
+import IconLucidePlay from '~icons/lucide/play';
+import IconLucideRotateCcw from '~icons/lucide/rotate-ccw';
+import IconLucideSearch from '~icons/lucide/search';
+import IconLucideSearchX from '~icons/lucide/search-x';
+import IconLucideSquare from '~icons/lucide/square';
+import IconLucideSun from '~icons/lucide/sun';
 // Import commonly used icons at build time
 import IconLucideZap from '~icons/lucide/zap';
-import IconLucideSearch from '~icons/lucide/search';
-import IconLucideFileText from '~icons/lucide/file-text';
-import IconLucideSearchX from '~icons/lucide/search-x';
-import IconLucidePlay from '~icons/lucide/play';
-import IconLucideSquare from '~icons/lucide/square';
-import IconLucideRotateCcw from '~icons/lucide/rotate-ccw';
-import IconLucideInfo from '~icons/lucide/info';
-import IconLucideSun from '~icons/lucide/sun';
-import IconLucideMoon from '~icons/lucide/moon';
 import IconMdiHome from '~icons/mdi/home';
-import IconHeroiconsUser from '~icons/heroicons/user';
 import IconPhHeartFill from '~icons/ph/heart-fill';
 
 interface IconProps {
@@ -50,7 +50,6 @@ export function Icon(props: IconProps) {
   const IconComponent = iconRegistry[icon];
 
   if (!IconComponent) {
-    console.warn(`Icon "${icon}" not found in registry`);
     return <span class={className}>?</span>;
   }
 

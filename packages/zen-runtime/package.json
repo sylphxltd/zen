@@ -15,7 +15,7 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
+    "build": "tsup",
     "dev": "bun run --watch src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
@@ -32,7 +32,7 @@
     "@zen/signal": "workspace:*"
   },
   "devDependencies": {
-    "bunup": "^0.15.13",
+    "tsup": "^8.3.5",
     "typescript": "^5.8.3"
   },
   "publishConfig": {

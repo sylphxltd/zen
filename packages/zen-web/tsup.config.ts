@@ -9,12 +9,12 @@ export default defineConfig({
     hydrate: 'src/hydrate.ts',
   },
   format: ['esm'],
-  dts: false, // Disable for now - re-exports from @zen/web
+  dts: false, // Disable for now
   clean: true,
   minify: true,
   sourcemap: true,
   target: 'es2022',
   outDir: 'dist',
   treeshake: true,
-  external: ['@zen/web'],
+  external: ['@zen/runtime', '@zen/signal'],
 });
