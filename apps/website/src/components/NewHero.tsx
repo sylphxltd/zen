@@ -117,8 +117,8 @@ const doubled = computed(
 function Counter() {
   return (
     <div>
-      <p>Count: {count}</p>
-      <p>Doubled: {doubled}</p>
+      <p>Count: {count.value}</p>
+      <p>Doubled: {doubled.value}</p>
       <button onClick={() => count.value++}>
         +1
       </button>

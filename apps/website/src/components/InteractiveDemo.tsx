@@ -70,7 +70,7 @@ function BasicSignalDemo() {
 
       <div class="demo-visual">
         <div class="demo-output">
-          <span style={{ fontSize: '64px', fontWeight: '700', color: '#667eea' }}>{count}</span>
+          <span style={{ fontSize: '64px', fontWeight: '700', color: '#667eea' }}>{count.value}</span>
         </div>
 
         <div class="demo-controls">
@@ -97,7 +97,7 @@ function BasicSignalDemo() {
           <code>{`const count = signal(0);
 
 // In JSX:
-<div>{count}</div>
+<div>{count.value}</div>
 
 // Update:
 count.value++`}</code>
@@ -132,10 +132,10 @@ function ComputedDemo() {
           <div
             style={{ fontSize: '48px', fontWeight: '700', color: '#667eea', marginBottom: '16px' }}
           >
-            {celsius}°C
+            {celsius.value}°C
           </div>
           <div style={{ fontSize: '24px', color: '#666', marginBottom: '16px' }}>
-            {fahrenheit}°F
+            {fahrenheit.value}°F
           </div>
           <div
             style={{
@@ -147,7 +147,7 @@ function ComputedDemo() {
               color: status.value.color,
             }}
           >
-            {computed(() => status.value.text)}
+            {status.value.text}
           </div>
         </div>
 
@@ -156,7 +156,7 @@ function ComputedDemo() {
             type="range"
             min="-10"
             max="45"
-            value={celsius}
+            value={celsius.value}
             onInput={(e) => {
               celsius.value = Number.parseInt((e.target as HTMLInputElement).value);
             }}
@@ -203,7 +203,7 @@ function EffectDemo() {
           <input
             type="text"
             placeholder="Enter your name..."
-            value={name}
+            value={name.value}
             onInput={(e) => {
               name.value = (e.target as HTMLInputElement).value;
               logEffect();

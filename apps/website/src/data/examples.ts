@@ -26,8 +26,8 @@ const doubled = computed(() => count.value * 2);
 // Create component
 const app = (
   <div style={{ padding: '20px', fontFamily: 'sans-serif', color: 'var(--text)' }}>
-    <h2>Counter: {count}</h2>
-    <p>Doubled: {doubled}</p>
+    <h2>Counter: {count.value}</h2>
+    <p>Doubled: {doubled.value}</p>
     <div style={{ display: 'flex', gap: '10px' }}>
       <button
         onClick={() => count.value--}
@@ -97,10 +97,10 @@ const app = (
       marginBottom: '16px'
     }}>
       <p style={{ fontSize: '24px', margin: '8px 0' }}>
-        Count: <strong>{count}</strong>
+        Count: <strong>{count.value}</strong>
       </p>
       <p style={{ fontSize: '16px', margin: '8px 0', opacity: 0.7 }}>
-        Effect runs: {renderCount}
+        Effect runs: {renderCount.value}
       </p>
     </div>
     <div style={{
@@ -155,7 +155,7 @@ const app = (
     <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
       <input
         type="text"
-        value={input}
+        value={input.value}
         onInput={(e) => input.value = e.target.value}
         placeholder="Add a todo..."
         style={{
@@ -243,7 +243,7 @@ const app = (
           <label style={{ display: 'block', marginBottom: '4px' }}>Name:</label>
           <input
             type="text"
-            value={name}
+            value={name.value}
             onInput={(e) => name.value = e.target.value}
             style={{
               display: 'block',
@@ -260,7 +260,7 @@ const app = (
           <label style={{ display: 'block', marginBottom: '4px' }}>Email:</label>
           <input
             type="email"
-            value={email}
+            value={email.value}
             onInput={(e) => email.value = e.target.value}
             style={{
               display: 'block',
@@ -299,8 +299,8 @@ const app = (
         borderRadius: '8px'
       }}>
         <h3 style={{ marginBottom: '8px' }}>✓ Form submitted!</h3>
-        <p style={{ margin: '4px 0' }}>Name: {name}</p>
-        <p style={{ margin: '4px 0' }}>Email: {email}</p>
+        <p style={{ margin: '4px 0' }}>Name: {name.value}</p>
+        <p style={{ margin: '4px 0' }}>Email: {email.value}</p>
       </div>
     </Show>
   </div>
@@ -362,7 +362,7 @@ const app = (
         backgroundColor: 'var(--bg-light)',
         borderRadius: '4px'
       }}>
-        Error: {error}
+        Error: {error.value}
       </div>
     </Show>
 

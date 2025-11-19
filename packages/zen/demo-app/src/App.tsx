@@ -15,14 +15,14 @@ function Counter() {
     <div class="demo-card">
       <h2>🔢 Counter - Signal & Computed</h2>
 
-      <div class="counter-display">{count}</div>
+      <div class="counter-display">{count.value}</div>
 
       <div class="stats">
         <div>
-          <strong>Doubled:</strong> {doubled}
+          <strong>Doubled:</strong> {doubled.value}
         </div>
         <div>
-          <strong>Squared:</strong> {squared}
+          <strong>Squared:</strong> {squared.value}
         </div>
       </div>
 
@@ -101,13 +101,13 @@ function TodoList() {
 
       <div class="stats">
         <span>
-          Total: <strong>{computed(() => stats.value.total)}</strong>
+          Total: <strong>{stats.value.total}</strong>
         </span>
         <span>
-          Active: <strong>{computed(() => stats.value.active)}</strong>
+          Active: <strong>{stats.value.active}</strong>
         </span>
         <span>
-          Completed: <strong>{computed(() => stats.value.completed)}</strong>
+          Completed: <strong>{stats.value.completed}</strong>
         </span>
       </div>
 
@@ -165,7 +165,7 @@ function Performance() {
       <h2>⚡ Performance - batch()</h2>
 
       <div class="performance-box">
-        Count: <strong>{count}</strong>
+        Count: <strong>{count.value}</strong>
       </div>
 
       <button onClick={() => count.value++}>Increment</button>

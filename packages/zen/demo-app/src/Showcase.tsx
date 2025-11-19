@@ -30,7 +30,7 @@ export function FineGrainedDemo() {
 
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0;">
         <div style="padding: 12px; background: #fff; border: 2px solid #ddd; border-radius: 8px;">
-          <div style="font-size: 32px; font-weight: bold; color: #00d4ff;">{count1}</div>
+          <div style="font-size: 32px; font-weight: bold; color: #00d4ff;">{count1.value}</div>
           <button onClick={() => count1.value++} style="width: 100%; margin-top: 8px;">
             更新 Count 1
           </button>
@@ -38,7 +38,7 @@ export function FineGrainedDemo() {
         </div>
 
         <div style="padding: 12px; background: #fff; border: 2px solid #ddd; border-radius: 8px;">
-          <div style="font-size: 32px; font-weight: bold; color: #00d4ff;">{count2}</div>
+          <div style="font-size: 32px; font-weight: bold; color: #00d4ff;">{count2.value}</div>
           <button onClick={() => count2.value++} style="width: 100%; margin-top: 8px;">
             更新 Count 2
           </button>
@@ -46,7 +46,7 @@ export function FineGrainedDemo() {
         </div>
 
         <div style="padding: 12px; background: #fff; border: 2px solid #ddd; border-radius: 8px;">
-          <div style="font-size: 32px; font-weight: bold; color: #00d4ff;">{count3}</div>
+          <div style="font-size: 32px; font-weight: bold; color: #00d4ff;">{count3.value}</div>
           <button onClick={() => count3.value++} style="width: 100%; margin-top: 8px;">
             更新 Count 3
           </button>
@@ -56,7 +56,7 @@ export function FineGrainedDemo() {
 
       <div style="background: #e7f5ff; padding: 12px; border-radius: 6px; margin-top: 16px;">
         <strong>總點擊次數:</strong>{' '}
-        <span style="font-size: 24px; color: #00d4ff;">{totalClicks}</span>
+        <span style="font-size: 24px; color: #00d4ff;">{totalClicks.value}</span>
         <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">
           每次點擊任何按鈕，只有對應的數字DOM節點更新，component 不會re-run
         </p>
@@ -98,10 +98,10 @@ export function BatchDemo() {
 
       <div style="background: #fff; padding: 16px; border: 2px solid #ff6b6b; border-radius: 8px; margin: 16px 0;">
         <div style="font-size: 18px; margin-bottom: 12px;">
-          Count: <strong style="color: #ff6b6b; font-size: 32px;">{count}</strong>
+          Count: <strong style="color: #ff6b6b; font-size: 32px;">{count.value}</strong>
         </div>
         <div style="font-size: 18px; margin-bottom: 16px;">
-          Sum (x3): <strong style="color: #2f9e44; font-size: 32px;">{sum}</strong>
+          Sum (x3): <strong style="color: #2f9e44; font-size: 32px;">{sum.value}</strong>
         </div>
 
         <button
@@ -170,7 +170,7 @@ export function MemoryDemo() {
           <div style="background: white; padding: 12px; border-radius: 6px; margin-top: 8px;">
             <p style="margin: 8px 0; font-size: 14px;">
               <code style="background: #f1f3f5; padding: 2px 6px; border-radius: 3px;">
-                {'<div>{count}</div>'}
+                {'<div>{count.value}</div>'}
               </code>
             </p>
             <p style="margin: 8px 0; font-size: 14px; color: #666;">

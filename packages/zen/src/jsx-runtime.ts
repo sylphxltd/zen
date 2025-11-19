@@ -222,30 +222,6 @@ function appendChild(parent: Element, child: any, hydrating: boolean): void {
     return;
   }
 
-  // Reactive child - less common
-  if (isReactive(child)) {
-    let textNode: Text;
-
-    if (hydrating) {
-      const node = getNextHydrateNode();
-      if (node && node.nodeType === Node.TEXT_NODE) {
-        textNode = node as Text;
-      } else {
-        textNode = document.createTextNode('');
-        parent.appendChild(textNode);
-      }
-    } else {
-      textNode = document.createTextNode('');
-      parent.appendChild(textNode);
-    }
-
-    effect(() => {
-      textNode.data = String(child.value ?? '');
-      return undefined;
-    });
-    return;
-  }
-
   // Text - very common
   if (hydrating) {
     const node = getNextHydrateNode();

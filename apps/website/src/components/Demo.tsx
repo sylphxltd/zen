@@ -31,8 +31,8 @@ export function Demo() {
             <h3 class="text-2xl font-semibold mb-6 text-text">Counter</h3>
             <div class="mb-6">
               <div class="text-center mb-8">
-                <div class="text-6xl font-bold text-primary mb-4">{count}</div>
-                <div class="text-xl text-text-muted">Doubled: {doubled}</div>
+                <div class="text-6xl font-bold text-primary mb-4">{count.value}</div>
+                <div class="text-xl text-text-muted">Doubled: {doubled.value}</div>
               </div>
               <div class="flex gap-3 justify-center">
                 <button
@@ -63,8 +63,8 @@ export function Demo() {
             <pre class="bg-bg-lighter border border-border rounded-zen p-4 text-sm text-text-muted overflow-x-auto font-mono">{`const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
-<div>{count}</div>
-<div>Doubled: {doubled}</div>
+<div>{count.value}</div>
+<div>Doubled: {doubled.value}</div>
 <button onClick={() => count.value++}>+</button>`}</pre>
           </div>
 
