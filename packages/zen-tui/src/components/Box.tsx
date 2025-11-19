@@ -5,6 +5,7 @@
  * Similar to <div> in web but for terminal.
  */
 
+import { appendChild } from '../jsx-runtime.js';
 import type { TUINode, TUIStyle } from '../types.js';
 
 export interface BoxProps {
@@ -21,19 +22,9 @@ export function Box(props: BoxProps): TUINode {
     style: props?.style || {},
   };
 
-  // Handle children
+  // Handle children using appendChild for reactivity support
   if (props?.children !== undefined) {
-    const children = Array.isArray(props.children) ? props.children : [props.children];
-    for (const child of children) {
-      if (child != null && child !== false) {
-        if (typeof child === 'object' && 'type' in child) {
-          node.children.push(child);
-          child.parentNode = node;
-        } else {
-          node.children.push(String(child));
-        }
-      }
-    }
+    appendChild(node, props.children);
   }
 
   return node;

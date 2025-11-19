@@ -4,6 +4,7 @@
  * Renders text with styling support.
  */
 
+import { appendChild } from '../jsx-runtime.js';
 import type { TUINode, TUIStyle } from '../types.js';
 
 export interface TextProps {
@@ -39,14 +40,9 @@ export function Text(props: TextProps): TUINode {
     style,
   };
 
-  // Handle children (text content)
+  // Handle children using appendChild for reactivity support
   if (props?.children !== undefined) {
-    const children = Array.isArray(props.children) ? props.children : [props.children];
-    for (const child of children) {
-      if (child != null && child !== false) {
-        node.children.push(String(child));
-      }
-    }
+    appendChild(node, props.children);
   }
 
   return node;

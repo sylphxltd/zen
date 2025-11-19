@@ -149,51 +149,95 @@ function insertContent(
 function renderNode(node: TUINode, parentWidth: number): RenderOutput {
   // Get dimensions from style or use defaults
   const width = typeof node.style?.width === 'number' ? node.style.width : parentWidth || 80;
-  const padding = node.style?.padding || 1;
-  const paddingX = node.style?.paddingX || padding;
-  const paddingY = node.style?.paddingY || padding;
+  const padding = node.style?.padding || 0;
+  const paddingX = node.style?.paddingX ?? padding;
+  const paddingY = node.style?.paddingY ?? padding;
   const paddingLeft = paddingX;
   const paddingTop = paddingY;
 
   const lines: string[] = [];
 
-  // Render border or plain box
-  if (node.style?.borderStyle && node.style.borderStyle !== 'none') {
+  // Check if this is a fixed-height box or auto-sizing box
+  const hasBorder = node.style?.borderStyle && node.style.borderStyle !== 'none';
+  const hasExplicitHeight = typeof node.style?.height === 'number';
+
+  if (hasBorder || hasExplicitHeight) {
+    // Fixed-height box: pre-allocate lines
     const height = typeof node.style?.height === 'number' ? node.style.height : 10;
-    const borderLines = renderBorder(width, height, node.style.borderStyle, node.style.borderColor);
-    lines.push(...borderLines);
+
+    if (hasBorder) {
+      const borderLines = renderBorder(
+        width,
+        height,
+        node.style.borderStyle,
+        node.style.borderColor,
+      );
+      lines.push(...borderLines);
+    } else {
+      for (let i = 0; i < height; i++) {
+        let line = ' '.repeat(width);
+        if (node.style?.backgroundColor) {
+          line = getBgColorFn(node.style.backgroundColor)(line);
+        }
+        lines.push(line);
+      }
+    }
+
+    // Insert children into fixed space
+    let currentY = paddingTop;
+    for (const child of node.children) {
+      if (typeof child === 'string') {
+        const textContent = applyTextStyle(child, node.style);
+        insertContent(lines, textContent, paddingLeft, currentY, width);
+        currentY += 1;
+      } else if ('_type' in child && child._type === 'marker') {
+        // Skip markers
+      } else {
+        const childOutput = renderNode(child, width - paddingLeft * 2);
+        const childLines = childOutput.text.split('\n');
+        for (const childLine of childLines) {
+          if (currentY < lines.length) {
+            insertContent(lines, childLine, paddingLeft, currentY, width);
+            currentY += 1;
+          }
+        }
+      }
+    }
   } else {
-    // No border - create empty lines
-    const height = typeof node.style?.height === 'number' ? node.style.height : 10;
-    for (let i = 0; i < height; i++) {
+    // Auto-sizing box: render children first, then create box
+    const childrenLines: string[] = [];
+
+    for (const child of node.children) {
+      if (typeof child === 'string') {
+        const textContent = applyTextStyle(child, node.style);
+        childrenLines.push(textContent);
+      } else if ('_type' in child && child._type === 'marker') {
+        // Skip markers
+      } else {
+        const childOutput = renderNode(child, width - paddingLeft * 2);
+        childrenLines.push(...childOutput.text.split('\n'));
+      }
+    }
+
+    // Calculate height: padding + content + padding
+    const contentHeight = childrenLines.length;
+    const totalHeight = Math.max(1, paddingTop + contentHeight + paddingY);
+
+    // Create box with calculated height
+    for (let i = 0; i < totalHeight; i++) {
       let line = ' '.repeat(width);
       if (node.style?.backgroundColor) {
         line = getBgColorFn(node.style.backgroundColor)(line);
       }
       lines.push(line);
     }
-  }
 
-  // Render children
-  let currentY = paddingTop;
-
-  for (const child of node.children) {
-    if (typeof child === 'string') {
-      // Text content
-      const textContent = applyTextStyle(child, node.style);
-      insertContent(lines, textContent, paddingLeft, currentY, width);
-      currentY += 1;
-    } else if ('_type' in child && child._type === 'marker') {
-    } else {
-      // Child node - render recursively
-      const childOutput = renderNode(child, width - paddingLeft * 2);
-      const childLines = childOutput.text.split('\n');
-
-      for (const childLine of childLines) {
-        if (currentY < lines.length) {
-          insertContent(lines, childLine, paddingLeft, currentY, width);
-          currentY += 1;
-        }
+    // Insert children
+    let currentY = paddingTop;
+    for (const childLine of childrenLines) {
+      if (currentY < lines.length) {
+        insertContent(lines, childLine, paddingLeft, currentY, width);
+        currentY += 1;
       }
     }
   }

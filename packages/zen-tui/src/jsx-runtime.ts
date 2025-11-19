@@ -60,7 +60,7 @@ export const jsxDEV = jsx;
 /**
  * Append child to TUI node
  */
-function appendChild(parent: TUINode, child: any): void {
+export function appendChild(parent: TUINode, child: any): void {
   // Null/undefined/false
   if (child == null || child === false) {
     return;
