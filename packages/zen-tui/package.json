@@ -21,7 +21,7 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
+    "build": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --external @zen/runtime --external @zen/signal --external @zen/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi",
     "dev": "bun run --watch src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -44,7 +44,7 @@
     "strip-ansi": "^7.1.0"
   },
   "devDependencies": {
-    "tsup": "^8.3.5",
+    "bunup": "^0.15.13",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
