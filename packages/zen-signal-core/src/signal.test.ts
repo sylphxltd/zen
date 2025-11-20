@@ -153,18 +153,18 @@ describe('computed', () => {
 
     // Initial access
     expect(doubled.value).toBe(2);
-    expect((doubled as any)._state).toBe(0); // STATE_CLEAN
+    expect((doubled as any)._dirty).toBe(false); // Clean after computation
 
     // Change source
     count.value = 5;
 
     // Fast mode: direct propagation marks computed stale without recomputing
     // Lazy evaluation - computed stays stale until accessed
-    expect((doubled as any)._state).toBeGreaterThan(0); // STATE_CHECK or STATE_DIRTY
+    expect((doubled as any)._dirty).toBe(true); // Marked dirty
 
     // Access triggers lazy recomputation
     expect(doubled.value).toBe(10);
-    expect((doubled as any)._state).toBe(0); // STATE_CLEAN after access
+    expect((doubled as any)._dirty).toBe(false); // Clean after recomputation
   });
 });
 

@@ -86,10 +86,16 @@ const zenProto = {
     return this._value;
   },
 
+  // biome-ignore lint/suspicious/noExplicitAny: Generic setter accepts any type
   set value(newValue: any) {
     const oldValue = this._value;
     // OPTIMIZATION: Inline Object.is check (avoid function call)
-    if (newValue === oldValue || (newValue !== newValue && oldValue !== oldValue)) return;
+    // Handle NaN: NaN !== NaN in JS, so if both are NaN, they're equal
+    // Handle +0/-0: Object.is(+0, -0) === false, but === treats them as equal
+    // We need to detect +0 vs -0: (1/+0) === Infinity, (1/-0) === -Infinity
+    if (newValue === oldValue && (newValue !== 0 || 1 / newValue === 1 / oldValue)) return;
+    // biome-ignore lint/suspicious/noSelfCompare: Intentional NaN check (IEEE 754)
+    if (newValue !== newValue && oldValue !== oldValue) return; // Both NaN
 
     this._value = newValue;
 
@@ -186,15 +192,8 @@ export function subscribe<A extends AnySignal>(
     subscribeToSources(zen as any);
   }
 
-  // For computed values, ensure they're computed before initial notification
-  let initialValue = zenData._value;
-  if (zen._kind === 'computed' && zen._dirty) {
-    // Trigger computation by accessing value
-    initialValue = (zen as any).value;
-  }
-
-  // Initial notification
-  listener(initialValue as any, undefined);
+  // BREAKING CHANGE: No initial notification
+  // Listeners only fire on updates, not on subscription
 
   // Return unsubscribe
   return () => {
@@ -295,6 +294,7 @@ function updateComputed<T>(c: ComputedCore<T>): void {
     // OPTIMIZATION: Inline Object.is check
     if (
       c._value !== null &&
+      // biome-ignore lint/suspicious/noSelfCompare: Intentional NaN check (IEEE 754)
       (newValue === c._value || (newValue !== newValue && c._value !== c._value))
     ) {
       return;
@@ -346,7 +346,8 @@ function attachListener(sources: AnySignal[], callback: any): Unsubscribe[] {
 function subscribeToSources(c: ComputedCore<any>): void {
   const onSourceChange = () => {
     c._dirty = true;
-    updateComputed(c);
+    // Notify computed's own listeners (lazy evaluation - don't recompute yet)
+    notifyListeners(c as any, c._value, c._value);
   };
   (onSourceChange as any)._computedZen = c;
 
