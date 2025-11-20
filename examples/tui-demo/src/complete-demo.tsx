@@ -112,6 +112,7 @@ function AppContent() {
         id="agree-checkbox"
         label="I agree to the terms and conditions"
         checked={agreed}
+        width={60}
         onChange={(checked) => {
           agreed.value = checked;
         }}

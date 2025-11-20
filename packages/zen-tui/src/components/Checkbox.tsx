@@ -6,8 +6,8 @@
 
 import { type Signal, signal } from '@zen/runtime';
 import { useFocus } from '../focus';
-import { useInput } from '../useInput';
 import type { TUINode } from '../types';
+import { useInput } from '../useInput';
 import { Box } from './Box';
 import { Text } from './Text';
 
@@ -16,6 +16,7 @@ export interface CheckboxProps {
   label?: string;
   onChange?: (checked: boolean) => void;
   id?: string;
+  width?: number;
   style?: any;
 }
 
@@ -33,7 +34,7 @@ export function Checkbox(props: CheckboxProps): TUINode {
   const { isFocused } = useFocus(id);
 
   // Handle keyboard input
-  useInput((input, key) => {
+  useInput((input, _key) => {
     if (!isFocused) return;
 
     handleCheckbox(checkedSignal, input, props.onChange);
@@ -47,6 +48,7 @@ export function Checkbox(props: CheckboxProps): TUINode {
 
   return Box({
     style: {
+      width: props.width,
       flexDirection: 'row',
       borderStyle: focused ? 'round' : 'none',
       borderColor: focused ? 'cyan' : undefined,

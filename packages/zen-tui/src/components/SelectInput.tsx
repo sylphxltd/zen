@@ -6,8 +6,8 @@
 
 import { type Signal, signal } from '@zen/runtime';
 import { useFocus } from '../focus';
-import { useInput } from '../useInput';
 import type { TUINode } from '../types';
+import { useInput } from '../useInput';
 import { Box } from './Box';
 import { Text } from './Text';
 
@@ -57,7 +57,7 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
   });
 
   // Handle keyboard input
-  useInput((input, key) => {
+  useInput((input, _key) => {
     if (!isFocused) return;
 
     handleSelectInput(isOpen, highlightedIndex, valueSignal, props.options, input, props.onChange);

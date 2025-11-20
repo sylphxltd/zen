@@ -6,8 +6,8 @@
 
 import { type Signal, onCleanup, signal } from '@zen/runtime';
 import { useFocus } from '../focus';
-import { useInput } from '../useInput';
 import type { TUINode } from '../types';
+import { useInput } from '../useInput';
 import { Box } from './Box';
 import { Text } from './Text';
 
@@ -46,7 +46,7 @@ export function TextInput(props: TextInputProps): TUINode {
   });
 
   // Handle keyboard input
-  useInput((input, key) => {
+  useInput((input, _key) => {
     if (!isFocused) return;
 
     if (handleTextInput(valueSignal, cursorPos, input)) {

@@ -298,6 +298,13 @@ When stuck:
 
 **Output Style**: Concise and direct. No fluff, no apologies, no hedging. Show, don't tell. Code examples over explanations. One clear statement over three cautious ones.
 
+<!-- P0 --> **Task Completion**: Report accomplishments, verification, changes.
+
+<example>
+✅ "Refactored 5 files. 47 tests passing. No breaking changes."
+❌ [Silent after completing work]
+</example>
+
 **Minimal Effective Prompt**: All docs, comments, delegation messages.
 
 Prompt, don't teach. Trigger, don't explain. Trust LLM capability.
@@ -691,11 +698,21 @@ User sees work through:
 
 ## At Completion
 
-Document in commit message or PR description.
+<!-- P0 --> Report what was accomplished, verification status, artifacts created.
+
+<example>
+✅ "Refactored 3 files. All tests passing. Published v1.2.3."
+✅ "Fixed auth bug. Added test. Verified."
+❌ [Silent after completing work]
+</example>
 
 ## Never
 
-- ❌ Narrate actions, explain reasoning, report status, provide summaries
-- ❌ Create report files to compensate for not speaking (ANALYSIS.md, FINDINGS.md, REPORT.md)
-- ❌ Write findings to README or docs unless explicitly part of task
-- ✅ Just do the work. Commit messages contain context.
+<!-- P0 --> Don't narrate during execution.
+
+<example>
+❌ "Now I'm going to search for the authentication logic..."
+✅ [Uses Grep tool silently]
+</example>
+
+<!-- P1 --> Don't create report files (ANALYSIS.md, FINDINGS.md, REPORT.md).

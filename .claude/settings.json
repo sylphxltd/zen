@@ -1,15 +1,5 @@
 {
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sylphx-flow hook --type session --target claude-code"
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": "",
