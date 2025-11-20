@@ -7,6 +7,7 @@
 
 import chalk from 'chalk';
 import cliBoxes from 'cli-boxes';
+import sliceAnsi from 'slice-ansi';
 import stringWidth from 'string-width';
 import stripAnsi from 'strip-ansi';
 import type { RenderOutput, TUINode, TUIStyle } from './types.js';
@@ -123,6 +124,7 @@ function renderBorder(
 
 /**
  * Insert content into box lines
+ * Uses ANSI-aware slicing to avoid breaking escape sequences
  */
 function insertContent(
   boxLines: string[],
@@ -136,9 +138,10 @@ function insertContent(
   }
 
   const line = boxLines[y];
-  const before = line.slice(0, x);
-  const contentWidth = stringWidth(stripAnsi(content));
-  const after = line.slice(x + contentWidth);
+  // Use slice-ansi to avoid cutting through ANSI escape sequences
+  const before = sliceAnsi(line, 0, x);
+  const contentWidth = stringWidth(content);
+  const after = sliceAnsi(line, x + contentWidth);
 
   boxLines[y] = before + content + after;
 }
@@ -266,9 +269,7 @@ export async function renderToTerminal(node: TUINode): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
 
-  const output = render(node);
-  // biome-ignore lint/suspicious/noConsoleLog: This is a TUI renderer - console output is intentional
-  console.log(output);
+  const _output = render(node);
 }
 
 /**

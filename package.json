@@ -89,6 +89,7 @@
     "@sylphx/craft": "^1.3.0",
     "highlight.js": "^11.11.1",
     "marked": "^17.0.0",
-    "preact": "^10.27.2"
+    "preact": "^10.27.2",
+    "slice-ansi": "^7.1.2"
   }
 }
