@@ -92,8 +92,9 @@ export function FocusProvider(props: { children: any }): any {
     focusPrev,
   };
 
-  // Call Provider directly instead of using JSX
-  // JSX creates a descriptor object instead of calling the function
+  // Call Provider directly (not via JSX) because Bun uses React's JSX runtime
+  // which doesn't call component functions. Provider uses children() helper
+  // internally for runtime lazy evaluation.
   return FocusContext.Provider({ value: contextValue, children: props.children });
 }
 

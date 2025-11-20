@@ -9,6 +9,7 @@
 
 import { getNodeOwner, getOwner } from '@zen/signal';
 import { getPlatformOps } from '../platform-ops.js';
+import { children } from '../utils/children.js';
 
 /**
  * Context object that holds the default value
@@ -160,14 +161,17 @@ export function Provider<T>(context: Context<T>, props: { value: T; children: an
   }
   values.set(context.id, props.value);
 
-  // NOW access children (triggers lazy evaluation)
-  const children = props.children;
+  // Use children() helper for runtime lazy evaluation
+  // This ensures children are evaluated AFTER context is set,
+  // even without compiler transformation
+  const c = children(() => props.children);
 
   // Get platform operations
   const ops = getPlatformOps();
 
-  // Return children as a fragment
-  const childArray = Array.isArray(children) ? children : [children];
+  // Resolve children lazily
+  const resolved = c();
+  const childArray = Array.isArray(resolved) ? resolved : [resolved];
   const fragment = ops.createFragment();
   for (const child of childArray) {
     if (child) {
