@@ -34,23 +34,20 @@ export function Button(props: ButtonProps): TUINode {
     },
   });
 
-  const focused = isFocused();
-  const pressed = isPressed.value;
-
-  // Variant colors
+  // Variant colors (computed based on pressed state)
   const colors = {
     primary: {
-      bg: disabled ? 'gray' : pressed ? 'blue' : 'cyan',
+      bg: () => (disabled ? 'gray' : isPressed.value ? 'blue' : 'cyan'),
       fg: disabled ? 'white' : 'black',
       border: 'cyan',
     },
     secondary: {
-      bg: disabled ? 'gray' : pressed ? 'white' : undefined,
-      fg: disabled ? 'white' : pressed ? 'black' : 'white',
+      bg: () => (disabled ? 'gray' : isPressed.value ? 'white' : undefined),
+      fg: () => (disabled ? 'white' : isPressed.value ? 'black' : 'white'),
       border: disabled ? 'gray' : 'white',
     },
     danger: {
-      bg: disabled ? 'gray' : pressed ? 'red' : undefined,
+      bg: () => (disabled ? 'gray' : isPressed.value ? 'red' : undefined),
       fg: disabled ? 'white' : 'red',
       border: 'red',
     },
@@ -58,10 +55,11 @@ export function Button(props: ButtonProps): TUINode {
 
   const colorScheme = colors[variant];
 
+  // Use function call style to avoid circular dependency during build
   return Box({
     style: {
-      borderStyle: focused ? 'round' : 'single',
-      borderColor: disabled ? 'gray' : focused ? colorScheme.border : undefined,
+      borderStyle: () => (isFocused() ? 'round' : 'single'),
+      borderColor: () => (disabled ? 'gray' : isFocused() ? colorScheme.border : undefined),
       backgroundColor: colorScheme.bg,
       paddingX: 2,
       paddingY: 0,
@@ -69,11 +67,10 @@ export function Button(props: ButtonProps): TUINode {
       justifyContent: 'center',
     },
     children: Text({
-      children: disabled ? `[${props.label}]` : props.label,
       color: colorScheme.fg,
-      bold: !disabled && focused,
+      bold: () => !disabled && isFocused(),
+      children: disabled ? `[${props.label}]` : props.label,
     }),
-    props: { id, disabled, isPressed },
   });
 }
 

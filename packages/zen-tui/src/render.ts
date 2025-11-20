@@ -218,12 +218,17 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
     const height = node.style.height;
 
     if (hasBorder) {
-      const borderLines = renderBorder(
-        width,
-        height,
-        node.style.borderStyle,
-        node.style.borderColor,
-      );
+      // Resolve reactive values
+      const borderStyle =
+        typeof node.style.borderStyle === 'function'
+          ? node.style.borderStyle()
+          : node.style.borderStyle;
+      const borderColor =
+        typeof node.style.borderColor === 'function'
+          ? node.style.borderColor()
+          : node.style.borderColor;
+
+      const borderLines = renderBorder(width, height, borderStyle, borderColor);
       lines.push(...borderLines);
     } else {
       for (let i = 0; i < height; i++) {
@@ -405,12 +410,17 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
 
     // Create box with calculated height
     if (hasBorder) {
-      const borderLines = renderBorder(
-        width,
-        totalHeight,
-        node.style.borderStyle,
-        node.style.borderColor,
-      );
+      // Resolve reactive values
+      const borderStyle =
+        typeof node.style.borderStyle === 'function'
+          ? node.style.borderStyle()
+          : node.style.borderStyle;
+      const borderColor =
+        typeof node.style.borderColor === 'function'
+          ? node.style.borderColor()
+          : node.style.borderColor;
+
+      const borderLines = renderBorder(width, totalHeight, borderStyle, borderColor);
       lines.push(...borderLines);
     } else {
       for (let i = 0; i < totalHeight; i++) {
