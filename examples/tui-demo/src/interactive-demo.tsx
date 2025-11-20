@@ -23,10 +23,10 @@ const isLoading = signal(false);
 const message = signal('Click a button to start!');
 
 // Spinner frame indices
-const spinnerFrame1 = signal(0);
-const spinnerFrame2 = signal(0);
-const spinnerFrame3 = signal(0);
-const spinnerFrame4 = signal(0);
+const _spinnerFrame1 = signal(0);
+const _spinnerFrame2 = signal(0);
+const _spinnerFrame3 = signal(0);
+const _spinnerFrame4 = signal(0);
 
 function App() {
   return (
@@ -49,9 +49,7 @@ function App() {
 
       {/* Status Message */}
       <Box style={{ borderStyle: 'single', padding: 1, width: 66 }}>
-        <Text color={() => (isLoading.value ? 'yellow' : 'green')}>
-          {() => message.value}
-        </Text>
+        <Text color={() => (isLoading.value ? 'yellow' : 'green')}>{() => message.value}</Text>
       </Box>
 
       <Box style={{ height: 1 }} />
@@ -61,35 +59,35 @@ function App() {
         Buttons:
       </Text>
       <Box style={{ flexDirection: 'row', gap: 2 }}>
-        {Button({
-          id: 'start',
-          label: 'Start Task',
-          variant: 'primary',
-          onClick: () => {
+        <Button
+          id="start"
+          label="Start Task"
+          variant="primary"
+          onClick={() => {
             isLoading.value = true;
             message.value = 'Task started! Watch the progress...';
             progress.value = 0;
-          },
-        })}
-        {Button({
-          id: 'stop',
-          label: 'Stop',
-          variant: 'secondary',
-          onClick: () => {
+          }}
+        />
+        <Button
+          id="stop"
+          label="Stop"
+          variant="secondary"
+          onClick={() => {
             isLoading.value = false;
             message.value = 'Task stopped.';
-          },
-        })}
-        {Button({
-          id: 'reset',
-          label: 'Reset',
-          variant: 'danger',
-          onClick: () => {
+          }}
+        />
+        <Button
+          id="reset"
+          label="Reset"
+          variant="danger"
+          onClick={() => {
             isLoading.value = false;
             progress.value = 0;
             message.value = 'Reset complete. Click Start to begin again.';
-          },
-        })}
+          }}
+        />
       </Box>
 
       <Box style={{ height: 1 }} />
@@ -100,16 +98,16 @@ function App() {
       </Text>
       <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         {() =>
-          isLoading.value
-            ? Fragment({
-                children: [
-                  Spinner({ type: 'dots', label: 'Processing', color: 'cyan' }),
-                  Spinner({ type: 'line', color: 'yellow' }),
-                  Spinner({ type: 'arc', color: 'green' }),
-                  Spinner({ type: 'arrow', color: 'magenta' }),
-                ],
-              })
-            : Text({ children: 'Not loading...', color: 'gray' })
+          isLoading.value ? (
+            <>
+              <Spinner type="dots" label="Processing" color="cyan" />
+              <Spinner type="line" color="yellow" />
+              <Spinner type="arc" color="green" />
+              <Spinner type="arrow" color="magenta" />
+            </>
+          ) : (
+            <Text color="gray">Not loading...</Text>
+          )
         }
       </Box>
 
@@ -119,11 +117,11 @@ function App() {
       <Text color="white" bold={true}>
         Progress:
       </Text>
-      {ProgressBar({
-        value: progress,
-        label: () => (progress.value < 100 ? 'Task Progress' : 'Complete!'),
-        width: 66,
-      })}
+      <ProgressBar
+        value={progress}
+        label={() => (progress.value < 100 ? 'Task Progress' : 'Complete!')}
+        width={66}
+      />
     </Box>
   );
 }
