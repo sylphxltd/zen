@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Box } from './Box';
 import type { TUINode } from '../types';
+import { Box } from './Box';
 
 describe('Box', () => {
   it('should create box node with default props', () => {
@@ -73,7 +73,7 @@ describe('Box', () => {
       style: {
         borderStyle: 'round',
         borderColor: 'cyan',
-      }
+      },
     });
 
     expect(node.style?.borderStyle).toBe('round');
@@ -86,7 +86,7 @@ describe('Box', () => {
         padding: 2,
         paddingX: 3,
         paddingY: 1,
-      }
+      },
     });
 
     expect(node.style?.padding).toBe(2);
@@ -106,7 +106,7 @@ describe('Box', () => {
         flexGrow: 1,
         flexShrink: 0,
         flexBasis: 'auto',
-      }
+      },
     });
 
     expect(node.style?.flexGrow).toBe(1);

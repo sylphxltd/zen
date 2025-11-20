@@ -1,11 +1,11 @@
-import { describe, expect, it } from 'vitest';
 import stripAnsi from 'strip-ansi';
-import { render } from './render';
+import { describe, expect, it } from 'vitest';
 import { Box } from './components/Box';
-import { Text } from './components/Text';
-import { Static } from './components/Static';
 import { Newline } from './components/Newline';
 import { Spacer } from './components/Spacer';
+import { Static } from './components/Static';
+import { Text } from './components/Text';
+import { render } from './render';
 
 describe('render', () => {
   describe('basic rendering', () => {
@@ -103,7 +103,7 @@ describe('render', () => {
       const lines = output.split('\n');
 
       // Line with content should have padding space before X
-      const contentLine = lines.find(line => line.includes('X'));
+      const contentLine = lines.find((line) => line.includes('X'));
       expect(contentLine).toBeTruthy();
       // With padding: 1, content is inserted at position paddingLeft (1) within the line
       // The border is at position 0, so X appears at position 1 in the string
@@ -119,7 +119,7 @@ describe('render', () => {
       const output = stripAnsi(render(node));
       const lines = output.split('\n');
 
-      const contentLine = lines.find(line => line.includes('X'));
+      const contentLine = lines.find((line) => line.includes('X'));
       expect(contentLine).toBeTruthy();
       // With paddingX: 2 and border, content should be at position 3 (border + 2)
       expect(contentLine?.indexOf('X')).toBeGreaterThanOrEqual(2);
@@ -140,7 +140,7 @@ describe('render', () => {
       // Actually, based on the code: currentY = paddingTop for fixed-height
       // For fixed height with border, content starts at paddingTop (line 1 inside border)
       // Find which line has X
-      const xLineIndex = lines.findIndex(line => stripAnsi(line).includes('X'));
+      const xLineIndex = lines.findIndex((line) => stripAnsi(line).includes('X'));
       expect(xLineIndex).toBeGreaterThan(0); // Not on first line (top border)
     });
   });
@@ -190,11 +190,7 @@ describe('render', () => {
 
     it('should not add excessive spacing in row layout', () => {
       const node = Text({
-        children: [
-          Text({ children: 'A' }),
-          Text({ children: 'B' }),
-          Text({ children: 'C' }),
-        ],
+        children: [Text({ children: 'A' }), Text({ children: 'B' }), Text({ children: 'C' })],
       });
       const output = stripAnsi(render(node, { width: 80 }));
       const firstLine = output.split('\n')[0];
@@ -241,11 +237,7 @@ describe('render', () => {
     it('should auto-size box to fit content', () => {
       const node = Box({
         style: { width: 30, borderStyle: 'single', padding: 1 },
-        children: [
-          'Line 1',
-          'Line 2',
-          'Line 3',
-        ],
+        children: ['Line 1', 'Line 2', 'Line 3'],
       });
       const output = stripAnsi(render(node, { width: 80 }));
       const lines = output.split('\n');
@@ -315,12 +307,10 @@ describe('render', () => {
       ];
       const node = Static({
         items: logs,
-        children: (log) => Text({
-          children: [
-            Text({ children: `[${log.time}]`, dim: true }),
-            ` ${log.msg}`,
-          ],
-        }),
+        children: (log) =>
+          Text({
+            children: [Text({ children: `[${log.time}]`, dim: true }), ` ${log.msg}`],
+          }),
       });
       const output = stripAnsi(render(node, { width: 80 }));
 
@@ -354,7 +344,7 @@ describe('render', () => {
       // A, then 2 empty lines (count: 3 - 1), then B
       expect(lines[0]).toContain('A');
       // Note: actual empty line count depends on implementation
-      const bLineIndex = lines.findIndex(line => line.includes('B'));
+      const bLineIndex = lines.findIndex((line) => line.includes('B'));
       expect(bLineIndex).toBeGreaterThan(2);
     });
   });
@@ -363,11 +353,7 @@ describe('render', () => {
     it('should render spacer', () => {
       const node = Box({
         style: { width: 20, height: 10, borderStyle: 'single' },
-        children: [
-          'Top',
-          Spacer(),
-          'Bottom',
-        ],
+        children: ['Top', Spacer(), 'Bottom'],
       });
       const output = stripAnsi(render(node, { width: 80 }));
 

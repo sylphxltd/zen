@@ -53,9 +53,10 @@ describe('Static', () => {
 
     const node = Static({
       items,
-      children: (entry) => Text({
-        children: `[${entry.time}] ${entry.level} - ${entry.message}`,
-      }),
+      children: (entry) =>
+        Text({
+          children: `[${entry.time}] ${entry.level} - ${entry.message}`,
+        }),
     });
 
     expect(node.children).toHaveLength(2);
@@ -82,7 +83,7 @@ describe('Static', () => {
     });
 
     expect(node.children).toHaveLength(3);
-    expect(node.children.every(child => child === '')).toBe(true);
+    expect(node.children.every((child) => child === '')).toBe(true);
   });
 
   it('should render items statically without reactivity', () => {
