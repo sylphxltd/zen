@@ -55,50 +55,37 @@ export function FocusProvider(props: { children: unknown }): unknown {
   };
 
   const focus = (id: string) => {
-    console.log('[focus] called with id:', id, 'current focusedId:', focusedId.value);
     if (!focusEnabled.value) {
-      console.log('[focus] focus disabled, returning');
       return;
     }
 
     const currentId = focusedId.value;
     if (currentId === id) {
-      console.log('[focus] already focused on', id, 'returning');
       return;
     }
 
     // Blur current
     if (currentId) {
       const current = items.value.find((i: FocusableItem) => i.id === currentId);
-      console.log('[focus] blurring current:', currentId);
       current?.onBlur?.();
     }
-
-    // Focus new
-    console.log('[focus] setting focusedId to:', id);
     focusedId.value = id;
     const newItem = items.value.find((i: FocusableItem) => i.id === id);
-    console.log('[focus] calling onFocus for:', id);
     newItem?.onFocus?.();
   };
 
   const focusNext = () => {
-    console.log('[focusNext] called, focusEnabled:', focusEnabled.value, 'items count:', items.value.length);
     if (!focusEnabled.value) {
-      console.log('[focusNext] focus disabled, returning');
       return;
     }
 
     const activeItems = items.value.filter((i) => i.isActive !== false);
-    console.log('[focusNext] activeItems:', activeItems.map((i) => i.id));
     if (activeItems.length === 0) {
-      console.log('[focusNext] no active items, returning');
       return;
     }
 
     const currentIndex = activeItems.findIndex((i: FocusableItem) => i.id === focusedId.value);
     const nextIndex = (currentIndex + 1) % activeItems.length;
-    console.log('[focusNext] currentIndex:', currentIndex, 'nextIndex:', nextIndex, 'next id:', activeItems[nextIndex].id);
     focus(activeItems[nextIndex].id);
   };
 

@@ -31,7 +31,7 @@ export function Checkbox(props: CheckboxProps): TUINode {
       : signal(typeof props.checked === 'boolean' ? props.checked : false);
 
   // Focus management
-  const { isFocused } = useFocus(id);
+  const { isFocused } = useFocus({ id });
 
   // Handle keyboard input
   useInput((input, _key) => {

@@ -43,15 +43,11 @@ function AppContent() {
 
   // Handle Tab navigation
   useInput((_input, key) => {
-    console.log('[AppContent] useInput handler, key.tab:', key.tab, 'key.shift:', key.shift);
     if (key.tab) {
-      console.log('[AppContent] Tab detected, calling focusNext/Previous');
       if (key.shift) {
         focusPrevious();
-        console.log('[AppContent] focusPrevious called');
       } else {
         focusNext();
-        console.log('[AppContent] focusNext called');
       }
     }
   });

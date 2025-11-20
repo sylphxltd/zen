@@ -35,7 +35,8 @@ export function TextInput(props: TextInputProps): TUINode {
   const cursorPos = props.cursor || signal(valueSignal.value.length);
 
   // Focus management
-  const { isFocused } = useFocus(id, {
+  const { isFocused } = useFocus({
+    id,
     onFocus: () => {
       // Reset cursor to end on focus
       cursorPos.value = valueSignal.value.length;
@@ -47,15 +48,10 @@ export function TextInput(props: TextInputProps): TUINode {
 
   // Handle keyboard input
   useInput((input, _key) => {
-    console.log('[TextInput]', id, 'useInput handler, isFocused:', isFocused, 'input:', JSON.stringify(input));
     if (!isFocused) {
-      console.log('[TextInput]', id, 'not focused, returning');
       return;
     }
-
-    console.log('[TextInput]', id, 'calling handleTextInput');
     if (handleTextInput(valueSignal, cursorPos, input)) {
-      console.log('[TextInput]', id, 'text changed, new value:', valueSignal.value);
       props.onChange?.(valueSignal.value);
     }
   });

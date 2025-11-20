@@ -117,10 +117,13 @@ export function Button(props: ButtonProps): TUINode {
       }}
       props={{ id, isPressed }}
     >
-      <Text color={colorScheme.fg} bold={() => {
-        const disabled = getDisabled();
-        return !disabled && isFocused;
-      }}>
+      <Text
+        color={colorScheme.fg}
+        bold={() => {
+          const disabled = getDisabled();
+          return !disabled && isFocused;
+        }}
+      >
         {() => {
           const disabled = getDisabled();
           return disabled ? `[${props.label}]` : props.label;
