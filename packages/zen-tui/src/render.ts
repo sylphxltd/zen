@@ -292,22 +292,53 @@ export async function renderToTerminalReactive(
 
   let isRunning = true;
   let needsRender = true;
+  let previousLines: string[] = [];
 
-  // Render function
+  // Render function with diff-based updates
   const doRender = async () => {
     if (!needsRender || !isRunning) return;
     needsRender = false;
-
-    // Clear screen and move cursor to top
-    console.clear();
-    process.stdout.write('\x1b[H');
 
     const node = createNode();
     await Promise.resolve();
     await Promise.resolve();
 
     const output = render(node);
-    console.log(output);
+    const newLines = output.split('\n');
+
+    // First render: clear screen and draw everything
+    if (previousLines.length === 0) {
+      // Clear screen properly
+      process.stdout.write('\x1b[2J\x1b[H');
+      process.stdout.write(output);
+      process.stdout.write('\n');
+    } else {
+      // Diff-based update: only redraw changed lines
+      const maxLines = Math.max(previousLines.length, newLines.length);
+
+      for (let i = 0; i < maxLines; i++) {
+        const oldLine = previousLines[i] || '';
+        const newLine = newLines[i] || '';
+
+        if (oldLine !== newLine) {
+          // Move cursor to line i (1-indexed)
+          process.stdout.write(`\x1b[${i + 1};1H`);
+          // Clear line and write new content
+          process.stdout.write('\x1b[2K');
+          process.stdout.write(newLine);
+        }
+      }
+
+      // If new output is shorter, clear remaining lines
+      if (previousLines.length > newLines.length) {
+        for (let i = newLines.length; i < previousLines.length; i++) {
+          process.stdout.write(`\x1b[${i + 1};1H`);
+          process.stdout.write('\x1b[2K');
+        }
+      }
+    }
+
+    previousLines = newLines;
   };
 
   // Set up keyboard handler
