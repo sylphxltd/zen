@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { signal } from '../index';
-import { SelectInput, handleSelectInput, type SelectOption } from './SelectInput';
+import { SelectInput, type SelectOption, handleSelectInput } from './SelectInput';
 
 const testOptions: SelectOption<string>[] = [
   { label: 'Option 1', value: 'opt1' },

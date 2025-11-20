@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { signal } from './index';
 import { FocusProvider, useFocusContext, useFocusable } from './focus';
+import { signal } from './index';
 
 describe('FocusProvider', () => {
   it('should create a focus provider node', () => {

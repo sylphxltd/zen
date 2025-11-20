@@ -115,12 +115,22 @@ export function useFocusContext(): FocusContextValue {
 
 /**
  * Hook to make a component focusable
+ * Works in standalone mode if no FocusProvider is present
  */
 export function useFocusable(
   id: string,
   callbacks?: { onFocus?: () => void; onBlur?: () => void },
 ) {
-  const ctx = useFocusContext();
+  const ctx = useContext(FocusContext);
+
+  // Standalone mode (no FocusProvider)
+  if (!ctx) {
+    return {
+      isFocused: () => false,
+      focus: () => {},
+      unregister: () => {},
+    };
+  }
 
   // Register on mount, unregister on cleanup
   const unregister = ctx.register({
