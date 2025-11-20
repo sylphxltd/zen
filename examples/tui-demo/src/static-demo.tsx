@@ -7,7 +7,7 @@
  * - Spacer for flexible layout (push content to bottom)
  */
 
-import { Box, Text, Static, Newline, Spacer, signal, renderToTerminalReactive } from '@zen/tui';
+import { Box, Newline, Spacer, Static, Text, renderToTerminalReactive, signal } from '@zen/tui';
 import chalk from 'chalk';
 
 // Static log entries (non-reactive)
@@ -19,12 +19,9 @@ const logEntries = [
 ];
 
 // Format log entry with chalk
-function formatLog(entry: typeof logEntries[0]): string {
+function formatLog(entry: (typeof logEntries)[0]): string {
   const time = chalk.dim(`[${entry.time}]`);
-  const level =
-    entry.level === 'SUCCESS'
-      ? chalk.green.bold(entry.level)
-      : chalk.cyan(entry.level);
+  const level = entry.level === 'SUCCESS' ? chalk.green.bold(entry.level) : chalk.cyan(entry.level);
   return `${time} ${level} - ${entry.message}`;
 }
 
@@ -41,18 +38,20 @@ function App() {
     <Box style={{ width: 80, borderStyle: 'round', padding: 1 }}>
       {/* Header */}
       <Box style={{ borderStyle: 'single', padding: 1 }}>
-        <Text bold color="cyan">📝 Server Log Viewer</Text>
+        <Text bold color="cyan">
+          📝 Server Log Viewer
+        </Text>
       </Box>
 
       <Newline count={1} />
 
       {/* Static logs section */}
       <Box>
-        <Text bold color="yellow">Boot Logs:</Text>
+        <Text bold color="yellow">
+          Boot Logs:
+        </Text>
         <Newline />
-        <Static items={logEntries}>
-          {(entry) => <Text>{formatLog(entry)}</Text>}
-        </Static>
+        <Static items={logEntries}>{(entry) => <Text>{formatLog(entry)}</Text>}</Static>
       </Box>
 
       <Newline count={2} />
