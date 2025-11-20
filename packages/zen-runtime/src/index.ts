@@ -37,7 +37,7 @@ export type { Context } from './components/Context.js';
 
 // Utilities
 export { lazy } from './lazy.js';
-export { resolve, isSignal } from './reactive-utils.js';
+export { resolve, isSignal, executeComponent } from './reactive-utils.js';
 export type { Reactive, MaybeReactive } from './reactive-utils.js';
 export { mergeProps, splitProps } from './utils/props.js';
 export { selector } from './utils/selector.js';

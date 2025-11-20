@@ -5,7 +5,7 @@
  * Used automatically when bundling for server environments.
  */
 
-import { createOwner, getOwner, setOwner } from '@zen/signal';
+import { executeComponent } from '@zen/runtime';
 
 // Symbol to mark safe HTML strings
 const SAFE_HTML = Symbol('SAFE_HTML');
@@ -143,19 +143,11 @@ export function jsx(type: any, props: any): SafeHtml {
 
   // Component function
   if (typeof type === 'function') {
-    // Create owner for component scope
-    const owner = createOwner();
-    const prev = getOwner();
-    setOwner(owner);
-
-    try {
-      // Execute component
+    return executeComponent(() => {
       const result = type({ ...restProps, children });
       const html = renderChildren(result);
       return createSafeHtml(html);
-    } finally {
-      setOwner(prev);
-    }
+    });
   }
 
   // Intrinsic HTML element

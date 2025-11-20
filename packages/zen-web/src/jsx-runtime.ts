@@ -10,8 +10,8 @@
  */
 
 import { effect } from '@zen/signal';
-import type { AnySignal } from '@zen/signal';
-import { attachNodeToOwner, createOwner, setOwner } from '@zen/signal';
+import { attachNodeToOwner, getOwner } from '@zen/signal';
+import { isSignal, executeComponent } from '@zen/runtime';
 import { enterHydrateParent, getNextHydrateNode, isHydrating } from './hydrate.js';
 
 export { Fragment } from './core/fragment.js';
@@ -20,29 +20,14 @@ type Props = Record<string, unknown>;
 type ComponentFunction = (props: Props | null) => Node;
 
 /**
- * Fast reactive check - inline for better performance
- * Check _kind first (faster than _value lookup)
- */
-function isReactive(value: unknown): value is AnySignal {
-  return value !== null && typeof value === 'object' && '_kind' in value;
-}
-
-/**
  * JSX factory function - optimized
  */
 export function jsx(type: string | ComponentFunction, props: Props | null): Node {
   // Component
   if (typeof type === 'function') {
-    const owner = createOwner();
-    setOwner(owner);
-
-    try {
-      const node = type(props);
-      attachNodeToOwner(node, owner);
-      return node;
-    } finally {
-      setOwner(null);
-    }
+    return executeComponent(() => type(props), (node, owner) =>
+      attachNodeToOwner(node, owner),
+    );
   }
 
   // Cache hydration state (avoid repeated calls)
@@ -150,7 +135,7 @@ function setAttribute(element: Element, key: string, value: unknown): void {
   }
 
   // Reactive value
-  if (isReactive(value)) {
+  if (isSignal(value)) {
     // Special case: form control values
     if (
       key === 'value' &&
@@ -219,7 +204,7 @@ function appendChild(parent: Element, child: unknown, hydrating: boolean): void 
   }
 
   // Reactive signal - auto-unwrap (runtime-first)
-  if (isReactive(child)) {
+  if (isSignal(child)) {
     const textNode = document.createTextNode('');
     if (!hydrating) {
       parent.appendChild(textNode);

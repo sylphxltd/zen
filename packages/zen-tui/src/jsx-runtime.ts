@@ -5,19 +5,12 @@
  * Similar pattern to zen-web but for terminal rendering.
  */
 
-import { attachNodeToOwner, createOwner, effect, setOwner } from '@zen/signal';
-import type { AnySignal } from '@zen/signal';
+import { attachNodeToOwner, effect, getOwner } from '@zen/signal';
+import { isSignal, executeComponent } from '@zen/runtime';
 import type { TUINode } from './types.js';
 
 type Props = Record<string, unknown>;
 type ComponentFunction = (props: Props | null) => TUINode;
-
-/**
- * Check if value is reactive signal
- */
-function isReactive(value: unknown): value is AnySignal {
-  return value !== null && typeof value === 'object' && '_kind' in value;
-}
 
 /**
  * JSX factory for TUI
@@ -25,16 +18,9 @@ function isReactive(value: unknown): value is AnySignal {
 export function jsx(type: string | ComponentFunction, props: Props | null): TUINode {
   // Component
   if (typeof type === 'function') {
-    const owner = createOwner();
-    setOwner(owner);
-
-    try {
-      const node = type(props);
-      attachNodeToOwner(node as any, owner);
-      return node;
-    } finally {
-      setOwner(null);
-    }
+    return executeComponent(() => type(props), (node, owner) =>
+      attachNodeToOwner(node as any, owner),
+    );
   }
 
   // TUI Element (box, text, etc.)
@@ -90,7 +76,7 @@ export function appendChild(parent: TUINode, child: unknown): void {
   }
 
   // Reactive signal - auto-unwrap (runtime-first)
-  if (isReactive(child)) {
+  if (isSignal(child)) {
     // Create a text node that updates reactively
     const textNode: TUINode = {
       type: 'text',

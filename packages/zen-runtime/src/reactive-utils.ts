@@ -55,3 +55,41 @@ export function resolve<T>(value: Reactive<T> | T): T {
   }
   return value as T;
 }
+
+/**
+ * Execute a component function with proper owner scope
+ *
+ * Used by JSX runtimes to wrap component execution with signal ownership tracking.
+ * This ensures that effects and computed values created inside the component
+ * are properly disposed when the component is unmounted.
+ *
+ * @example
+ * // In jsx-runtime
+ * if (typeof type === 'function') {
+ *   return executeComponent(
+ *     () => type(props),
+ *     (node, owner) => attachNodeToOwner(node, owner)
+ *   );
+ * }
+ */
+export function executeComponent<T>(
+  fn: () => T,
+  attachToOwner?: (node: T, owner: import('@zen/signal').Owner) => void
+): T {
+  // Import at runtime to avoid circular dependency
+  const { createOwner, setOwner, getOwner } = require('@zen/signal');
+
+  const owner = createOwner();
+  const prev = getOwner();
+  setOwner(owner);
+
+  try {
+    const result = fn();
+    if (attachToOwner) {
+      attachToOwner(result, owner);
+    }
+    return result;
+  } finally {
+    setOwner(prev);
+  }
+}
