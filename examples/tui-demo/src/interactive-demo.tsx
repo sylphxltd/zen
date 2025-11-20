@@ -142,11 +142,10 @@ function AppContent() {
 }
 
 function App() {
-  // Use children prop as a function to make children lazy
-  // This is required when using Bun's React JSX runtime because it eagerly evaluates JSX children
-  // The function delays evaluation until Provider's children() helper calls it
-  // biome-ignore lint/correctness/noChildrenProp: Required for lazy evaluation with React JSX runtime
-  return <FocusProvider children={() => <AppContent />} />;
+  // Use function in JSX body to make children lazy (runtime-first pattern)
+  // Without @zen/compiler, wrap children in function for lazy evaluation
+  // This matches SolidJS runtime-only behavior
+  return <FocusProvider>{() => <AppContent />}</FocusProvider>;
 }
 
 // Auto-increment progress when loading
