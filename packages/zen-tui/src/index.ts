@@ -57,6 +57,9 @@ export { Fragment } from './jsx-runtime.js';
 // TUI-specific: Components
 export { Box } from './components/Box.js';
 export { Text } from './components/Text.js';
+export { Static } from './components/Static.js';
+export { Newline } from './components/Newline.js';
+export { Spacer } from './components/Spacer.js';
 
 // TUI-specific: Types
 export type { TUINode, TUIStyle, RenderOutput } from './types.js';

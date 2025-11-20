@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "bun run src/index.tsx",
-    "start": "bun run src/index.tsx"
+    "start": "bun run src/index.tsx",
+    "static-demo": "bun run src/static-demo.tsx"
   },
   "dependencies": {
     "@zen/tui": "workspace:*"
