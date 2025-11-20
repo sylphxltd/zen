@@ -16,22 +16,21 @@ import { enterHydrateParent, getNextHydrateNode, isHydrating } from './hydrate.j
 
 export { Fragment } from './core/fragment.js';
 
-type Props = Record<string, any>;
-type Child = Node | string | number | boolean | null | undefined;
-type ReactiveValue = AnySignal;
+type Props = Record<string, unknown>;
+type ComponentFunction = (props: Props | null) => Node;
 
 /**
  * Fast reactive check - inline for better performance
  * Check _kind first (faster than _value lookup)
  */
-function isReactive(value: any): value is ReactiveValue {
+function isReactive(value: unknown): value is AnySignal {
   return value !== null && typeof value === 'object' && '_kind' in value;
 }
 
 /**
  * JSX factory function - optimized
  */
-export function jsx(type: string | Function, props: Props | null): Node {
+export function jsx(type: string | ComponentFunction, props: Props | null): Node {
   // Component
   if (typeof type === 'function') {
     const owner = createOwner();
@@ -115,7 +114,7 @@ export const jsxDEV = jsx;
 /**
  * Set attribute - optimized
  */
-function setAttribute(element: Element, key: string, value: any): void {
+function setAttribute(element: Element, key: string, value: unknown): void {
   // Fast path: most common cases first
 
   // Event listener (most common in interactive apps)
@@ -185,7 +184,7 @@ function setAttribute(element: Element, key: string, value: any): void {
 /**
  * Set static value - extracted to avoid duplication
  */
-function setStaticValue(element: Element, key: string, value: any): void {
+function setStaticValue(element: Element, key: string, value: unknown): void {
   // Property vs attribute
   if (key in element) {
     (element as any)[key] = value;
@@ -197,7 +196,7 @@ function setStaticValue(element: Element, key: string, value: any): void {
 /**
  * Append child - optimized
  */
-function appendChild(parent: Element, child: any, hydrating: boolean): void {
+function appendChild(parent: Element, child: unknown, hydrating: boolean): void {
   // Null/undefined/false - most common in conditional rendering
   if (child == null || child === false) {
     return;
@@ -234,17 +233,59 @@ function appendChild(parent: Element, child: any, hydrating: boolean): void {
     return;
   }
 
-  // Function - reactive text (from unplugin transformation)
+  // Function - reactive content (from unplugin transformation)
   if (typeof child === 'function') {
-    const textNode = document.createTextNode('');
+    // Create a marker comment node to hold the reactive content
+    const marker = document.createComment('reactive');
     if (!hydrating) {
-      parent.appendChild(textNode);
+      parent.appendChild(marker);
     }
+
+    let currentNodes: Node[] = [];
 
     // Wrap in effect for reactivity
     effect(() => {
       const value = child();
-      textNode.data = String(value ?? '');
+
+      // Remove previous nodes
+      for (const node of currentNodes) {
+        if (node.parentNode === parent) {
+          parent.removeChild(node);
+        }
+      }
+      currentNodes = [];
+
+      // Handle Node
+      if (value instanceof Node) {
+        if (!hydrating) {
+          parent.insertBefore(value, marker);
+        }
+        currentNodes.push(value);
+        return undefined;
+      }
+
+      // Handle array of nodes
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (item instanceof Node) {
+            if (!hydrating) {
+              parent.insertBefore(item, marker);
+            }
+            currentNodes.push(item);
+          }
+        }
+        return undefined;
+      }
+
+      // Handle primitive values (text)
+      if (value != null && value !== false) {
+        const textNode = document.createTextNode(String(value));
+        if (!hydrating) {
+          parent.insertBefore(textNode, marker);
+        }
+        currentNodes.push(textNode);
+      }
+
       return undefined;
     });
     return;
