@@ -31,7 +31,7 @@ export function Checkbox(props: CheckboxProps): TUINode {
   // Focus management
   const { isFocused } = useFocus(id);
 
-  const focused = isFocused();
+  const focused = isFocused;
   const checked = checkedSignal.value;
 
   // Checkbox character

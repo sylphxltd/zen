@@ -45,7 +45,7 @@ export function TextInput(props: TextInputProps): TUINode {
   });
 
   const width = props.width || 40;
-  const focused = isFocused();
+  const focused = isFocused;
 
   // Render input content
   const currentValue = valueSignal.value;

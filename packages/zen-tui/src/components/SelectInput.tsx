@@ -56,7 +56,7 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
   });
 
   const width = props.width || 40;
-  const focused = isFocused();
+  const focused = isFocused;
   const opened = isOpen.value;
 
   // Find selected option
