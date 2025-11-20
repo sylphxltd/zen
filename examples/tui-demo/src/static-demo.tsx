@@ -42,7 +42,14 @@ function App() {
         <Static items={logEntries}>
           {(entry) => (
             <Text>
-              <Text dim>[{entry.time}]</Text> <Text color={entry.level === 'SUCCESS' ? 'green' : 'cyan'} bold={entry.level === 'SUCCESS'}>{entry.level}</Text> - {entry.message}
+              <Text dim>[{entry.time}]</Text>{' '}
+              <Text
+                color={entry.level === 'SUCCESS' ? 'green' : 'cyan'}
+                bold={entry.level === 'SUCCESS'}
+              >
+                {entry.level}
+              </Text>{' '}
+              - {entry.message}
             </Text>
           )}
         </Static>
@@ -56,7 +63,8 @@ function App() {
       {/* Footer with reactive status */}
       <Box style={{ borderStyle: 'single', padding: 1 }}>
         <Text>
-          Status: <Text color="green">{recentActivity.value}</Text> | Connections: <Text bold>{activeConnections.value}</Text>
+          Status: <Text color="green">{recentActivity.value}</Text> | Connections:{' '}
+          <Text bold>{activeConnections.value}</Text>
         </Text>
       </Box>
     </Box>
