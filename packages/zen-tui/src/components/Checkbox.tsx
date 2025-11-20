@@ -47,13 +47,14 @@ export function Checkbox(props: CheckboxProps): TUINode {
   const checkboxChar = checked ? '☑' : '☐';
 
   // Truncate label to fit within width
+  // TUI rendering in flexDirection: 'row' doesn't clip overflow, so we need aggressive truncation
   let displayLabel = props.label;
   if (props.width && props.label) {
-    // Calculate available width: total - checkbox char (1) - space (1) - padding (focused ? 2*2 : 0) - borders (focused ? 2 : 0)
-    const overhead = 2 + (focused ? 6 : 0); // checkbox + space + padding + borders
-    const maxLabelWidth = props.width - overhead;
+    // Account for checkbox (1) + space (1) + padding (4 when focused) + borders (2 when focused) + safety margin (10)
+    const overhead = focused ? 18 : 12;
+    const maxLabelWidth = Math.max(10, props.width - overhead);
     if (props.label.length > maxLabelWidth) {
-      displayLabel = props.label.slice(0, maxLabelWidth - 3) + '...';
+      displayLabel = `${props.label.slice(0, maxLabelWidth - 3)}...`;
     }
   }
 
