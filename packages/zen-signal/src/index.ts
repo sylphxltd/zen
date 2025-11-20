@@ -60,6 +60,7 @@ export {
   setOwner,
   createOwner,
   attachNodeToOwner,
+  getNodeOwner,
   setServerMode,
 } from './lifecycle.js';
 export type { Owner } from './lifecycle.js';

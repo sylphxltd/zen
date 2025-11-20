@@ -8,7 +8,7 @@
  */
 
 import type { AnySignal } from '@zen/signal';
-import { createOwner, setOwner, getOwner } from '@zen/signal';
+import { createOwner, getOwner, setOwner } from '@zen/signal';
 
 /**
  * A reactive value - must be a function or signal

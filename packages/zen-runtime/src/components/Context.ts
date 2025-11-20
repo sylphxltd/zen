@@ -7,7 +7,7 @@
  * Similar to React's Context API and SolidJS's Context API.
  */
 
-import { getOwner } from '@zen/signal';
+import { getOwner, getNodeOwner } from '@zen/signal';
 import { getPlatformOps } from '../platform-ops.js';
 
 /**
@@ -111,10 +111,23 @@ export function Provider<T>(context: Context<T>, props: { value: T; children: an
     throw new Error('Provider must be used within a component');
   }
 
-  // Store the context value in the parent owner (not current owner)
-  // This is because JSX children are eagerly evaluated, so they are siblings
-  // of the Provider component, not children of it.
+  // WORKAROUND FOR EAGER JSX EVALUATION:
+  // Due to JSX evaluating children before the parent component runs, children
+  // and Provider are siblings in the owner tree, not parent-child.
+  //
+  // Solution: Store context in the Provider's PARENT owner (not Provider's own owner).
+  // This way, both Provider and its JSX children can access the same parent owner,
+  // allowing useContext to find the value even though children execute first.
+  //
+  // Owner tree (with eager JSX):
+  //   App (owner)
+  //   ├─ Provider (owner, parent: App) <- stores context in App
+  //   └─ Children (owner, parent: App) <- searches up to App, finds context!
+  //
+  // This is a compromise that works without custom JSX transform.
+  // SolidJS solves this properly with lazy children via compiler transform.
   const targetOwner = owner.parent || owner;
+
   let values = contextMap.get(targetOwner);
   if (!values) {
     values = new Map();
@@ -126,9 +139,8 @@ export function Provider<T>(context: Context<T>, props: { value: T; children: an
   const ops = getPlatformOps();
 
   // Return children as a fragment
-  const fragment = ops.createFragment();
   const childArray = Array.isArray(children) ? children : [children];
-
+  const fragment = ops.createFragment();
   for (const child of childArray) {
     if (child) {
       ops.appendToFragment(fragment, child);
