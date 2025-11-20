@@ -10,19 +10,25 @@ import { attachNodeToOwner, effect, getOwner } from '@zen/signal';
 import type { TUINode } from './types.js';
 
 type Props = Record<string, unknown>;
-type ComponentFunction = (props: Props | null) => TUINode;
+type ComponentFunction = (props: Props | null) => TUINode | TUINode[];
 
 /**
  * JSX factory for TUI
  */
-export function jsx(type: string | ComponentFunction, props: Props | null): TUINode {
+export function jsx(type: string | ComponentFunction, props: Props | null): TUINode | TUINode[] {
   // Component
   if (typeof type === 'function') {
-    return executeComponent(
+    const result = executeComponent(
       () => type(props),
       // biome-ignore lint/suspicious/noExplicitAny: Generic node type from framework
-      (node: any, owner: any) => attachNodeToOwner(node, owner),
+      (node: any, owner: any) => {
+        // Only attach if it's a single node, not an array/fragment
+        if (!Array.isArray(node)) {
+          attachNodeToOwner(node, owner);
+        }
+      },
     );
+    return result;
   }
 
   // TUI Element (box, text, etc.)

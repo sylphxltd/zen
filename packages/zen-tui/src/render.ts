@@ -452,8 +452,22 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
 /**
  * Render TUI tree to terminal
  */
-export function render(node: TUINode, options: { width?: number } = {}): string {
+export function render(node: TUINode | TUINode[], options: { width?: number } = {}): string {
   const terminalWidth = options.width || process.stdout.columns || 80;
+
+  // Handle fragments (arrays) by wrapping in a fragment node
+  if (Array.isArray(node)) {
+    const fragmentNode: TUINode = {
+      type: 'box',
+      tagName: 'fragment',
+      props: {},
+      children: node,
+      style: {}
+    };
+    const output = renderNode(fragmentNode, terminalWidth);
+    return output.text;
+  }
+
   const output = renderNode(node, terminalWidth);
   return output.text;
 }
@@ -461,12 +475,14 @@ export function render(node: TUINode, options: { width?: number } = {}): string 
 /**
  * Render and display in terminal
  */
-export async function renderToTerminal(node: TUINode): Promise<void> {
+export async function renderToTerminal(node: TUINode | TUINode[]): Promise<void> {
   // Wait for microtasks (For/Show/Switch effects) to complete
   await Promise.resolve();
   await Promise.resolve();
 
-  const _output = render(node);
+  const output = render(node);
+  process.stdout.write(output);
+  process.stdout.write('\n');
 }
 
 /**
