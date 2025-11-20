@@ -3,7 +3,9 @@
  *
  * Transforms:
  * 1. Auto-lazy children: <Show><Child /></Show> → <Show>{() => <Child />}</Show>
- * 2. Signal auto-unwrap: {signal} → {() => signal.value}
+ * 2. Signal.value auto-unwrap: {signal.value} → {() => signal.value}
+ *
+ * Note: {signal} is NOT transformed - runtime handles it via isSignal()
  */
 
 import * as babel from '@babel/core';
@@ -57,13 +59,13 @@ export function transformZenJSX(
             ];
           },
 
-          // Transform signal expressions to auto-unwrap
+          // Transform signal.value expressions to auto-unwrap
           JSXExpressionContainer(path: NodePath<t.JSXExpressionContainer>) {
             if (!autoUnwrap) return;
 
             const expression = path.node.expression;
 
-            // Skip if already a function or not an identifier/member expression
+            // Skip if already a function
             if (
               t.isArrowFunctionExpression(expression) ||
               t.isFunctionExpression(expression) ||
@@ -72,15 +74,12 @@ export function transformZenJSX(
               return;
             }
 
-            // Check if this looks like a signal access
-            // Heuristic: identifier or member expression ending in .value
-            const isSignalAccess =
-              t.isIdentifier(expression) ||
-              (t.isMemberExpression(expression) &&
-                t.isIdentifier(expression.property) &&
-                expression.property.name === 'value');
+            // Transform expressions containing .value access
+            // Examples: {signal.value}, {signal.value + 2}, {foo(signal.value)}
+            // Do NOT transform {signal} - runtime handles it with isSignal()
+            const containsValueAccess = hasValueAccess(expression);
 
-            if (!isSignalAccess) return;
+            if (!containsValueAccess) return;
 
             // Wrap in arrow function for reactivity
             path.node.expression = t.arrowFunctionExpression([], expression);
@@ -98,6 +97,64 @@ export function transformZenJSX(
     code: result.code,
     map: result.map,
   };
+}
+
+/**
+ * Recursively check if an expression contains .value member access
+ * Examples: signal.value, count.value + 2, foo(bar.value)
+ */
+function hasValueAccess(node: t.Node): boolean {
+  // Direct .value access
+  if (
+    t.isMemberExpression(node) &&
+    t.isIdentifier(node.property) &&
+    node.property.name === 'value'
+  ) {
+    return true;
+  }
+
+  // Recursively check all child nodes
+  if (t.isBinaryExpression(node)) {
+    return hasValueAccess(node.left) || hasValueAccess(node.right);
+  }
+
+  if (t.isUnaryExpression(node)) {
+    return hasValueAccess(node.argument);
+  }
+
+  if (t.isCallExpression(node)) {
+    return (
+      node.arguments.some((arg) => t.isExpression(arg) && hasValueAccess(arg)) ||
+      (t.isExpression(node.callee) && hasValueAccess(node.callee))
+    );
+  }
+
+  if (t.isConditionalExpression(node)) {
+    return hasValueAccess(node.test) || hasValueAccess(node.consequent) || hasValueAccess(node.alternate);
+  }
+
+  if (t.isMemberExpression(node)) {
+    return hasValueAccess(node.object) || hasValueAccess(node.property);
+  }
+
+  if (t.isLogicalExpression(node)) {
+    return hasValueAccess(node.left) || hasValueAccess(node.right);
+  }
+
+  if (t.isArrayExpression(node)) {
+    return node.elements.some((el) => el && t.isExpression(el) && hasValueAccess(el));
+  }
+
+  if (t.isObjectExpression(node)) {
+    return node.properties.some((prop) => {
+      if (t.isObjectProperty(prop) && t.isExpression(prop.value)) {
+        return hasValueAccess(prop.value);
+      }
+      return false;
+    });
+  }
+
+  return false;
 }
 
 function getJSXElementName(name: t.JSXElement['openingElement']['name']): string | null {
