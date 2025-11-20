@@ -51,7 +51,7 @@ export {
 export type { Signal, Computed, Owner, Context, Reactive, MaybeReactive } from '@zen/runtime';
 
 // TUI-specific: Renderer
-export { render, renderToTerminal } from './render.js';
+export { render, renderToTerminal, renderToTerminalReactive } from './render.js';
 export { Fragment } from './jsx-runtime.js';
 
 // TUI-specific: Components

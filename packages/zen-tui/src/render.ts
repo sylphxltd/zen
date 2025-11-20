@@ -269,3 +269,93 @@ export async function renderToTerminal(node: TUINode): Promise<void> {
   const output = render(node);
   console.log(output);
 }
+
+/**
+ * Render to terminal with reactive updates
+ * Clears screen and re-renders when signals change
+ */
+export async function renderToTerminalReactive(
+  createNode: () => TUINode,
+  options: {
+    onKeyPress?: (key: string) => void;
+    fps?: number;
+  } = {},
+): Promise<() => void> {
+  const { onKeyPress, fps = 10 } = options;
+
+  // Enable raw mode for keyboard input
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+  }
+
+  let isRunning = true;
+  let needsRender = true;
+
+  // Render function
+  const doRender = async () => {
+    if (!needsRender || !isRunning) return;
+    needsRender = false;
+
+    // Clear screen and move cursor to top
+    console.clear();
+    process.stdout.write('\x1b[H');
+
+    const node = createNode();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const output = render(node);
+    console.log(output);
+  };
+
+  // Set up keyboard handler
+  const keyHandler = (key: string) => {
+    // Ctrl+C to exit
+    if (key === '\u0003') {
+      cleanup();
+      process.exit(0);
+    }
+
+    // 'q' to quit
+    if (key === 'q' || key === 'Q') {
+      cleanup();
+      process.exit(0);
+    }
+
+    // Custom key handler
+    if (onKeyPress) {
+      onKeyPress(key);
+      needsRender = true;
+    }
+  };
+
+  if (process.stdin.isTTY) {
+    process.stdin.on('data', keyHandler);
+  }
+
+  // Render loop
+  const renderInterval = setInterval(() => {
+    if (isRunning) {
+      needsRender = true;
+      doRender();
+    }
+  }, 1000 / fps);
+
+  // Initial render
+  await doRender();
+
+  // Cleanup function
+  const cleanup = () => {
+    isRunning = false;
+    clearInterval(renderInterval);
+    if (process.stdin.isTTY) {
+      process.stdin.removeListener('data', keyHandler);
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+    }
+  };
+
+  return cleanup;
+}
