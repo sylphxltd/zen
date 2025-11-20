@@ -12,6 +12,7 @@ import sliceAnsi from 'slice-ansi';
 import stringWidth from 'string-width';
 import stripAnsi from 'strip-ansi';
 import type { RenderOutput, TUINode, TUIStyle } from './types.js';
+import { dispatchInput } from './useInput.js';
 
 /**
  * Get chalk color function
@@ -578,7 +579,6 @@ export async function renderToTerminalReactive(
     }
 
     // Dispatch to useInput handlers
-    const { dispatchInput } = require('./useInput');
     dispatchInput(key);
 
     // Custom key handler
