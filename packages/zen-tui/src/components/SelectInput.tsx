@@ -64,69 +64,73 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
   });
 
   const width = props.width || 40;
-  const focused = isFocused;
-  const opened = isOpen.value;
 
-  // Find selected option
-  const selectedOption = props.options.find((opt) => opt.value === valueSignal.value);
-  const displayLabel = selectedOption?.label || props.placeholder || 'Select...';
-
-  // Render current selection
-  // WORKAROUND: Concatenate label and arrow into single Text to avoid flexDirection: 'row' overflow bug
-  const arrow = opened ? '▲' : '▼';
-  const combinedText = `${displayLabel} ${arrow}`;
-
-  const selectionDisplay = Box({
-    style: {
-      width,
-      borderStyle: focused ? 'round' : 'single',
-      borderColor: focused ? 'cyan' : undefined,
-      padding: 0,
-      paddingX: 1,
-      ...props.style,
-    },
-    children: Text({
-      children: combinedText,
-      dim: !selectedOption,
-      color: 'cyan',
-    }),
-  });
-
-  // Render dropdown if open
-  if (!opened) {
-    return selectionDisplay;
-  }
-
-  const highlighted = highlightedIndex.value;
-
-  const optionsList = Box({
-    style: {
-      width,
-      borderStyle: 'single',
-      padding: 0,
-    },
-    children: props.options.map((option, index) => {
-      const isHighlighted = index === highlighted;
-      const isSelected = option.value === valueSignal.value;
-
-      return Box({
-        style: {
-          backgroundColor: isHighlighted ? 'cyan' : undefined,
-          paddingX: 1,
-        },
-        children: Text({
-          children: [isSelected ? '✓ ' : '  ', option.label],
-          color: isHighlighted ? 'black' : undefined,
-          bold: isSelected,
-        }),
-      });
-    }),
-  });
-
-  // Return both selection and dropdown
+  // Use reactive functions for rendering
   return Box({
     style: { width },
-    children: [selectionDisplay, optionsList],
+    children: () => {
+      // This function re-runs when signals change
+      const opened = isOpen.value;
+
+      // Find selected option
+      const selectedOption = props.options.find((opt) => opt.value === valueSignal.value);
+      const displayLabel = selectedOption?.label || props.placeholder || 'Select...';
+
+      // Render current selection
+      // WORKAROUND: Concatenate label and arrow into single Text to avoid flexDirection: 'row' overflow bug
+      const arrow = opened ? '▲' : '▼';
+      const combinedText = `${displayLabel} ${arrow}`;
+
+      const selectionDisplay = Box({
+        style: {
+          width,
+          borderStyle: () => (isFocused ? 'round' : 'single'),
+          borderColor: () => (isFocused ? 'cyan' : undefined),
+          padding: 0,
+          paddingX: 1,
+          ...props.style,
+        },
+        children: Text({
+          children: combinedText,
+          dim: !selectedOption,
+          color: 'cyan',
+        }),
+      });
+
+      // Render dropdown if open
+      if (!opened) {
+        return selectionDisplay;
+      }
+
+      const highlighted = highlightedIndex.value;
+
+      const optionsList = Box({
+        style: {
+          width,
+          borderStyle: 'single',
+          padding: 0,
+        },
+        children: props.options.map((option, index) => {
+          const isHighlighted = index === highlighted;
+          const isSelected = option.value === valueSignal.value;
+
+          return Box({
+            style: {
+              backgroundColor: isHighlighted ? 'cyan' : undefined,
+              paddingX: 1,
+            },
+            children: Text({
+              children: [isSelected ? '✓ ' : '  ', option.label],
+              color: isHighlighted ? 'black' : undefined,
+              bold: isSelected,
+            }),
+          });
+        }),
+      });
+
+      // Return both selection and dropdown
+      return [selectionDisplay, optionsList];
+    },
   });
 }
 

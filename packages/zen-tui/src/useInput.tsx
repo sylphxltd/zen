@@ -68,15 +68,12 @@ export function parseKey(str: string): Key {
  * Called by renderToTerminalReactive's onKeyPress
  */
 export function dispatchInput(input: string): void {
-  console.log('[dispatchInput] Called with input:', JSON.stringify(input), 'Total handlers:', inputHandlers.size);
   const key = parseKey(input);
 
   // Call all registered handlers
   for (const handler of inputHandlers) {
-    console.log('[dispatchInput] Calling handler...');
     handler(input, key);
   }
-  console.log('[dispatchInput] Finished calling all handlers');
 }
 
 /**

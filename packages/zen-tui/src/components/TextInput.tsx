@@ -47,71 +47,74 @@ export function TextInput(props: TextInputProps): TUINode {
 
   // Handle keyboard input
   useInput((input, _key) => {
-    if (!isFocused) return;
+    console.log('[TextInput]', id, 'useInput handler, isFocused:', isFocused, 'input:', JSON.stringify(input));
+    if (!isFocused) {
+      console.log('[TextInput]', id, 'not focused, returning');
+      return;
+    }
 
+    console.log('[TextInput]', id, 'calling handleTextInput');
     if (handleTextInput(valueSignal, cursorPos, input)) {
+      console.log('[TextInput]', id, 'text changed, new value:', valueSignal.value);
       props.onChange?.(valueSignal.value);
     }
   });
 
   const width = props.width || 40;
-  const focused = isFocused;
 
-  // Render input content
-  const currentValue = valueSignal.value;
-  const showPlaceholder = currentValue.length === 0 && props.placeholder;
-
-  let displayText: TUINode;
-
-  if (showPlaceholder) {
-    // Show placeholder
-    displayText = Text({
-      children: props.placeholder,
-      dim: true,
-      style: { flexDirection: 'row' },
-    });
-  } else {
-    // Show value with cursor
-    const pos = Math.min(cursorPos.value, currentValue.length);
-
-    if (focused) {
-      // Render with cursor
-      const before = currentValue.slice(0, pos);
-      const cursorChar = pos < currentValue.length ? currentValue[pos] : ' ';
-      const after = currentValue.slice(pos + 1);
-
-      displayText = Text({
-        style: { flexDirection: 'row' },
-        children: [
-          before,
-          Text({
-            children: cursorChar,
-            backgroundColor: 'white',
-            color: 'black',
-          }),
-          after,
-        ],
-      });
-    } else {
-      // Render without cursor
-      displayText = Text({
-        children: currentValue || ' ',
-        style: { flexDirection: 'row' },
-      });
-    }
-  }
-
-  // Container box
+  // Container box - use function for reactive children
   return Box({
     style: {
       width,
-      borderStyle: focused ? 'round' : 'single',
-      borderColor: focused ? 'cyan' : undefined,
+      borderStyle: () => (isFocused ? 'round' : 'single'),
+      borderColor: () => (isFocused ? 'cyan' : undefined),
       padding: 0,
       paddingX: 1,
       ...props.style,
     },
-    children: displayText,
+    children: () => {
+      // This function re-runs when signals change
+      const currentValue = valueSignal.value;
+      const showPlaceholder = currentValue.length === 0 && props.placeholder;
+
+      if (showPlaceholder) {
+        // Show placeholder
+        return Text({
+          children: props.placeholder,
+          dim: true,
+          style: { flexDirection: 'row' },
+        });
+      }
+
+      // Show value with cursor
+      const pos = Math.min(cursorPos.value, currentValue.length);
+
+      if (isFocused) {
+        // Render with cursor
+        const before = currentValue.slice(0, pos);
+        const cursorChar = pos < currentValue.length ? currentValue[pos] : ' ';
+        const after = currentValue.slice(pos + 1);
+
+        return Text({
+          style: { flexDirection: 'row' },
+          children: [
+            before,
+            Text({
+              children: cursorChar,
+              backgroundColor: 'white',
+              color: 'black',
+            }),
+            after,
+          ],
+        });
+      }
+
+      // Render without cursor
+      return Text({
+        children: currentValue || ' ',
+        style: { flexDirection: 'row' },
+      });
+    },
   });
 }
 

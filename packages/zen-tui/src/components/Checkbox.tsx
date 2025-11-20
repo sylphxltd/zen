@@ -40,42 +40,42 @@ export function Checkbox(props: CheckboxProps): TUINode {
     handleCheckbox(checkedSignal, input, props.onChange);
   });
 
-  const focused = isFocused;
-  const checked = checkedSignal.value;
-
-  // Checkbox character
-  const checkboxChar = checked ? '☑' : '☐';
-
-  // Truncate label to fit within width
-  // Avoid overflow by ensuring combined text fits within the box width
-  let displayLabel = props.label;
-
-  if (props.width && props.label) {
-    // Account for: checkbox char(1) + space(1) + padding when focused(2) + borders when focused(2) + safety margin
-    const safetyMargin = 20;
-    const maxLabelWidth = Math.max(10, props.width - safetyMargin);
-
-    if (props.label.length > maxLabelWidth) {
-      displayLabel = `${props.label.slice(0, maxLabelWidth - 3)}...`;
-    }
-  }
-
-  // WORKAROUND: Concatenate checkbox and label into single Text to avoid flexDirection: 'row' overflow bug
-  const combinedText = displayLabel ? `${checkboxChar} ${displayLabel}` : checkboxChar;
-
+  // Use reactive functions for rendering
   return Box({
     style: {
       width: props.width,
-      borderStyle: focused ? 'round' : 'none',
-      borderColor: focused ? 'cyan' : undefined,
-      paddingX: focused ? 1 : 0,
+      borderStyle: () => (isFocused ? 'round' : 'none'),
+      borderColor: () => (isFocused ? 'cyan' : undefined),
+      paddingX: () => (isFocused ? 1 : 0),
       ...props.style,
     },
-    children: Text({
-      children: combinedText,
-      color: checked ? 'green' : 'white',
-      bold: focused,
-    }),
+    children: () => {
+      // This function re-runs when signals change
+      const checked = checkedSignal.value;
+      const checkboxChar = checked ? '☑' : '☐';
+
+      // Truncate label to fit within width
+      let displayLabel = props.label;
+
+      if (props.width && props.label) {
+        // Account for: checkbox char(1) + space(1) + padding when focused(2) + borders when focused(2) + safety margin
+        const safetyMargin = 20;
+        const maxLabelWidth = Math.max(10, props.width - safetyMargin);
+
+        if (props.label.length > maxLabelWidth) {
+          displayLabel = `${props.label.slice(0, maxLabelWidth - 3)}...`;
+        }
+      }
+
+      // WORKAROUND: Concatenate checkbox and label into single Text to avoid flexDirection: 'row' overflow bug
+      const combinedText = displayLabel ? `${checkboxChar} ${displayLabel}` : checkboxChar;
+
+      return Text({
+        children: combinedText,
+        color: checked ? 'green' : 'white',
+        bold: isFocused,
+      });
+    },
   });
 }
 

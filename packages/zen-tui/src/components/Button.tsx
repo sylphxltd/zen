@@ -14,7 +14,7 @@ import { Text } from './Text';
 export interface ButtonProps {
   label: string;
   onClick?: () => void;
-  disabled?: boolean;
+  disabled?: boolean | (() => boolean);
   variant?: 'primary' | 'secondary' | 'danger';
   width?: number;
   id?: string;
@@ -22,16 +22,20 @@ export interface ButtonProps {
 
 export function Button(props: ButtonProps): TUINode {
   const id = props.id || `button-${Math.random().toString(36).slice(2, 9)}`;
-  const disabled = props.disabled || false;
   const variant = props.variant || 'primary';
   const width = props.width;
 
   // Visual pressed state
   const isPressed = signal(false);
 
+  // Helper to get current disabled state
+  const getDisabled = () => {
+    return typeof props.disabled === 'function' ? props.disabled() : props.disabled || false;
+  };
+
   const { isFocused } = useFocus({
     id,
-    isActive: !disabled,
+    isActive: true, // We'll check disabled in the input handler
     onFocus: () => {
       isPressed.value = false;
     },
@@ -40,6 +44,7 @@ export function Button(props: ButtonProps): TUINode {
   // Handle keyboard input for this button
   useInput((input, key) => {
     // Only handle input if this button is focused
+    const disabled = getDisabled();
     if (!isFocused || disabled) return;
 
     // Enter or Space to activate
@@ -54,21 +59,42 @@ export function Button(props: ButtonProps): TUINode {
     }
   });
 
-  // Variant colors (computed based on pressed state)
+  // Variant colors (computed based on pressed state and disabled)
   const colors = {
     primary: {
-      bg: () => (disabled ? 'gray' : isPressed.value ? 'blue' : 'cyan'),
-      fg: disabled ? 'white' : 'black',
+      bg: () => {
+        const disabled = getDisabled();
+        return disabled ? 'gray' : isPressed.value ? 'blue' : 'cyan';
+      },
+      fg: () => {
+        const disabled = getDisabled();
+        return disabled ? 'white' : 'black';
+      },
       border: 'cyan',
     },
     secondary: {
-      bg: () => (disabled ? 'gray' : isPressed.value ? 'white' : undefined),
-      fg: () => (disabled ? 'white' : isPressed.value ? 'black' : 'white'),
-      border: disabled ? 'gray' : 'white',
+      bg: () => {
+        const disabled = getDisabled();
+        return disabled ? 'gray' : isPressed.value ? 'white' : undefined;
+      },
+      fg: () => {
+        const disabled = getDisabled();
+        return disabled ? 'white' : isPressed.value ? 'black' : 'white';
+      },
+      border: () => {
+        const disabled = getDisabled();
+        return disabled ? 'gray' : 'white';
+      },
     },
     danger: {
-      bg: () => (disabled ? 'gray' : isPressed.value ? 'red' : undefined),
-      fg: disabled ? 'white' : 'red',
+      bg: () => {
+        const disabled = getDisabled();
+        return disabled ? 'gray' : isPressed.value ? 'red' : undefined;
+      },
+      fg: () => {
+        const disabled = getDisabled();
+        return disabled ? 'white' : 'red';
+      },
       border: 'red',
     },
   };
@@ -79,17 +105,26 @@ export function Button(props: ButtonProps): TUINode {
     <Box
       style={{
         borderStyle: () => (isFocused ? 'round' : 'single'),
-        borderColor: () => (disabled ? 'gray' : isFocused ? colorScheme.border : undefined),
+        borderColor: () => {
+          const disabled = getDisabled();
+          return disabled ? 'gray' : isFocused ? colorScheme.border : undefined;
+        },
         backgroundColor: colorScheme.bg,
         paddingX: 2,
         paddingY: 0,
         width,
         justifyContent: 'center',
       }}
-      props={{ id, disabled, isPressed }}
+      props={{ id, isPressed }}
     >
-      <Text color={colorScheme.fg} bold={() => !disabled && isFocused}>
-        {disabled ? `[${props.label}]` : props.label}
+      <Text color={colorScheme.fg} bold={() => {
+        const disabled = getDisabled();
+        return !disabled && isFocused;
+      }}>
+        {() => {
+          const disabled = getDisabled();
+          return disabled ? `[${props.label}]` : props.label;
+        }}
       </Text>
     </Box>
   );
