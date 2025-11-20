@@ -111,11 +111,14 @@ export function Provider<T>(context: Context<T>, props: { value: T; children: an
     throw new Error('Provider must be used within a component');
   }
 
-  // Store the context value in the current owner
-  let values = contextMap.get(owner);
+  // Store the context value in the parent owner (not current owner)
+  // This is because JSX children are eagerly evaluated, so they are siblings
+  // of the Provider component, not children of it.
+  const targetOwner = owner.parent || owner;
+  let values = contextMap.get(targetOwner);
   if (!values) {
     values = new Map();
-    contextMap.set(owner, values);
+    contextMap.set(targetOwner, values);
   }
   values.set(context.id, value);
 

@@ -8,6 +8,7 @@
  */
 
 import type { AnySignal } from '@zen/signal';
+import { createOwner, setOwner, getOwner } from '@zen/signal';
 
 /**
  * A reactive value - must be a function or signal
@@ -76,9 +77,6 @@ export function executeComponent<T>(
   fn: () => T,
   attachToOwner?: (node: T, owner: import('@zen/signal').Owner) => void,
 ): T {
-  // Import at runtime to avoid circular dependency
-  const { createOwner, setOwner, getOwner } = require('@zen/signal');
-
   const owner = createOwner();
   const prev = getOwner();
   setOwner(owner);
