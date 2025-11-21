@@ -617,30 +617,38 @@ export async function renderToTerminalReactive(
     // Diff and update only changed lines
     const changes = currentBuffer.diff(previousBuffer);
 
-    // React Ink style: Always do full redraw to handle console.log displacement
-    // When console.log pushes the app down, fine-grained updates fail because
-    // they try to update lines at the old positions
+    // React Ink style: Fine-grained update of only changed lines
+    // Console.log is static content, we preserve it by not clearing before writing
     if (changes.length > 0) {
-      // Erase old output (move down to where it is, then clear upwards)
-      let clear = '';
-      if (lastOutputHeight > 0) {
-        // Move down to the last line of our previous output
-        for (let i = 0; i < lastOutputHeight - 1; i++) {
-          clear += '\x1b[1B'; // Move down one line
+      let updateSequence = '';
+
+      // Update only changed lines
+      for (const change of changes) {
+        // Move cursor to the line (from top-left of app region)
+        if (change.y > 0) {
+          updateSequence += `\x1b[${change.y}B`; // Move down change.y lines
         }
-        // Clear each line going upwards
-        for (let i = 0; i < lastOutputHeight; i++) {
-          clear += '\x1b[2K'; // Clear entire line
-          if (i < lastOutputHeight - 1) {
-            clear += '\x1b[1A'; // Move cursor up one line
-          }
+        updateSequence += '\r'; // Return to start of line
+        updateSequence += change.line; // Write new content
+        updateSequence += '\x1b[K'; // Clear to end of line
+
+        // Move cursor back to top-left for next change
+        if (change.y > 0) {
+          updateSequence += `\x1b[${change.y}A`; // Move back up
         }
-        clear += '\x1b[G'; // Move cursor to left edge
+        updateSequence += '\r'; // Return to start
       }
 
-      // Write new output
-      const finalOutput = clear + output;
-      process.stdout.write(finalOutput);
+      // If app got smaller, clear remaining old lines
+      if (newOutputHeight < lastOutputHeight) {
+        for (let i = newOutputHeight; i < lastOutputHeight; i++) {
+          updateSequence += `\x1b[${i}B\r`; // Move to line i
+          updateSequence += '\x1b[2K'; // Clear line
+          updateSequence += `\x1b[${i}A\r`; // Move back to top
+        }
+      }
+
+      process.stdout.write(updateSequence);
       lastOutputHeight = newOutputHeight;
 
       // Move cursor back to the start of app region (top-left)

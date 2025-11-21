@@ -7,6 +7,7 @@ const counter = signal(0);
 // Increment counter every second, with console output
 setInterval(() => {
   counter.value++;
+  console.log(`Counter updated to: ${counter.value}`);
 }, 1000);
 
 const ConsoleTest = () => {

@@ -4,6 +4,8 @@
  * Allows components to handle keyboard input in a declarative way.
  */
 
+import { onCleanup } from '@zen/runtime';
+
 export type InputHandler = (input: string, key: Key) => void;
 
 export interface Key {
@@ -36,8 +38,10 @@ export function useInput(handler: InputHandler, options?: { isActive?: boolean }
   if (isActive) {
     inputHandlers.add(handler);
 
-    // TODO: Add cleanup when component unmounts
-    // This would need onCleanup() from @zen/runtime
+    // Cleanup when component unmounts
+    onCleanup(() => {
+      inputHandlers.delete(handler);
+    });
   }
 }
 
