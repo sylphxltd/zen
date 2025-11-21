@@ -48,7 +48,7 @@ export function TextInput(props: TextInputProps): TUINode {
 
   // Handle keyboard input
   useInput((input, _key) => {
-    if (!isFocused) {
+    if (!isFocused.value) {
       return;
     }
 
@@ -63,8 +63,8 @@ export function TextInput(props: TextInputProps): TUINode {
   return Box({
     style: {
       width,
-      borderStyle: () => (isFocused ? 'round' : 'single'),
-      borderColor: () => (isFocused ? 'cyan' : undefined),
+      borderStyle: () => (isFocused.value ? 'round' : 'single'),
+      borderColor: () => (isFocused.value ? 'cyan' : undefined),
       padding: 0,
       paddingX: 1,
       ...props.style,
@@ -86,7 +86,7 @@ export function TextInput(props: TextInputProps): TUINode {
       // Show value with cursor
       const pos = Math.min(cursorPos.value, currentValue.length);
 
-      if (isFocused) {
+      if (isFocused.value) {
         // Render with cursor
         const before = currentValue.slice(0, pos);
         const cursorChar = pos < currentValue.length ? currentValue[pos] : ' ';

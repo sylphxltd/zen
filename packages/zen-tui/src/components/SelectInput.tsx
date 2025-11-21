@@ -59,7 +59,7 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
 
   // Handle keyboard input
   useInput((input, _key) => {
-    if (!isFocused) return;
+    if (!isFocused.value) return;
 
     handleSelectInput(isOpen, highlightedIndex, valueSignal, props.options, input, props.onChange);
   });
@@ -85,8 +85,8 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
       const selectionDisplay = Box({
         style: {
           width,
-          borderStyle: () => (isFocused ? 'round' : 'single'),
-          borderColor: () => (isFocused ? 'cyan' : undefined),
+          borderStyle: () => (isFocused.value ? 'round' : 'single'),
+          borderColor: () => (isFocused.value ? 'cyan' : undefined),
           padding: 0,
           paddingX: 1,
           ...props.style,

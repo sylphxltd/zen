@@ -5,7 +5,14 @@
  * API matches React Ink, implementation uses signals.
  */
 
-import { computed, createContext, onMount, signal, useContext, ContextProvider } from '@zen/runtime';
+import {
+  ContextProvider,
+  computed,
+  createContext,
+  onMount,
+  signal,
+  useContext,
+} from '@zen/runtime';
 import { useInput } from './useInput.js';
 
 export interface FocusableItem {
@@ -222,6 +229,6 @@ export function useFocus(options?: {
   const isFocusedSignal = computed(() => ctx.focusedId.value === id);
 
   return {
-    isFocused: isFocusedSignal,  // Return signal directly for reactivity
+    isFocused: isFocusedSignal, // Return signal directly for reactivity
   };
 }

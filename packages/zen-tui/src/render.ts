@@ -533,7 +533,7 @@ export async function renderToTerminalReactive(
     fps?: number;
   } = {},
 ): Promise<() => void> {
-  const { onKeyPress} = options;
+  const { onKeyPress } = options;
   try {
     fs.writeFileSync(DEBUG_LOG, `=== TUI Debug Log - ${new Date().toISOString()} ===\n`);
   } catch (_err) {}
@@ -578,12 +578,7 @@ export async function renderToTerminalReactive(
 
     // If result is a descriptor, execute it
     // This happens when root component is a function component
-    if (
-      result &&
-      typeof result === 'object' &&
-      '_jsx' in result &&
-      (result as any)._jsx === true
-    ) {
+    if (result && typeof result === 'object' && '_jsx' in result && (result as any)._jsx === true) {
       // Import executeDescriptor dynamically to avoid circular dependency
       const { executeDescriptor } = require('@zen/runtime');
       return executeDescriptor(result);
@@ -651,9 +646,7 @@ export async function renderToTerminalReactive(
   // Helper: Remove Static nodes from tree (for rendering dynamic content only)
   function removeStaticNodes(node: TUINode | TUINode[]): TUINode | TUINode[] | null {
     if (Array.isArray(node)) {
-      const filtered = node
-        .map(n => removeStaticNodes(n))
-        .filter(n => n !== null) as TUINode[];
+      const filtered = node.map((n) => removeStaticNodes(n)).filter((n) => n !== null) as TUINode[];
       return filtered.length > 0 ? filtered : null;
     }
 
@@ -665,8 +658,11 @@ export async function renderToTerminalReactive(
       const filteredChildren = removeStaticNodes(node.children);
       return {
         ...node,
-        children: Array.isArray(filteredChildren) ? filteredChildren :
-                  filteredChildren ? [filteredChildren] : [],
+        children: Array.isArray(filteredChildren)
+          ? filteredChildren
+          : filteredChildren
+            ? [filteredChildren]
+            : [],
       };
     }
 
@@ -698,9 +694,9 @@ export async function renderToTerminalReactive(
 
   // Helper: Format console args to string
   function formatConsoleArgs(...args: any[]): string {
-    return args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-    ).join(' ');
+    return args
+      .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+      .join(' ');
   }
 
   // Wrap console methods - collect into static buffer (don't call original to avoid duplication)

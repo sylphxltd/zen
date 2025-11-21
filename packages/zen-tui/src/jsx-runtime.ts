@@ -8,7 +8,7 @@
  * Phase 2: executeDescriptor() executes in correct order
  */
 
-import { isSignal, isDescriptor, executeDescriptor } from '@zen/runtime';
+import { executeDescriptor, isDescriptor, isSignal } from '@zen/runtime';
 import type { ComponentDescriptor } from '@zen/runtime';
 import { effect } from '@zen/signal';
 import { scheduleNodeUpdate } from './render-context.js';

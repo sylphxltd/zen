@@ -91,3 +91,54 @@ export function executeComponent<T>(
     setOwner(prev);
   }
 }
+
+/**
+ * Make props.children lazy for proper Context propagation
+ *
+ * Runtime-First Architecture: Without compiler, JSX eagerly evaluates children,
+ * causing them to execute BEFORE parent component setup. This breaks Context
+ * providers because children try to access context before it's been set.
+ *
+ * This helper transforms eager children into a lazy getter, ensuring children
+ * evaluate AFTER the parent component has set up context.
+ *
+ * Owner Tree (Broken - Eager):
+ *   Root
+ *   ├─ Child (executed first, can't find context)
+ *   └─ Provider (executed second, sets context too late)
+ *
+ * Owner Tree (Fixed - Lazy):
+ *   Root
+ *   └─ Provider (executed first, sets context)
+ *      └─ Child (executed second, finds context ✓)
+ *
+ * @example
+ * // In jsx-runtime.ts
+ * if (typeof type === 'function') {
+ *   const lazyProps = makeLazyProps(props);
+ *   return executeComponent(() => type(lazyProps), ...);
+ * }
+ *
+ * @param props - Component props with possibly eager children
+ * @returns Props with lazy children getter
+ */
+// biome-ignore lint/suspicious/noExplicitAny: Generic props type
+export function makeLazyProps(props: Record<string, any> | null): Record<string, any> | null {
+  if (!props || !('children' in props)) {
+    return props; // No children to make lazy
+  }
+
+  // Already a function (lazy) - don't double-wrap
+  if (typeof props.children === 'function') {
+    return props;
+  }
+
+  // Make children lazy via getter
+  const children = props.children;
+  return {
+    ...props,
+    get children() {
+      return children;
+    },
+  };
+}

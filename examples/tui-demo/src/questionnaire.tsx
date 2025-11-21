@@ -1,3 +1,4 @@
+/** @jsxImportSource @zen/tui */
 import { signal } from '@zen/signal';
 import { renderToTerminalReactive } from '@zen/tui';
 import {

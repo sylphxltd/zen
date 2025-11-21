@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022"],
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowJs": true,
@@ -15,7 +15,6 @@
     "sourceMap": true,
     "composite": false,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "@zen/web"
+    "jsx": "react-jsx"
   }
 }

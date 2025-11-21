@@ -45,7 +45,7 @@ export function Button(props: ButtonProps): TUINode {
   useInput((input, key) => {
     // Only handle input if this button is focused
     const disabled = getDisabled();
-    if (!isFocused || disabled) return;
+    if (!isFocused.value || disabled) return;
 
     // Enter or Space to activate
     if (key.return || input === ' ') {
@@ -104,10 +104,10 @@ export function Button(props: ButtonProps): TUINode {
   return (
     <Box
       style={{
-        borderStyle: () => (isFocused ? 'round' : 'single'),
+        borderStyle: () => (isFocused.value ? 'round' : 'single'),
         borderColor: () => {
           const disabled = getDisabled();
-          return disabled ? 'gray' : isFocused ? colorScheme.border : undefined;
+          return disabled ? 'gray' : isFocused.value ? colorScheme.border : undefined;
         },
         backgroundColor: colorScheme.bg,
         paddingX: 2,
@@ -121,7 +121,7 @@ export function Button(props: ButtonProps): TUINode {
         color={colorScheme.fg}
         bold={() => {
           const disabled = getDisabled();
-          return !disabled && isFocused;
+          return !disabled && isFocused.value;
         }}
       >
         {() => {

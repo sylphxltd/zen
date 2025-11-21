@@ -35,7 +35,7 @@ export function Checkbox(props: CheckboxProps): TUINode {
 
   // Handle keyboard input
   useInput((input, _key) => {
-    if (!isFocused) return;
+    if (!isFocused.value) return;
 
     handleCheckbox(checkedSignal, input, props.onChange);
   });
@@ -48,10 +48,10 @@ export function Checkbox(props: CheckboxProps): TUINode {
       const combinedText = props.label ? `${checkboxChar} ${props.label}` : checkboxChar;
 
       // When focused, add visual indicator
-      return isFocused ? `> ${combinedText}` : `  ${combinedText}`;
+      return isFocused.value ? `> ${combinedText}` : `  ${combinedText}`;
     },
     color: () => (checkedSignal.value ? 'green' : 'white'),
-    bold: () => isFocused,
+    bold: () => isFocused.value,
     ...props.style,
   });
 }

@@ -8,10 +8,10 @@
  */
 
 import { attachNodeToOwner, getNodeOwner, getOwner } from '@zen/signal';
+import { executeDescriptor, isDescriptor } from '../descriptor.js';
 import { getPlatformOps } from '../platform-ops.js';
 import { executeComponent } from '../reactive-utils.js';
 import { children } from '../utils/children.js';
-import { isDescriptor, executeDescriptor } from '../descriptor.js';
 
 /**
  * Context object that holds the default value
@@ -185,7 +185,7 @@ export function Provider<T>(context: Context<T>, props: { value: T; children: an
   // accessing it would trigger execution BEFORE context is set.
   // Use Object.getOwnPropertyDescriptor to check if children is a getter.
   const childrenDescriptor = Object.getOwnPropertyDescriptor(props, 'children');
-  const hasChildrenGetter = childrenDescriptor?.get !== undefined;
+  const _hasChildrenGetter = childrenDescriptor?.get !== undefined;
 
   // Use children() helper for runtime lazy evaluation
   // If children is already a getter, wrap it to delay execution

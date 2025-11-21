@@ -1,29 +1,22 @@
+import { Show } from '@zen/runtime';
+import { signal } from '@zen/runtime';
 /** @jsxImportSource @zen/tui */
 import { renderToTerminalReactive } from '@zen/tui';
 import { Box, Text } from '@zen/tui';
-import { Show } from '@zen/runtime';
-import { signal } from '@zen/runtime';
-
-console.log('=== Show Lazy Execution Test ===\n');
 
 let expensiveChildExecuted = false;
 
 const ExpensiveChild = () => {
-  console.log('[ExpensiveChild] 🔴 EXECUTED! (This should NOT happen when when=false)');
   expensiveChildExecuted = true;
   return <Text color="red">Expensive Child Rendered</Text>;
 };
 
 const CheapChild = () => {
-  console.log('[CheapChild] ✅ EXECUTED (This should happen when when=true)');
   return <Text color="green">Cheap Child Rendered</Text>;
 };
 
 const App = () => {
   const condition = signal(false);
-
-  console.log('\n=== Test 1: when=false ===');
-  console.log('ExpensiveChild should NOT execute...\n');
 
   return (
     <Box flexDirection="column" padding={1}>
@@ -56,11 +49,8 @@ const App = () => {
 const cleanup = await renderToTerminalReactive(() => <App />);
 
 setTimeout(() => {
-  console.log('\n=== Test Result ===');
   if (expensiveChildExecuted) {
-    console.log('❌ FAILED: ExpensiveChild should not execute when when=false');
   } else {
-    console.log('✅ PASSED: Show correctly uses lazy evaluation!');
   }
   cleanup();
   process.exit(expensiveChildExecuted ? 1 : 0);

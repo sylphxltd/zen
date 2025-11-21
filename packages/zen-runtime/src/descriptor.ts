@@ -14,8 +14,8 @@
  * See ADR-011 for full details.
  */
 
-import { executeComponent } from './reactive-utils.js';
 import { attachNodeToOwner } from '@zen/signal';
+import { executeComponent } from './reactive-utils.js';
 
 /**
  * Component descriptor - returned by jsx() for components
