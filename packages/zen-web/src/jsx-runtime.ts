@@ -1,5 +1,10 @@
 /**
- * ZenJS JSX Runtime - Optimized
+ * ZenJS JSX Runtime - Descriptor Pattern
+ *
+ * Uses descriptor pattern (ADR-011) to fix Context propagation.
+ *
+ * Phase 1: jsx() returns descriptors for components
+ * Phase 2: executeDescriptor() executes in correct order
  *
  * Performance optimizations:
  * 1. Avoid Object.entries() allocation
@@ -9,9 +14,9 @@
  * 5. Reorder conditions by frequency
  */
 
-import { executeComponent, isSignal } from '@zen/runtime';
+import { executeDescriptor, isDescriptor, isSignal } from '@zen/runtime';
+import type { ComponentDescriptor } from '@zen/runtime';
 import { effect } from '@zen/signal';
-import { attachNodeToOwner, getOwner } from '@zen/signal';
 import { enterHydrateParent, getNextHydrateNode, isHydrating } from './hydrate.js';
 
 export { Fragment } from './core/fragment.js';
@@ -20,15 +25,23 @@ type Props = Record<string, unknown>;
 type ComponentFunction = (props: Props | null) => Node;
 
 /**
- * JSX factory function - optimized
+ * JSX factory function - Descriptor Pattern (ADR-011)
+ *
+ * Components: Return descriptor (delay execution)
+ * Elements: Create DOM node immediately
  */
-export function jsx(type: string | ComponentFunction, props: Props | null): Node {
-  // Component
+export function jsx(
+  type: string | ComponentFunction,
+  props: Props | null,
+): Node | ComponentDescriptor {
+  // Component: Return descriptor (Phase 1)
+  // Execution delayed until parent accesses children via lazy getter
   if (typeof type === 'function') {
-    return executeComponent(
-      () => type(props),
-      (node, owner) => attachNodeToOwner(node, owner),
-    );
+    return {
+      _jsx: true,
+      type,
+      props,
+    } as ComponentDescriptor;
   }
 
   // Cache hydration state (avoid repeated calls)
@@ -180,7 +193,7 @@ function setStaticValue(element: Element, key: string, value: unknown): void {
 }
 
 /**
- * Append child - optimized
+ * Append child - optimized with descriptor support
  */
 function appendChild(parent: Element, child: unknown, hydrating: boolean): void {
   // Null/undefined/false - most common in conditional rendering
@@ -193,6 +206,13 @@ function appendChild(parent: Element, child: unknown, hydrating: boolean): void 
     for (let i = 0; i < child.length; i++) {
       appendChild(parent, child[i], hydrating);
     }
+    return;
+  }
+
+  // Descriptor - execute and append result (Phase 2)
+  if (isDescriptor(child)) {
+    const result = executeDescriptor(child);
+    appendChild(parent, result, hydrating);
     return;
   }
 
@@ -292,13 +312,26 @@ function appendChild(parent: Element, child: unknown, hydrating: boolean): void 
 }
 
 /**
- * Render component to container
+ * Render component to container - with descriptor support
  */
-export function render(component: () => Node, container: Element): () => void {
-  const node = component();
-  container.appendChild(node);
+export function render(component: () => unknown, container: Element): () => void {
+  let result = component();
+
+  // Handle descriptor (Phase 2)
+  if (isDescriptor(result)) {
+    result = executeDescriptor(result);
+  }
+
+  // Ensure result is a Node
+  if (!(result instanceof Node)) {
+    throw new TypeError(
+      `render() expected a Node, got ${typeof result}. Component must return a DOM element.`,
+    );
+  }
+
+  container.appendChild(result);
 
   return () => {
-    container.removeChild(node);
+    container.removeChild(result as Node);
   };
 }
