@@ -164,25 +164,16 @@ const zenProto = {
           }
         }
 
-        // Deduplicate listeners to avoid multiple updates
-        const listenerMap = new Map<any, { zen: any; oldValue: any }>();
-
+        // Call listeners for each signal that changed
         for (const [zen, oldVal] of batchState.pendingNotifications) {
           const listeners = zen._listeners;
           if (listeners) {
-            const len = listeners.length;
+            const listenersCopy = listeners.slice();
+            const len = listenersCopy.length;
             for (let i = 0; i < len; i++) {
-              const listener = listeners[i];
-              if (!listenerMap.has(listener)) {
-                listenerMap.set(listener, { zen, oldValue: oldVal });
-              }
+              listenersCopy[i](zen._value, oldVal);
             }
           }
-        }
-
-        // Call each unique listener once
-        for (const [listener, { zen, oldValue: oldVal }] of listenerMap) {
-          listener(zen._value, oldVal);
         }
 
         batchState.pendingNotifications.clear();
@@ -226,8 +217,32 @@ export function subscribe<A extends AnySignal>(
   if (!zenData._listeners) zenData._listeners = [];
   zenData._listeners.push(listener as any);
 
-  // Subscribe computed to sources
-  if (zen._kind === 'computed' && zen._unsubs === undefined) {
+  // Force initial computation for computed signals (without notification)
+  // Skip if in batch - let the batch flush handle it
+  if (zen._kind === 'computed' && zen._dirty && batchState.batchDepth === 0) {
+    // Compute WITHOUT notifying (just evaluate the value)
+    const prevListener = currentListener;
+    currentListener = zen as any;
+
+    try {
+      const newValue = (zen as any)._calc();
+      (zen as any)._value = newValue;
+      (zen as any)._dirty = false;
+
+      // Track static deps if needed
+      if ((zen as any)._sources.length > 0 && (zen as any)._staticDepsCount === undefined) {
+        (zen as any)._staticDepsCount = 0;
+      }
+    } finally {
+      currentListener = prevListener;
+    }
+
+    // Subscribe to sources after initial computation
+    if (zen._unsubs === undefined && (zen as any)._sources.length > 0) {
+      subscribeToSources(zen as any);
+    }
+  } else if (zen._kind === 'computed' && zen._unsubs === undefined && (zen as any)._sources.length > 0) {
+    // In batch or not dirty - just subscribe to sources without computing
     subscribeToSources(zen as any);
   }
 
@@ -263,61 +278,56 @@ export function batch<T>(fn: () => T): T {
   try {
     return fn();
   } finally {
-    batchState.batchDepth--;
-    if (batchState.batchDepth === 0) {
-      // Flush all pending notifications
-      if (batchState.pendingNotifications.size > 0) {
-        // Mark all computed listeners as dirty first
-        for (const [zen] of batchState.pendingNotifications) {
-          const listeners = zen._listeners;
-          if (listeners) {
-            for (let i = 0; i < listeners.length; i++) {
-              const listener = listeners[i];
-              if ((listener as any)._computedZen) {
-                (listener as any)._computedZen._dirty = true;
+    if (batchState.batchDepth === 1) {
+      // Keep flushing until no more work is pending
+      // This handles effects that modify signals during execution
+      let maxIterations = 100; // Prevent infinite loops
+      while ((batchState.pendingNotifications.size > 0 || batchState.pendingEffects.length > 0) && maxIterations-- > 0) {
+        // Flush all pending notifications
+        if (batchState.pendingNotifications.size > 0) {
+          // Mark all computed listeners as dirty first
+          for (const [zen] of batchState.pendingNotifications) {
+            const listeners = zen._listeners;
+            if (listeners) {
+              for (let i = 0; i < listeners.length; i++) {
+                const listener = listeners[i];
+                if ((listener as any)._computedZen) {
+                  (listener as any)._computedZen._dirty = true;
+                }
               }
             }
           }
-        }
 
-        // OPTIMIZATION: Deduplicate listeners to avoid multiple updates
-        // Collect all unique listeners with their signal context
-        const listenerMap = new Map<any, { zen: any; oldValue: any }>();
-
-        for (const [zen, oldValue] of batchState.pendingNotifications) {
-          const listeners = zen._listeners;
-          if (listeners) {
-            const len = listeners.length;
-            for (let i = 0; i < len; i++) {
-              const listener = listeners[i];
-              // Only store first occurrence (first signal that changed)
-              if (!listenerMap.has(listener)) {
-                listenerMap.set(listener, { zen, oldValue });
+          // Call listeners for each signal that changed
+          // Note: Same listener can be called multiple times if subscribed to multiple signals
+          for (const [zen, oldValue] of batchState.pendingNotifications) {
+            const listeners = zen._listeners;
+            if (listeners) {
+              const listenersCopy = listeners.slice();
+              const len = listenersCopy.length;
+              for (let i = 0; i < len; i++) {
+                listenersCopy[i](zen._value, oldValue);
               }
             }
           }
+
+          batchState.pendingNotifications.clear();
         }
 
-        // Call each unique listener once with its original context
-        for (const [listener, { zen, oldValue }] of listenerMap) {
-          listener(zen._value, oldValue);
-        }
+        // Flush effects after notifications
+        if (batchState.pendingEffects.length > 0) {
+          // Copy the array to avoid issues when effects modify pendingEffects during iteration
+          const effectsToRun = batchState.pendingEffects.slice();
+          batchState.pendingEffects.length = 0;
 
-        batchState.pendingNotifications.clear();
-      }
-
-      // Flush effects after notifications
-      if (batchState.pendingEffects.length > 0) {
-        // Copy the array to avoid issues when effects modify pendingEffects during iteration
-        const effectsToRun = batchState.pendingEffects.slice();
-        batchState.pendingEffects.length = 0;
-
-        const len = effectsToRun.length;
-        for (let i = 0; i < len; i++) {
-          effectsToRun[i]();
+          const len = effectsToRun.length;
+          for (let i = 0; i < len; i++) {
+            effectsToRun[i]();
+          }
         }
       }
     }
+    batchState.batchDepth--;
   }
 }
 
@@ -347,8 +357,7 @@ function updateComputed<T>(c: ComputedCore<T>): void {
       if (needsResubscribe) {
         // Re-computation - check if sources changed
         const sourcesChanged =
-          oldSources.length !== c._sources.length ||
-          oldSources.some((s, i) => s !== c._sources[i]);
+          oldSources.length !== c._sources.length || oldSources.some((s, i) => s !== c._sources[i]);
 
         if (sourcesChanged) {
           // Dynamic deps detected - reset counter
@@ -554,9 +563,7 @@ function executeEffect(e: EffectCore): void {
 
   // Run previous cleanup
   if (e._cleanup) {
-    try {
-      e._cleanup();
-    } catch (_) {}
+    e._cleanup();
     e._cleanup = undefined;
   }
 
@@ -576,7 +583,6 @@ function executeEffect(e: EffectCore): void {
   try {
     const cleanup = e._callback();
     if (cleanup) e._cleanup = cleanup;
-  } catch (_err) {
   } finally {
     currentListener = prevListener;
   }
@@ -627,7 +633,6 @@ export function effect(
   try {
     const cleanup = e._callback();
     if (cleanup) e._cleanup = cleanup;
-  } catch (_err) {
   } finally {
     currentListener = prevListener;
   }
@@ -644,9 +649,7 @@ export function effect(
 
     // Run final cleanup
     if (e._cleanup) {
-      try {
-        e._cleanup();
-      } catch (_) {}
+      e._cleanup();
     }
 
     // Unsubscribe from sources
