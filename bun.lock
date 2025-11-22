@@ -172,6 +172,7 @@
       "dependencies": {
         "@zen/router-core": "workspace:*",
         "@zen/signal": "workspace:*",
+        "@zen/web": "workspace:*",
       },
       "devDependencies": {
         "bunup": "^0.15.13",
@@ -244,6 +245,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@zen/signal": "workspace:*",
+        "@zen/signal-extensions": "workspace:*",
       },
       "devDependencies": {
         "tsup": "^8.3.5",

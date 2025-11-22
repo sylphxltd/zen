@@ -31,6 +31,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm,cjs --dts --target node --minify",
+    "dev": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm,cjs --dts --target node --watch",
     "test": "vitest run",
     "test:watch": "vitest"
   },

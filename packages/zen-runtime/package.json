@@ -15,8 +15,8 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
-    "dev": "bun run --watch src/index.ts",
+    "build": "bunup --format esm,cjs --target node --minify",
+    "dev": "bunup --format esm,cjs --target node --watch",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
@@ -29,10 +29,11 @@
     "directory": "packages/zen-runtime"
   },
   "dependencies": {
-    "@zen/signal": "workspace:*"
+    "@zen/signal": "workspace:*",
+    "@zen/signal-extensions": "workspace:*"
   },
   "devDependencies": {
-    "tsup": "^8.3.5",
+    "bunup": "^0.15.13",
     "typescript": "^5.8.3"
   },
   "publishConfig": {

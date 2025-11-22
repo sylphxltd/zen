@@ -16,6 +16,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "bunup --format esm,cjs --dts --target node --minify",
+    "dev": "bunup --format esm,cjs --dts --target node --watch",
     "clean": "bun rimraf dist .turbo"
   },
   "keywords": ["zen", "router", "routing", "framework", "component"],

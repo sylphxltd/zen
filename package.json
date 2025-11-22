@@ -7,7 +7,7 @@
   "type": "module",
   "workspaces": ["packages/*", "apps/*", "examples/*"],
   "scripts": {
-    "dev": "bunx turbo dev",
+    "dev": "bunx turbo dev --concurrency=15",
     "build": "bunx turbo run build --filter=./packages/*",
     "test": "bunx turbo test",
     "test:watch": "bunx turbo test:watch",
