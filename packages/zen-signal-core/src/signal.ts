@@ -479,17 +479,27 @@ export function effect(
   callback: () => undefined | (() => void),
   explicitDeps?: AnySignal[],
 ): Unsubscribe {
+  // Create execute function FIRST before creating the effect object
+  // This prevents race conditions where runEffect could be called
+  // before _execute is initialized
+  let executeRef: (() => void) | null = null;
+
   const e: EffectCore = {
     _sources: explicitDeps || [],
     _callback: callback,
     _cancelled: false,
     _autoTrack: !explicitDeps, // Only auto-track if no explicit deps provided
     _queued: false,
-    _execute: null as any, // Will be set below
+    get _execute() {
+      return executeRef!;
+    },
+    set _execute(_val) {
+      // no-op setter for type compatibility
+    },
   };
 
-  // Create stable reference for queuing
-  e._execute = () => executeEffect(e);
+  // Set the execute function
+  executeRef = () => executeEffect(e);
 
   // Run effect immediately (synchronously for initial run)
   const prevListener = currentListener;
