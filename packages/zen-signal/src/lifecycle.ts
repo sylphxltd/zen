@@ -74,11 +74,21 @@ export function onMount(callback: () => undefined | CleanupFunction): void {
 
   // Use queueMicrotask to ensure DOM is inserted
   queueMicrotask(() => {
-    const cleanup = callback();
+    // Temporarily restore owner context during callback execution
+    // This ensures onCleanup() calls inside callback use the correct owner
+    const prevOwner = currentOwner;
+    currentOwner = owner;
 
-    // Track cleanup function in captured owner
-    if (typeof cleanup === 'function' && owner && !owner.disposed) {
-      owner.cleanups.push(cleanup);
+    try {
+      const cleanup = callback();
+
+      // Track cleanup function in captured owner
+      if (typeof cleanup === 'function' && owner && !owner.disposed) {
+        owner.cleanups.push(cleanup);
+      }
+    } finally {
+      // Restore previous owner context
+      currentOwner = prevOwner;
     }
   });
 }

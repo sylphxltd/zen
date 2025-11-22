@@ -1,4 +1,4 @@
-import { effect, onCleanup, onMount } from '@zen/web';
+import { onCleanup, onMount } from '@zen/web';
 import type { ZenNode } from '@zen/web';
 
 export interface ModalProps {
@@ -9,7 +9,7 @@ export interface ModalProps {
 
 export function Modal(props: ModalProps) {
   // Lock body scroll when modal is mounted
-  effect(() => {
+  onMount(() => {
     const originalOverflow = document.body.style.overflow;
     const originalPaddingRight = document.body.style.paddingRight;
 
@@ -23,10 +23,10 @@ export function Modal(props: ModalProps) {
     }
 
     // Cleanup when modal unmounts
-    return () => {
+    onCleanup(() => {
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
-    };
+    });
   });
 
   // Handle ESC key to close modal
