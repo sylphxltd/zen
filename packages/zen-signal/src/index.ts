@@ -7,7 +7,7 @@
 
 // Import raw primitives from @zen/signal-core
 import { batch, peek, effect as rawEffect, subscribe, untrack } from '@zen/signal-core';
-import type { Computed, Signal } from '@zen/signal-core';
+import type { AnySignal, Computed, Signal } from '@zen/signal-core';
 import { getOwner, onCleanup } from './lifecycle.js';
 
 // ============================================================================
@@ -20,6 +20,9 @@ import { getOwner, onCleanup } from './lifecycle.js';
  * When used inside a Zen component, cleanup is automatic.
  * When used outside components, behaves like raw effect.
  *
+ * @param callback - Effect callback function
+ * @param explicitDeps - Optional explicit dependencies (disables auto-tracking)
+ *
  * @example
  * ```tsx
  * function Component() {
@@ -27,11 +30,19 @@ import { getOwner, onCleanup } from './lifecycle.js';
  *     console.log('Effect running');
  *     return () => console.log('Cleanup automatically registered');
  *   });
+ *
+ *   // With explicit dependencies
+ *   effect(() => {
+ *     console.log(count.value, name.value);
+ *   }, [count]);  // Only re-run when count changes
  * }
  * ```
  */
-export function effect(callback: () => undefined | (() => void)): () => void {
-  const dispose = rawEffect(callback);
+export function effect(
+  callback: () => undefined | (() => void),
+  explicitDeps?: AnySignal[],
+): () => void {
+  const dispose = rawEffect(callback, explicitDeps);
 
   // If we have an owner context, register cleanup automatically
   const owner = getOwner();
