@@ -6,9 +6,9 @@
 import {
   $router,
   defineRoutes,
+  open,
   startHistoryListener,
   stopHistoryListener,
-  open,
 } from '@zen/router-core';
 import type { RouteConfig } from '@zen/router-core';
 import { executeDescriptor, isDescriptor } from '@zen/runtime';
@@ -138,7 +138,7 @@ export function Router(props: RouterProps): TUINode {
       stopHistoryListener();
 
       // Dispose all cached components
-      for (const [path, node] of componentCache) {
+      for (const [_path, node] of componentCache) {
         disposeNode(node);
       }
       componentCache.clear();

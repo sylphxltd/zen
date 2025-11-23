@@ -174,6 +174,6 @@ function App() {
 
 // Render
 // Note: renderToTerminalReactive already handles Ctrl+C and dispatches to useInput handlers
-const _cleanup = renderToTerminalReactive(() => App(), {
+const _cleanup = await renderToTerminalReactive(() => App(), {
   fps: 30,
 });

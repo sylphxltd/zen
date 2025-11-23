@@ -122,6 +122,26 @@ function applyStylesToYogaNode(yogaNode: any, style: TUIStyle, Yoga: any) {
     yogaNode.setMaxHeight(style.maxHeight);
   }
 
+  // Border - Yoga has border support!
+  // Check if border exists
+  let hasBorder = false;
+  if (style.borderStyle) {
+    if (typeof style.borderStyle === 'function') {
+      const resolved = style.borderStyle();
+      hasBorder = resolved && resolved !== 'none';
+    } else {
+      hasBorder = style.borderStyle !== 'none';
+    }
+  }
+
+  // Set border width in Yoga (1px on all sides if border exists)
+  if (hasBorder) {
+    yogaNode.setBorder(Yoga.EDGE_TOP, 1);
+    yogaNode.setBorder(Yoga.EDGE_BOTTOM, 1);
+    yogaNode.setBorder(Yoga.EDGE_LEFT, 1);
+    yogaNode.setBorder(Yoga.EDGE_RIGHT, 1);
+  }
+
   // Padding
   const padding = style.padding ?? 0;
   const paddingX = style.paddingX ?? padding;

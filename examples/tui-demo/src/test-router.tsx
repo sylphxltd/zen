@@ -7,12 +7,12 @@
 
 import { signal } from '@zen/signal';
 import {
+  $router,
   Box,
-  Text,
+  FocusProvider,
   Router,
   RouterLink,
-  $router,
-  FocusProvider,
+  Text,
   renderToTerminalReactive,
 } from '@zen/tui';
 
@@ -20,7 +20,9 @@ import {
 function HomePage() {
   return (
     <Box style={{ flexDirection: 'column', gap: 1 }}>
-      <Text bold color="cyan">🏠 Home Page</Text>
+      <Text bold color="cyan">
+        🏠 Home Page
+      </Text>
       <Text>Welcome to the TUI Router Demo!</Text>
 
       <Box style={{ marginTop: 2, flexDirection: 'column', gap: 1 }}>
@@ -41,7 +43,9 @@ function HomePage() {
 function AboutPage() {
   return (
     <Box style={{ flexDirection: 'column', gap: 1 }}>
-      <Text bold color="green">ℹ️  About Page</Text>
+      <Text bold color="green">
+        ℹ️ About Page
+      </Text>
       <Text>This is a demo of TUI routing with @zen/tui Router</Text>
 
       <Box style={{ marginTop: 2 }}>
@@ -61,7 +65,9 @@ function UserProfilePage() {
 
   return (
     <Box style={{ flexDirection: 'column', gap: 1 }}>
-      <Text bold color="yellow">👤 User Profile</Text>
+      <Text bold color="yellow">
+        👤 User Profile
+      </Text>
       <Text>User ID: {userId}</Text>
 
       <Box style={{ marginTop: 2 }}>
@@ -81,7 +87,9 @@ function UserProfilePage() {
 function SettingsPage() {
   return (
     <Box style={{ flexDirection: 'column', gap: 1 }}>
-      <Text bold color="magenta">⚙️  Settings</Text>
+      <Text bold color="magenta">
+        ⚙️ Settings
+      </Text>
       <Text>App Settings Page</Text>
 
       <Box style={{ marginTop: 2 }}>
@@ -95,7 +103,9 @@ function SettingsPage() {
 function NotFoundPage() {
   return (
     <Box style={{ flexDirection: 'column', gap: 1 }}>
-      <Text bold color="red">❌ 404 - Page Not Found</Text>
+      <Text bold color="red">
+        ❌ 404 - Page Not Found
+      </Text>
       <Text>The page you're looking for doesn't exist.</Text>
 
       <Box style={{ marginTop: 2 }}>
@@ -136,9 +146,7 @@ function App() {
         />
 
         <Box style={{ marginTop: 2, borderStyle: 'single', padding: 1 }}>
-          <Text dim>
-            Press q or Ctrl+C to quit
-          </Text>
+          <Text dim>Press q or Ctrl+C to quit</Text>
         </Box>
       </Box>
     </FocusProvider>
@@ -146,7 +154,7 @@ function App() {
 }
 
 // Render the app
-renderToTerminalReactive(() => <App />, {
+await renderToTerminalReactive(() => <App />, {
   fullscreen: true,
   mouse: true,
   fps: 10,

@@ -7,7 +7,7 @@
 import chalk from 'chalk';
 import cliBoxes from 'cli-boxes';
 import stringWidth from 'string-width';
-import type { TerminalBuffer} from './terminal-buffer.js';
+import type { TerminalBuffer } from './terminal-buffer.js';
 import type { TUINode, TUIStyle } from './types.js';
 import type { LayoutMap } from './yoga-layout.js';
 

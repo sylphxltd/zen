@@ -988,6 +988,14 @@ export async function renderToTerminalReactive(
     }
     dispatchInput(key);
 
+    // Trigger UI update after input handlers (which may update signals)
+    // Use queueMicrotask to batch all signal updates before rendering
+    queueMicrotask(() => {
+      if (isRunning) {
+        flushUpdates();
+      }
+    });
+
     // Custom key handler
     if (onKeyPress) {
       onKeyPress(key);

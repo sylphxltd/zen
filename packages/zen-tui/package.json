@@ -7,14 +7,17 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./jsx-runtime": {
+      "development": "./src/jsx-runtime.ts",
       "types": "./dist/jsx-runtime.d.ts",
       "import": "./dist/jsx-runtime.js"
     },
     "./jsx-dev-runtime": {
+      "development": "./src/jsx-runtime.ts",
       "types": "./dist/jsx-runtime.d.ts",
       "import": "./dist/jsx-runtime.js"
     }
@@ -22,6 +25,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --external @zen/router-core --external @zen/runtime --external @zen/signal --external @zen/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
+    "build:watch": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --watch --external @zen/router-core --external @zen/runtime --external @zen/signal --external @zen/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
     "dev": "bun run --watch src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",

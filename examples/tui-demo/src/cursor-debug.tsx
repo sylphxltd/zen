@@ -24,4 +24,4 @@ const DebugTest = () => {
   );
 };
 
-renderToTerminalReactive(() => <DebugTest />);
+await renderToTerminalReactive(() => <DebugTest />);
