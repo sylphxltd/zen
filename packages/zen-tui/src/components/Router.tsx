@@ -153,7 +153,10 @@ export function Router(props: RouterProps): TUINode {
     tagName: 'router-container',
     props: {},
     children: [],
-    style: {},
+    style: {
+      flex: 1,
+      flexDirection: 'column',
+    },
   };
 
   // Add current component as child (using function for reactivity)

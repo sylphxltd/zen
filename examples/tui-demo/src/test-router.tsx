@@ -115,6 +115,7 @@ function App() {
     <FocusProvider>
       <Box
         style={{
+          flex: 1,
           borderStyle: 'round',
           padding: 2,
           flexDirection: 'column',

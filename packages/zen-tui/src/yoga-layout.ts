@@ -178,8 +178,11 @@ function buildYogaTree(tuiNode: TUINode, yogaNodeMap: Map<TUINode, any>, Yoga: a
         yogaNode.insertChild(textYogaNode, yogaNode.getChildCount());
       } else if (typeof child === 'object' && child !== null) {
         if ('_type' in child && child._type === 'marker') {
-          // Reactive marker - treat as container
+          // Reactive marker - treat as container that expands to fill parent
           const markerYogaNode = Yoga.Node.create();
+          // Markers should expand to fill their parent container
+          markerYogaNode.setFlexGrow(1);
+          markerYogaNode.setFlexShrink(1);
           yogaNodeMap.set(child as any, markerYogaNode);
 
           // Process marker's children

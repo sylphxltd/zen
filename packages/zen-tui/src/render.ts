@@ -606,7 +606,7 @@ export async function renderToTerminalReactive(
 
   // Create component tree once (fine-grained reactivity - components render only once)
   // Handle descriptor pattern (ADR-011): createNode() may return a descriptor
-  const node = createRoot(() => {
+  let node = createRoot(() => {
     const result = createNode();
 
     // If result is a descriptor, execute it
@@ -620,6 +620,21 @@ export async function renderToTerminalReactive(
 
     return result;
   });
+
+  // Handle fragments (arrays) by wrapping in a fragment node
+  if (Array.isArray(node)) {
+    const fragmentNode: TUINode = {
+      type: 'box',
+      tagName: 'fragment',
+      props: {},
+      children: node,
+      style: {
+        flex: 1,
+        flexDirection: 'column',
+      },
+    };
+    node = fragmentNode;
+  }
 
   // Compute initial layout
   let layoutMap = await computeLayout(node, terminalWidth, terminalHeight);
