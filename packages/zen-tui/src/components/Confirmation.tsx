@@ -77,38 +77,42 @@ export function Confirmation(props: ConfirmationProps): TUINode {
   return Box({
     style: {
       flexDirection: 'column',
-      borderStyle: () => (isFocused.value ? 'round' : 'single'),
-      borderColor: () => (isFocused.value ? 'cyan' : undefined),
+      borderStyle: 'round',
+      borderColor: 'cyan',
       padding: 1,
       ...props.style,
     },
-    children: [
-      // Message
-      Text({
-        children: props.message,
-        style: { marginBottom: 1 },
-      }),
-      // Yes/No buttons
-      Box({
-        style: { flexDirection: 'row' },
-        children: [
-          // Yes button
-          Text({
-            children: () => (highlighted.value === 0 ? `> ${yesLabel}` : `  ${yesLabel}`),
-            color: () => (highlighted.value === 0 ? 'green' : 'gray'),
-            bold: () => highlighted.value === 0,
-            inverse: () => highlighted.value === 0,
-            style: { marginRight: 2 },
-          }),
-          // No button
-          Text({
-            children: () => (highlighted.value === 1 ? `> ${noLabel}` : `  ${noLabel}`),
-            color: () => (highlighted.value === 1 ? 'red' : 'gray'),
-            bold: () => highlighted.value === 1,
-            inverse: () => highlighted.value === 1,
-          }),
-        ],
-      }),
-    ],
+    children: () => {
+      const highlightedValue = highlighted.value;
+
+      return [
+        // Message
+        Text({
+          children: props.message,
+          style: { marginBottom: 1 },
+        }),
+        // Yes/No buttons
+        Box({
+          style: { flexDirection: 'row' },
+          children: [
+            // Yes button
+            Text({
+              children: highlightedValue === 0 ? `> ${yesLabel}` : `  ${yesLabel}`,
+              color: highlightedValue === 0 ? 'green' : 'gray',
+              bold: highlightedValue === 0,
+              inverse: highlightedValue === 0,
+              style: { marginRight: 2 },
+            }),
+            // No button
+            Text({
+              children: highlightedValue === 1 ? `> ${noLabel}` : `  ${noLabel}`,
+              color: highlightedValue === 1 ? 'red' : 'gray',
+              bold: highlightedValue === 1,
+              inverse: highlightedValue === 1,
+            }),
+          ],
+        }),
+      ];
+    },
   });
 }

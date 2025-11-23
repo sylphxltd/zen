@@ -59,58 +59,58 @@ export function Tabs(props: TabsProps): TUINode {
     handleTabsInput(input, activeTabSignal, tabCount, props.onChange);
   });
 
-  // Render tab headers
-  const tabHeaders = tabs.map((tab: any, index: number) => {
-    const tabName = tab.name || `Tab ${index + 1}`;
-    const isActive = () => activeTabSignal.value === index;
-
-    return Text({
-      key: `tab-header-${index}`,
-      children: ` ${tabName} `,
-      color: () => (isActive() ? 'cyan' : 'gray'),
-      bold: () => isActive(),
-      inverse: () => isActive(),
-      underline: () => isActive(),
-      style: { marginRight: 1 },
-    });
-  });
-
-  // Get active tab content
-  const activeContent = () => {
-    const activeIndex = activeTabSignal.value;
-    const activeTab = tabs[activeIndex];
-    if (!activeTab) return null;
-
-    // Return tab children (content)
-    if (typeof activeTab.children === 'function') {
-      return activeTab.children();
-    }
-    return activeTab.children;
-  };
-
   return Box({
     style: {
       flexDirection: 'column',
       ...props.style,
     },
-    children: [
-      // Tab headers row
-      Box({
-        style: {
-          flexDirection: 'row',
-          borderStyle: () => (isFocused.value ? 'round' : 'single'),
-          borderColor: () => (isFocused.value ? 'cyan' : undefined),
-          paddingX: 1,
-          marginBottom: 1,
-        },
-        children: tabHeaders,
-      }),
-      // Active tab content
-      Box({
-        style: { flexDirection: 'column' },
-        children: activeContent,
-      }),
-    ],
+    children: () => {
+      const activeIndex = activeTabSignal.value;
+      const focused = isFocused.value;
+
+      // Render tab headers
+      const tabHeaders = tabs.map((tab: any, index: number) => {
+        const tabName = tab.name || `Tab ${index + 1}`;
+        const isActive = activeIndex === index;
+
+        return Text({
+          key: `tab-header-${index}`,
+          children: ` ${tabName} `,
+          color: isActive ? 'cyan' : 'gray',
+          bold: isActive,
+          inverse: isActive,
+          underline: isActive,
+          style: { marginRight: 1 },
+        });
+      });
+
+      // Get active tab content
+      const activeTab = tabs[activeIndex];
+      const activeContent = activeTab
+        ? typeof activeTab.children === 'function'
+          ? activeTab.children()
+          : activeTab.children
+        : null;
+
+      return [
+        // Tab headers row
+        Box({
+          style: {
+            flexDirection: 'row',
+            borderStyle: focused ? 'round' : 'single',
+            borderColor: focused ? 'cyan' : undefined,
+            paddingX: 1,
+            marginBottom: 1,
+          },
+          children: tabHeaders,
+        }),
+        // Active tab content
+        Box({
+          style: { flexDirection: 'column' },
+          children: activeContent,
+        }),
+      ];
+    },
   });
 }
 
