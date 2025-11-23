@@ -7,6 +7,9 @@
 
 import { executeDescriptor, isDescriptor } from '@zen/runtime';
 import { createRoot } from '@zen/signal';
+import cliBoxes from 'cli-boxes';
+import stringWidth from 'string-width';
+import stripAnsi from 'strip-ansi';
 import { TUIElement, TUITextNode } from './element.js';
 import { TerminalBuffer } from './terminal-buffer.js';
 import { buildPersistentTree } from './tree-builder.js';
@@ -52,6 +55,55 @@ function getBgColorCode(color: string): string {
     grey: '\x1b[100m',
   };
   return bgColorMap[color.toLowerCase()] || '';
+}
+
+/**
+ * Get color function that wraps text with ANSI codes
+ */
+function getColorFn(color: string) {
+  const code = getColorCode(color);
+  return (text: string) => `${code + text}\x1b[39m`; // reset to default color
+}
+
+/**
+ * Render box border
+ */
+function renderBorder(
+  width: number,
+  height: number,
+  borderStyle = 'single',
+  borderColor?: string,
+): string[] {
+  const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
+  const lines: string[] = [];
+
+  // Top border
+  let topLine = box.topLeft + box.top.repeat(Math.max(0, width - 2)) + box.topRight;
+  if (borderColor) {
+    topLine = getColorFn(borderColor)(topLine);
+  }
+  lines.push(topLine);
+
+  // Middle lines (will be filled with content)
+  for (let i = 0; i < height - 2; i++) {
+    let middleLine = box.left + ' '.repeat(Math.max(0, width - 2)) + box.right;
+    if (borderColor) {
+      const colorFn = getColorFn(borderColor);
+      const leftBorder = colorFn(box.left);
+      const rightBorder = colorFn(box.right);
+      middleLine = leftBorder + ' '.repeat(Math.max(0, width - 2)) + rightBorder;
+    }
+    lines.push(middleLine);
+  }
+
+  // Bottom border
+  let bottomLine = box.bottomLeft + box.bottom.repeat(Math.max(0, width - 2)) + box.bottomRight;
+  if (borderColor) {
+    bottomLine = getColorFn(borderColor)(bottomLine);
+  }
+  lines.push(bottomLine);
+
+  return lines;
 }
 
 /**
@@ -113,7 +165,45 @@ function renderElementToString(element: TUIElement | TUITextNode): string {
     content = applyTextStyle(content, element.style);
   }
 
-  // TODO: Apply borders, layout positioning
+  // Apply borders if borderStyle is set
+  const borderStyle = element.props.borderStyle;
+  const borderColor = element.props.borderColor;
+
+  if (borderStyle) {
+    const contentLines = content.split('\n');
+    const contentWidth = Math.max(...contentLines.map((line) => stringWidth(stripAnsi(line))), 10);
+    const contentHeight = contentLines.length;
+
+    // Create border with appropriate dimensions (add 2 for left/right borders)
+    const borderLines = renderBorder(
+      contentWidth + 2,
+      contentHeight + 2,
+      borderStyle,
+      borderColor,
+    );
+
+    // Insert content lines into border
+    for (let i = 0; i < contentLines.length; i++) {
+      const line = contentLines[i];
+      const lineWidth = stringWidth(stripAnsi(line));
+      const padding = ' '.repeat(Math.max(0, contentWidth - lineWidth));
+
+      // Replace the empty space in the middle line with content
+      if (borderColor) {
+        const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
+        const colorFn = getColorFn(borderColor);
+        const leftBorder = colorFn(box.left);
+        const rightBorder = colorFn(box.right);
+        borderLines[i + 1] = leftBorder + line + padding + rightBorder;
+      } else {
+        const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
+        borderLines[i + 1] = box.left + line + padding + box.right;
+      }
+    }
+
+    content = borderLines.join('\n');
+  }
+
   return content;
 }
 
