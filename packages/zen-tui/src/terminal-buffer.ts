@@ -122,7 +122,7 @@ export class TerminalBuffer {
       if (afterX < existingVisualWidth) {
         // Extract the portion of existingLine that starts at visual position afterX
         // We need to find the actual string index that corresponds to visual position afterX
-        const strippedLine = stripAnsi(existingLine);
+        const _strippedLine = stripAnsi(existingLine);
         let visualPos = 0;
         let stringPos = 0;
         let inAnsiCode = false;

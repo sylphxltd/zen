@@ -18,7 +18,7 @@ function ScrollTest() {
       <Text>Scroll with mouse wheel or arrow keys</Text>
       <Text> </Text>
 
-      <ScrollBox height={5} style={{ borderStyle: 'single' }}>
+      <ScrollBox height={5} contentHeight={items.length} style={{ borderStyle: 'single' }}>
         <Box style={{ flexDirection: 'column' }}>
           {items.map((item) => (
             <Text key={item}>{item}</Text>

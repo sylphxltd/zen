@@ -142,7 +142,9 @@ function renderNodeToBuffer(
   clipMaxY?: number, // Optional viewport clipping (max Y)
 ): void {
   const layout = layoutMap.get(node);
-  if (!layout) return;
+  if (!layout) {
+    return;
+  }
 
   const x = Math.floor(layout.x + offsetX);
   const y = Math.floor(layout.y + offsetY);

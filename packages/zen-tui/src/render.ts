@@ -680,8 +680,21 @@ export async function renderToTerminalReactive(
   // Helper: Remove Static nodes from tree (for rendering dynamic content only)
   function removeStaticNodes(node: TUINode | TUINode[]): TUINode | TUINode[] | null {
     if (Array.isArray(node)) {
-      const filtered = node.map((n) => removeStaticNodes(n)).filter((n) => n !== null) as TUINode[];
-      return filtered.length > 0 ? filtered : null;
+      const filtered: TUINode[] = [];
+      let changed = false;
+
+      for (const n of node) {
+        const result = removeStaticNodes(n);
+        if (result !== null) {
+          filtered.push(result as TUINode);
+          if (result !== n) changed = true;
+        } else {
+          changed = true; // Removed a node
+        }
+      }
+
+      // Only create new array if something changed
+      return changed ? (filtered.length > 0 ? filtered : null) : node;
     }
 
     if (node.tagName === 'static') {
@@ -690,6 +703,12 @@ export async function renderToTerminalReactive(
 
     if (node.children) {
       const filteredChildren = removeStaticNodes(node.children);
+
+      // Only create new object if children actually changed
+      if (filteredChildren === node.children) {
+        return node; // No change, return original
+      }
+
       return {
         ...node,
         children: Array.isArray(filteredChildren)
@@ -794,8 +813,11 @@ export async function renderToTerminalReactive(
       staticContentBuffer = [];
 
       // Step 3: Re-render entire app below static content
-      layoutMap = await computeLayout(node, terminalWidth, terminalHeight);
       const dynamicNode = removeStaticNodes(node);
+
+      // Recompute layout for the node to render
+      // If removeStaticNodes didn't change anything, dynamicNode === node (same reference)
+      layoutMap = await computeLayout(dynamicNode || node, terminalWidth, terminalHeight);
 
       // Use layout-renderer for proper scroll offset handling
       currentBuffer.clear();
@@ -830,8 +852,12 @@ export async function renderToTerminalReactive(
     }
 
     // No static content - do fine-grained diff update
-    layoutMap = await computeLayout(node, terminalWidth, terminalHeight);
     const dynamicNode = removeStaticNodes(node);
+
+    // Recompute layout for the node to render
+    // If removeStaticNodes didn't change anything, dynamicNode === node (same reference)
+    // This optimization avoids creating new objects when there are no static nodes
+    layoutMap = await computeLayout(dynamicNode || node, terminalWidth, terminalHeight);
 
     // Use layout-renderer for proper scroll offset handling
     currentBuffer.clear();

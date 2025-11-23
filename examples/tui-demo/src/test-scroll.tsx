@@ -21,7 +21,7 @@ function ScrollDemo() {
       <Text style={{ color: 'yellow' }}>Use Page Up/Down for faster scrolling</Text>
       <Text> </Text>
 
-      <ScrollBox height={10} style={{ borderStyle: 'single' }}>
+      <ScrollBox height={10} contentHeight={items.length} style={{ borderStyle: 'single' }}>
         <Box style={{ flexDirection: 'column' }}>
           {items.map((item) => (
             <Text key={item}>{item}</Text>
