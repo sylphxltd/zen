@@ -2,8 +2,8 @@
  * Test Box rendering with interval
  */
 
-import { Box, Text, renderToTerminalReactive } from '@zen/tui';
 import { signal } from '@zen/signal';
+import { Box, Text, renderToTerminalReactive } from '@zen/tui';
 
 function App() {
   const counter = signal(0);

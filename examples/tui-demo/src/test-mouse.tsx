@@ -1,3 +1,4 @@
+/** @jsxImportSource @zen/tui */
 /**
  * Mouse Tracking Demo
  *
@@ -32,35 +33,26 @@ function MouseDemo() {
   });
 
   return (
-    <Box flexDirection="column" padding={1} borderStyle="round">
-      <Text bold color="cyan">
-        Mouse Tracking Demo
-      </Text>
+    <Box style={{ flexDirection: 'column', padding: 1, borderStyle: 'round' }}>
+      <Text style={{ bold: true, color: 'cyan' }}>Mouse Tracking Demo</Text>
       <Text>───────────────────────</Text>
-      <Text />
-      <Text color="yellow">Click anywhere in the terminal</Text>
-      <Text color="yellow">Scroll up/down to test scroll events</Text>
-      <Text />
-      <Text>
-        Last Click: <Text color="green">{() => lastClick.value}</Text>
-      </Text>
-      <Text>
-        Click Count: <Text color="green">{() => clickCount.value}</Text>
-      </Text>
-      <Text />
-      <Text>
-        Last Scroll: <Text color="magenta">{() => lastScroll.value}</Text>
-      </Text>
-      <Text>
-        Scroll Count: <Text color="magenta">{() => scrollCount.value}</Text>
-      </Text>
-      <Text />
-      <Text dim>Press 'q' or Ctrl+C to exit</Text>
+      <Text> </Text>
+      <Text style={{ color: 'yellow' }}>Click anywhere in the terminal</Text>
+      <Text style={{ color: 'yellow' }}>Scroll up/down to test scroll events</Text>
+      <Text> </Text>
+      <Text style={{ color: 'green' }}>Last Click: {() => lastClick.value}</Text>
+      <Text style={{ color: 'green' }}>Click Count: {() => clickCount.value}</Text>
+      <Text> </Text>
+      <Text style={{ color: 'magenta' }}>Last Scroll: {() => lastScroll.value}</Text>
+      <Text style={{ color: 'magenta' }}>Scroll Count: {() => scrollCount.value}</Text>
+      <Text> </Text>
+      <Text style={{ dim: true }}>Press 'q' or Ctrl+C to exit</Text>
     </Box>
   );
 }
 
 await renderToTerminalReactive(() => MouseDemo(), {
+  fps: 10,
   fullscreen: true,
   mouse: true,
 });
