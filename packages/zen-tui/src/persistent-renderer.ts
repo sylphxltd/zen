@@ -5,16 +5,96 @@
  * No reconciler needed - effects handle updates directly.
  */
 
-import { createRoot } from '@zen/signal';
 import { executeDescriptor, isDescriptor } from '@zen/runtime';
+import { createRoot } from '@zen/signal';
 import { TUIElement, TUITextNode } from './element.js';
-import { buildPersistentTree } from './tree-builder.js';
 import { TerminalBuffer } from './terminal-buffer.js';
-import { dispatchInput } from './useInput.js';
+import { buildPersistentTree } from './tree-builder.js';
 import type { TUINode } from './types.js';
+import { dispatchInput } from './useInput.js';
 
 // Global dirty elements set
 globalThis.__tuiDirtyElements = new Set<TUIElement>();
+
+/**
+ * Get ANSI color code
+ */
+function getColorCode(color: string): string {
+  const colorMap: Record<string, string> = {
+    black: '\x1b[30m',
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    magenta: '\x1b[35m',
+    cyan: '\x1b[36m',
+    white: '\x1b[37m',
+    gray: '\x1b[90m',
+    grey: '\x1b[90m',
+  };
+  return colorMap[color.toLowerCase()] || '\x1b[37m';
+}
+
+/**
+ * Get ANSI background color code
+ */
+function getBgColorCode(color: string): string {
+  const bgColorMap: Record<string, string> = {
+    black: '\x1b[40m',
+    red: '\x1b[41m',
+    green: '\x1b[42m',
+    yellow: '\x1b[43m',
+    blue: '\x1b[44m',
+    magenta: '\x1b[45m',
+    cyan: '\x1b[46m',
+    white: '\x1b[47m',
+    gray: '\x1b[100m',
+    grey: '\x1b[100m',
+  };
+  return bgColorMap[color.toLowerCase()] || '';
+}
+
+/**
+ * Apply text styling with ANSI codes
+ */
+function applyTextStyle(text: string, style: any = {}): string {
+  let codes = '';
+  let resetCodes = '';
+
+  if (style.color) {
+    const color = typeof style.color === 'function' ? style.color() : style.color;
+    codes += getColorCode(color);
+    resetCodes = `\x1b[39m${resetCodes}`;
+  }
+  if (style.backgroundColor) {
+    const bgColor =
+      typeof style.backgroundColor === 'function' ? style.backgroundColor() : style.backgroundColor;
+    codes += getBgColorCode(bgColor);
+    resetCodes = `\x1b[49m${resetCodes}`;
+  }
+  if (style.bold) {
+    codes += '\x1b[1m';
+    resetCodes = `\x1b[22m${resetCodes}`;
+  }
+  if (style.italic) {
+    codes += '\x1b[3m';
+    resetCodes = `\x1b[23m${resetCodes}`;
+  }
+  if (style.underline) {
+    codes += '\x1b[4m';
+    resetCodes = `\x1b[24m${resetCodes}`;
+  }
+  if (style.strikethrough) {
+    codes += '\x1b[9m';
+    resetCodes = `\x1b[29m${resetCodes}`;
+  }
+  if (style.dim) {
+    codes += '\x1b[2m';
+    resetCodes = `\x1b[22m${resetCodes}`;
+  }
+
+  return codes + text + resetCodes;
+}
 
 /**
  * Render element to string (like current renderNode but for TUIElement)
@@ -24,10 +104,17 @@ function renderElementToString(element: TUIElement | TUITextNode): string {
     return element.content;
   }
 
-  // For now, simple text concatenation
-  // TODO: Apply styling, borders, layout
+  // Render children
   const childrenStrings = element.children.map(renderElementToString);
-  return childrenStrings.join('\n');
+  let content = childrenStrings.join('\n');
+
+  // Apply text styling
+  if (element.style && Object.keys(element.style).length > 0) {
+    content = applyTextStyle(content, element.style);
+  }
+
+  // TODO: Apply borders, layout positioning
+  return content;
 }
 
 /**
@@ -92,7 +179,6 @@ export async function renderToTerminalPersistent(
   });
 
   if (!rootElement) {
-    console.error('Failed to build persistent tree');
     return () => {};
   }
 
@@ -218,11 +304,14 @@ export async function renderToTerminalPersistent(
   };
 
   // Watch for dirty elements
-  const checkDirtyInterval = setInterval(() => {
-    if (globalThis.__tuiDirtyElements && globalThis.__tuiDirtyElements.size > 0) {
-      scheduleUpdate();
-    }
-  }, 1000 / (options.fps || 10));
+  const checkDirtyInterval = setInterval(
+    () => {
+      if (globalThis.__tuiDirtyElements && globalThis.__tuiDirtyElements.size > 0) {
+        scheduleUpdate();
+      }
+    },
+    1000 / (options.fps || 10),
+  );
 
   // Set up keyboard handler
   const keyHandler = (key: string) => {
