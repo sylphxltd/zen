@@ -138,6 +138,8 @@ function renderNodeToBuffer(
   layoutMap: LayoutMap,
   offsetX = 0,
   offsetY = 0,
+  clipMinY?: number, // Optional viewport clipping (min Y)
+  clipMaxY?: number, // Optional viewport clipping (max Y)
 ): void {
   const layout = layoutMap.get(node);
   if (!layout) return;
@@ -174,10 +176,25 @@ function renderNodeToBuffer(
   const contentWidth = width - 2 * borderOffset - 2 * paddingX;
   const contentHeight = height - 2 * borderOffset - 2 * paddingY;
 
-  // Handle ScrollBox - apply scroll offset
+  // Handle ScrollBox - apply scroll offset and set viewport clipping
   const isScrollBox = node.tagName === 'scrollbox';
   const scrollOffset = isScrollBox && node.props?.scrollOffset ? node.props.scrollOffset.value : 0;
 
+  // Set viewport clipping bounds for ScrollBox children
+  let childClipMinY = clipMinY;
+  let childClipMaxY = clipMaxY;
+  if (isScrollBox) {
+    childClipMinY = contentY;
+    childClipMaxY = contentY + contentHeight;
+  }
+
+  // Check if this node is completely outside the clipping region
+  if (clipMinY !== undefined && clipMaxY !== undefined) {
+    const nodeBottom = y + height;
+    if (nodeBottom <= clipMinY || y >= clipMaxY) {
+      return; // Skip rendering entirely
+    }
+  }
 
   // Render text node
   if (node.type === 'text') {
@@ -214,31 +231,14 @@ function renderNodeToBuffer(
                 // Apply scroll offset for ScrollBox children
                 const childOffsetY = isScrollBox ? offsetY - scrollOffset : offsetY;
 
-                // For ScrollBox, check if child is within visible bounds
-                if (isScrollBox) {
-                  const childLayout = layoutMap.get(markerChild as TUINode);
-                  if (childLayout) {
-                    // childLayout.y is already absolute position from Yoga
-                    // Scroll offset shifts content up, so subtract it
-                    const absoluteChildY = childLayout.y - scrollOffset;
-                    const absoluteChildBottom = absoluteChildY + childLayout.height;
-
-                    // Skip if completely outside viewport
-                    if (
-                      absoluteChildBottom <= contentY ||
-                      absoluteChildY >= contentY + contentHeight
-                    ) {
-                      continue;
-                    }
-                  }
-                }
-
                 renderNodeToBuffer(
                   markerChild as TUINode,
                   buffer,
                   layoutMap,
                   offsetX,
                   childOffsetY,
+                  childClipMinY,
+                  childClipMaxY,
                 );
               }
             }
@@ -248,22 +248,15 @@ function renderNodeToBuffer(
           // Apply scroll offset for ScrollBox children
           const childOffsetY = isScrollBox ? offsetY - scrollOffset : offsetY;
 
-          // For ScrollBox, check if child is within visible bounds
-          if (isScrollBox) {
-            const childLayout = layoutMap.get(child as TUINode);
-            if (childLayout) {
-              // childLayout.y is already absolute position from Yoga
-              // Scroll offset shifts content up, so subtract it
-              const absoluteChildY = childLayout.y - scrollOffset;
-              const absoluteChildBottom = absoluteChildY + childLayout.height;
-              // Skip if completely outside viewport
-              if (absoluteChildBottom <= contentY || absoluteChildY >= contentY + contentHeight) {
-                continue;
-              }
-            }
-          }
-
-          renderNodeToBuffer(child as TUINode, buffer, layoutMap, offsetX, childOffsetY);
+          renderNodeToBuffer(
+            child as TUINode,
+            buffer,
+            layoutMap,
+            offsetX,
+            childOffsetY,
+            childClipMinY,
+            childClipMaxY,
+          );
         }
       }
     }
