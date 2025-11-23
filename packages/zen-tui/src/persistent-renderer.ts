@@ -5,16 +5,51 @@
  * No reconciler needed - effects handle updates directly.
  */
 
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { executeDescriptor, isDescriptor } from '@zen/runtime';
 import { createRoot } from '@zen/signal';
 import cliBoxes from 'cli-boxes';
 import stringWidth from 'string-width';
 import stripAnsi from 'strip-ansi';
+import initYoga, { type Yoga } from 'yoga-wasm-web';
 import { TUIElement, TUITextNode } from './element.js';
 import { TerminalBuffer } from './terminal-buffer.js';
 import { buildPersistentTree } from './tree-builder.js';
 import type { TUINode } from './types.js';
 import { dispatchInput } from './useInput.js';
+
+// Yoga WASM instance
+let yogaInstance: Yoga | null = null;
+let yogaInitPromise: Promise<Yoga> | null = null;
+
+async function getYoga(): Promise<Yoga> {
+  if (yogaInstance) return yogaInstance;
+  if (yogaInitPromise) return yogaInitPromise;
+
+  yogaInitPromise = (async () => {
+    let wasmPath: string;
+    try {
+      const yogaModulePath = dirname(fileURLToPath(import.meta.resolve('yoga-wasm-web')));
+      wasmPath = join(yogaModulePath, 'yoga.wasm');
+    } catch {
+      const currentDir = dirname(fileURLToPath(import.meta.url));
+      wasmPath = join(currentDir, '../node_modules/yoga-wasm-web/dist/yoga.wasm');
+    }
+
+    const wasmBuffer = readFileSync(wasmPath);
+    const arrayBuffer = wasmBuffer.buffer.slice(
+      wasmBuffer.byteOffset,
+      wasmBuffer.byteOffset + wasmBuffer.byteLength,
+    );
+    const yoga = await initYoga(arrayBuffer);
+    yogaInstance = yoga;
+    return yoga;
+  })();
+
+  return yogaInitPromise;
+}
 
 // Global dirty elements set
 globalThis.__tuiDirtyElements = new Set<TUIElement>();
@@ -65,46 +100,6 @@ function getColorFn(color: string) {
   return (text: string) => `${code + text}\x1b[39m`; // reset to default color
 }
 
-/**
- * Render box border
- */
-function renderBorder(
-  width: number,
-  height: number,
-  borderStyle = 'single',
-  borderColor?: string,
-): string[] {
-  const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
-  const lines: string[] = [];
-
-  // Top border
-  let topLine = box.topLeft + box.top.repeat(Math.max(0, width - 2)) + box.topRight;
-  if (borderColor) {
-    topLine = getColorFn(borderColor)(topLine);
-  }
-  lines.push(topLine);
-
-  // Middle lines (will be filled with content)
-  for (let i = 0; i < height - 2; i++) {
-    let middleLine = box.left + ' '.repeat(Math.max(0, width - 2)) + box.right;
-    if (borderColor) {
-      const colorFn = getColorFn(borderColor);
-      const leftBorder = colorFn(box.left);
-      const rightBorder = colorFn(box.right);
-      middleLine = leftBorder + ' '.repeat(Math.max(0, width - 2)) + rightBorder;
-    }
-    lines.push(middleLine);
-  }
-
-  // Bottom border
-  let bottomLine = box.bottomLeft + box.bottom.repeat(Math.max(0, width - 2)) + box.bottomRight;
-  if (borderColor) {
-    bottomLine = getColorFn(borderColor)(bottomLine);
-  }
-  lines.push(bottomLine);
-
-  return lines;
-}
 
 /**
  * Apply text styling with ANSI codes
@@ -149,62 +144,158 @@ function applyTextStyle(text: string, style: any = {}): string {
 }
 
 /**
- * Render element to string (like current renderNode but for TUIElement)
+ * Build or update Yoga node tree from TUIElement tree
  */
-function renderElementToString(element: TUIElement | TUITextNode): string {
+async function buildYogaTreeFromElements(
+  element: TUIElement | TUITextNode,
+  Yoga: Yoga,
+): Promise<any> {
   if (element instanceof TUITextNode) {
-    return element.content;
+    // Text node - create sized Yoga node
+    const textYogaNode = Yoga.Node.create();
+    textYogaNode.setWidth(element.content.length);
+    textYogaNode.setHeight(1);
+    return textYogaNode;
   }
 
-  // Render children
-  const childrenStrings = element.children.map(renderElementToString);
-  let content = childrenStrings.join('\n');
-
-  // Apply text styling
-  if (element.style && Object.keys(element.style).length > 0) {
-    content = applyTextStyle(content, element.style);
+  // Create or use existing Yoga node
+  if (!element.yogaNode) {
+    element.createYogaNode(Yoga);
   }
 
-  // Apply borders if borderStyle is set
+  // Update Yoga node with current styles
+  element.updateYogaNode(Yoga);
+
+  // Build children
+  const yogaNode = element.yogaNode;
+
+  // Clear existing children
+  while (yogaNode.getChildCount() > 0) {
+    yogaNode.removeChild(yogaNode.getChild(0));
+  }
+
+  // Add children
+  for (const child of element.children) {
+    const childYogaNode = await buildYogaTreeFromElements(child, Yoga);
+    yogaNode.insertChild(childYogaNode, yogaNode.getChildCount());
+  }
+
+  return yogaNode;
+}
+
+/**
+ * Layout result for elements
+ */
+interface ElementLayout {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Extract layout from computed Yoga tree
+ */
+function extractElementLayout(
+  element: TUIElement | TUITextNode,
+  layoutMap: Map<TUIElement | TUITextNode, ElementLayout>,
+  offsetX = 0,
+  offsetY = 0,
+): void {
+  if (element instanceof TUITextNode) {
+    // Text nodes don't have layout info
+    return;
+  }
+
+  const yogaNode = element.yogaNode;
+  if (!yogaNode) return;
+
+  const layout: ElementLayout = {
+    x: offsetX + yogaNode.getComputedLeft(),
+    y: offsetY + yogaNode.getComputedTop(),
+    width: yogaNode.getComputedWidth(),
+    height: yogaNode.getComputedHeight(),
+  };
+
+  layoutMap.set(element, layout);
+
+  // Process children
+  for (const child of element.children) {
+    if (child instanceof TUIElement) {
+      extractElementLayout(child, layoutMap, layout.x, layout.y);
+    }
+  }
+}
+
+/**
+ * Render element to buffer using Yoga layout
+ */
+function renderElementToBuffer(
+  element: TUIElement | TUITextNode,
+  buffer: TerminalBuffer,
+  layoutMap: Map<TUIElement | TUITextNode, ElementLayout>,
+): void {
+  if (element instanceof TUITextNode) {
+    // Text nodes are rendered by their parents
+    return;
+  }
+
+  const layout = layoutMap.get(element);
+  if (!layout) return;
+
+  const x = Math.floor(layout.x);
+  const y = Math.floor(layout.y);
+  const width = Math.floor(layout.width);
+  const height = Math.floor(layout.height);
+
+  // Render border if specified
   const borderStyle = element.props.borderStyle;
   const borderColor = element.props.borderColor;
 
-  if (borderStyle) {
-    const contentLines = content.split('\n');
-    const contentWidth = Math.max(...contentLines.map((line) => stringWidth(stripAnsi(line))), 10);
-    const contentHeight = contentLines.length;
+  if (borderStyle && borderStyle !== 'none') {
+    const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
+    const colorFn = borderColor ? getColorFn(borderColor) : (s: string) => s;
 
-    // Create border with appropriate dimensions (add 2 for left/right borders)
-    const borderLines = renderBorder(
-      contentWidth + 2,
-      contentHeight + 2,
-      borderStyle,
-      borderColor,
-    );
+    // Top border
+    const topBorder = colorFn(box.topLeft + box.top.repeat(Math.max(0, width - 2)) + box.topRight);
+    buffer.writeAt(x, y, topBorder, width);
 
-    // Insert content lines into border
-    for (let i = 0; i < contentLines.length; i++) {
-      const line = contentLines[i];
-      const lineWidth = stringWidth(stripAnsi(line));
-      const padding = ' '.repeat(Math.max(0, contentWidth - lineWidth));
-
-      // Replace the empty space in the middle line with content
-      if (borderColor) {
-        const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
-        const colorFn = getColorFn(borderColor);
-        const leftBorder = colorFn(box.left);
-        const rightBorder = colorFn(box.right);
-        borderLines[i + 1] = leftBorder + line + padding + rightBorder;
-      } else {
-        const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
-        borderLines[i + 1] = box.left + line + padding + box.right;
-      }
+    // Side borders
+    for (let i = 1; i < height - 1; i++) {
+      buffer.writeAt(x, y + i, colorFn(box.left), 1);
+      buffer.writeAt(x + width - 1, y + i, colorFn(box.right), 1);
     }
 
-    content = borderLines.join('\n');
+    // Bottom border
+    const bottomBorder = colorFn(
+      box.bottomLeft + box.bottom.repeat(Math.max(0, width - 2)) + box.bottomRight,
+    );
+    buffer.writeAt(x, y + height - 1, bottomBorder, width);
   }
 
-  return content;
+  // Calculate content area
+  const hasBorder = borderStyle && borderStyle !== 'none';
+  const borderOffset = hasBorder ? 1 : 0;
+  const padding = element.style.padding ?? 0;
+  const paddingX = element.style.paddingX ?? padding;
+  const paddingY = element.style.paddingY ?? padding;
+
+  const contentX = x + borderOffset + paddingX;
+  const contentY = y + borderOffset + paddingY;
+  const contentWidth = width - 2 * borderOffset - 2 * paddingX;
+
+  // Render text content (TUITextNode children)
+  let currentY = contentY;
+  for (const child of element.children) {
+    if (child instanceof TUITextNode) {
+      const styledText = applyTextStyle(child.content, element.style);
+      buffer.writeAt(contentX, currentY, styledText, contentWidth);
+      currentY++;
+    } else if (child instanceof TUIElement) {
+      // Recursive render for child elements
+      renderElementToBuffer(child, buffer, layoutMap);
+    }
+  }
 }
 
 /**
@@ -279,7 +370,10 @@ export async function renderToTerminalPersistent(
   // Track last output height
   let lastOutputHeight = 0;
 
-  // Flush updates - render dirty nodes only
+  // Initialize Yoga for layout
+  const Yoga = await getYoga();
+
+  // Flush updates - render dirty nodes with Yoga layout
   const flushUpdates = async () => {
     if (!isRunning || !rootElement) return;
 
@@ -290,17 +384,23 @@ export async function renderToTerminalPersistent(
       return; // Nothing to update
     }
 
-    // For MVP: Re-render entire tree (Phase 3 will optimize this)
-    // TODO: Incremental rendering of only dirty subtrees
-    const output = renderElementToString(rootElement);
-    const newLines = output.split('\n');
-    const newOutputHeight = newLines.length;
+    // Build/update Yoga tree from TUIElement tree
+    const rootYogaNode = await buildYogaTreeFromElements(rootElement, Yoga);
 
-    // Update buffer
+    // Compute layout
+    rootYogaNode.calculateLayout(terminalWidth, terminalHeight, Yoga.DIRECTION_LTR);
+
+    // Extract layout results
+    const layoutMap = new Map<TUIElement | TUITextNode, ElementLayout>();
+    extractElementLayout(rootElement, layoutMap);
+
+    // Render to buffer using layout
     currentBuffer.clear();
-    for (let i = 0; i < newLines.length && i < terminalHeight; i++) {
-      currentBuffer.writeAt(0, i, newLines[i], terminalWidth);
-    }
+    renderElementToBuffer(rootElement, currentBuffer, layoutMap);
+
+    // Calculate output height from buffer
+    const bufferOutput = currentBuffer.toString();
+    const newOutputHeight = bufferOutput.split('\n').length;
 
     // Diff and update only changed lines
     const changes = currentBuffer.diff(previousBuffer);
@@ -360,8 +460,18 @@ export async function renderToTerminalPersistent(
     globalThis.__tuiDirtyElements?.clear();
   };
 
-  // Initial render
-  const initialOutput = renderElementToString(rootElement);
+  // Initial render with Yoga layout
+  const initialYogaNode = await buildYogaTreeFromElements(rootElement, Yoga);
+  initialYogaNode.calculateLayout(terminalWidth, terminalHeight, Yoga.DIRECTION_LTR);
+
+  const initialLayoutMap = new Map<TUIElement | TUITextNode, ElementLayout>();
+  extractElementLayout(rootElement, initialLayoutMap);
+
+  currentBuffer.clear();
+  renderElementToBuffer(rootElement, currentBuffer, initialLayoutMap);
+
+  // Render buffer to terminal
+  const initialOutput = currentBuffer.toString();
   process.stdout.write(initialOutput);
 
   // Track how many lines we rendered
@@ -373,12 +483,6 @@ export async function renderToTerminalPersistent(
     process.stdout.write('\x1b[1A'); // Move up
   }
   process.stdout.write('\r');
-
-  // Initialize current buffer with initial output
-  const initialLines = initialOutput.split('\n');
-  for (let i = 0; i < initialLines.length && i < terminalHeight; i++) {
-    currentBuffer.writeAt(0, i, initialLines[i], terminalWidth);
-  }
 
   // Set up reactive update scheduler
   // When signals change → effects mark elements dirty → schedule flush
