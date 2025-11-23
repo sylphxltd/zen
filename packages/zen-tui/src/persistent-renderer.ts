@@ -421,42 +421,36 @@ export async function renderToTerminalPersistent(
     const changes = currentBuffer.diff(previousBuffer);
 
     if (changes.length > 0) {
-      // Update only changed lines
-      for (const change of changes) {
-        // Move to line
-        if (change.y > 0) {
-          for (let i = 0; i < change.y; i++) {
-            process.stdout.write('\x1b[1B');
+      // Clear entire display area first for clean update
+      if (lastOutputHeight > 0) {
+        // Move to top
+        process.stdout.write('\r');
+        // Clear all previous lines
+        for (let i = 0; i < lastOutputHeight; i++) {
+          process.stdout.write('\x1b[2K'); // Clear entire line
+          if (i < lastOutputHeight - 1) {
+            process.stdout.write('\x1b[1B'); // Move down
+            process.stdout.write('\r'); // Return to start of line
           }
         }
-        process.stdout.write('\r');
-        process.stdout.write(change.line);
-        process.stdout.write('\x1b[K');
-
         // Move back to top
-        if (change.y > 0) {
-          for (let i = 0; i < change.y; i++) {
-            process.stdout.write('\x1b[1A');
-          }
+        for (let i = 0; i < lastOutputHeight - 1; i++) {
+          process.stdout.write('\x1b[1A');
         }
         process.stdout.write('\r');
       }
 
-      // Clear extra lines if app got smaller
-      if (newOutputHeight < lastOutputHeight) {
-        for (let i = newOutputHeight; i < lastOutputHeight; i++) {
-          for (let j = 0; j < i; j++) {
-            process.stdout.write('\x1b[1B');
-          }
-          process.stdout.write('\r');
-          process.stdout.write('\x1b[2K');
-          for (let j = 0; j < i; j++) {
-            process.stdout.write('\x1b[1A');
-          }
-          process.stdout.write('\r');
+      // Render full new content
+      const fullOutput = currentBuffer.renderFull();
+      process.stdout.write(fullOutput);
+
+      // Move cursor back to top
+      const lines = fullOutput.split('\n');
+      if (lines.length > 1) {
+        for (let i = 0; i < lines.length - 1; i++) {
+          process.stdout.write('\x1b[1A');
         }
       }
-
       process.stdout.write('\r');
       lastOutputHeight = newOutputHeight;
     }
