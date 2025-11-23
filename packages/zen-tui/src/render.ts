@@ -542,6 +542,7 @@ export async function renderToTerminalReactive(
   options: {
     onKeyPress?: (key: string) => void;
     fps?: number;
+    fullscreen?: boolean;
   } = {},
 ): Promise<() => void> {
   const { onKeyPress } = options;
@@ -559,6 +560,16 @@ export async function renderToTerminalReactive(
 
   // Console.log is treated as static content - just let it print naturally
   // No interception needed! React Ink doesn't manage console output.
+
+  // Enter full-screen mode if requested
+  if (options.fullscreen) {
+    // Enter alternate screen buffer
+    process.stdout.write('\x1b[?1049h');
+    // Clear screen
+    process.stdout.write('\x1b[2J');
+    // Move cursor to top-left
+    process.stdout.write('\x1b[H');
+  }
 
   // Enable raw mode for keyboard input
   if (process.stdin.isTTY) {
@@ -935,13 +946,21 @@ export async function renderToTerminalReactive(
     console.error = originalConsoleError;
     console.warn = originalConsoleWarn;
     console.info = originalConsoleInfo;
-    // Cursor is at TOP of app, move to BOTTOM for clean terminal prompt
-    // Move down by number of newlines in app
-    const finalNewlineCount = (render(node).match(/\n/g) || []).length;
-    for (let i = 0; i < finalNewlineCount; i++) {
-      process.stdout.write('\x1b[1B'); // Move down
+
+    // Exit full-screen mode if enabled
+    if (options.fullscreen) {
+      // Restore normal screen buffer
+      process.stdout.write('\x1b[?1049l');
+    } else {
+      // Cursor is at TOP of app, move to BOTTOM for clean terminal prompt
+      // Move down by number of newlines in app
+      const finalNewlineCount = (render(node).match(/\n/g) || []).length;
+      for (let i = 0; i < finalNewlineCount; i++) {
+        process.stdout.write('\x1b[1B'); // Move down
+      }
+      process.stdout.write('\n');
     }
-    process.stdout.write('\n');
+
     // Show cursor again
     process.stdout.write('\x1b[?25h');
     if (process.stdin.isTTY) {

@@ -342,9 +342,20 @@ export async function renderToTerminalPersistent(
   options: {
     onKeyPress?: (key: string) => void;
     fps?: number;
+    fullscreen?: boolean;
   } = {},
 ): Promise<void> {
   const { onKeyPress } = options;
+
+  // Enter full-screen mode if requested
+  if (options.fullscreen) {
+    // Enter alternate screen buffer
+    process.stdout.write('\x1b[?1049h');
+    // Clear screen
+    process.stdout.write('\x1b[2J');
+    // Move cursor to top-left
+    process.stdout.write('\x1b[H');
+  }
 
   // Enable raw mode for keyboard input
   if (process.stdin.isTTY) {
@@ -555,12 +566,18 @@ export async function renderToTerminalPersistent(
       rootElement.dispose();
     }
 
-    // Move cursor to bottom
-    const finalNewlineCount = lastOutputHeight;
-    for (let i = 0; i < finalNewlineCount; i++) {
-      process.stdout.write('\x1b[1B');
+    // Exit full-screen mode if enabled
+    if (options.fullscreen) {
+      // Restore normal screen buffer
+      process.stdout.write('\x1b[?1049l');
+    } else {
+      // Move cursor to bottom
+      const finalNewlineCount = lastOutputHeight;
+      for (let i = 0; i < finalNewlineCount; i++) {
+        process.stdout.write('\x1b[1B');
+      }
+      process.stdout.write('\n');
     }
-    process.stdout.write('\n');
 
     // Show cursor
     process.stdout.write('\x1b[?25h');

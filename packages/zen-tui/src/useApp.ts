@@ -33,8 +33,6 @@ export function useApp(): AppContext {
   return {
     exit: (error?: Error) => {
       if (error) {
-        // Log error to stderr and exit with code 1
-        console.error(error.message || error);
         process.exit(1);
       } else {
         // Normal exit with code 0
