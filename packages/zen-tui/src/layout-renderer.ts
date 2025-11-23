@@ -229,7 +229,11 @@ function renderNodeToBuffer(
                 'type' in markerChild
               ) {
                 // Apply scroll offset for ScrollBox children
-                const childOffsetY = isScrollBox ? offsetY - scrollOffset : offsetY;
+                // Also apply border/padding offset to align children with content area
+                const contentOffset = isScrollBox ? borderOffset + paddingY : 0;
+                const childOffsetY = isScrollBox
+                  ? offsetY - scrollOffset + contentOffset
+                  : offsetY;
 
                 renderNodeToBuffer(
                   markerChild as TUINode,
@@ -246,7 +250,9 @@ function renderNodeToBuffer(
         } else if ('type' in child) {
           // Regular TUINode
           // Apply scroll offset for ScrollBox children
-          const childOffsetY = isScrollBox ? offsetY - scrollOffset : offsetY;
+          // Also apply border/padding offset to align children with content area
+          const contentOffset = isScrollBox ? borderOffset + paddingY : 0;
+          const childOffsetY = isScrollBox ? offsetY - scrollOffset + contentOffset : offsetY;
 
           renderNodeToBuffer(
             child as TUINode,
