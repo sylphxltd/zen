@@ -796,7 +796,13 @@ export async function renderToTerminalReactive(
       // Step 3: Re-render entire app below static content
       layoutMap = await computeLayout(node, terminalWidth, terminalHeight);
       const dynamicNode = removeStaticNodes(node);
-      const appOutput = dynamicNode ? render(dynamicNode) : '';
+
+      // Use layout-renderer for proper scroll offset handling
+      currentBuffer.clear();
+      if (dynamicNode) {
+        renderToBuffer(dynamicNode, currentBuffer, layoutMap);
+      }
+      const appOutput = currentBuffer.renderFull();
       const appLines = appOutput.split('\n');
       const appHeight = appLines.length;
 
@@ -812,12 +818,8 @@ export async function renderToTerminalReactive(
       // Update tracking
       lastOutputHeight = appHeight;
 
-      // Update buffers
-      previousBuffer.clear();
-      currentBuffer.clear();
-      for (let i = 0; i < appLines.length && i < terminalHeight; i++) {
-        currentBuffer.writeAt(0, i, appLines[i], terminalWidth);
-      }
+      // Update buffers - currentBuffer already has content from renderToBuffer
+      // Just swap buffers for next diff
       const temp = previousBuffer;
       previousBuffer = currentBuffer;
       currentBuffer = temp;
@@ -830,15 +832,15 @@ export async function renderToTerminalReactive(
     // No static content - do fine-grained diff update
     layoutMap = await computeLayout(node, terminalWidth, terminalHeight);
     const dynamicNode = removeStaticNodes(node);
-    const output = dynamicNode ? render(dynamicNode) : '';
+
+    // Use layout-renderer for proper scroll offset handling
+    currentBuffer.clear();
+    if (dynamicNode) {
+      renderToBuffer(dynamicNode, currentBuffer, layoutMap);
+    }
+    const output = currentBuffer.renderFull();
     const newLines = output.split('\n');
     const newOutputHeight = newLines.length;
-
-    // Update buffer
-    currentBuffer.clear();
-    for (let i = 0; i < newLines.length && i < terminalHeight; i++) {
-      currentBuffer.writeAt(0, i, newLines[i], terminalWidth);
-    }
 
     // Diff and update only changed lines
     const changes = currentBuffer.diff(previousBuffer);
@@ -896,7 +898,9 @@ export async function renderToTerminalReactive(
   });
 
   // Initial render (React Ink style - don't clear screen, render at current position)
-  const initialOutput = render(node);
+  // Use layout-renderer for proper scroll offset handling
+  renderToBuffer(node, currentBuffer, layoutMap);
+  const initialOutput = currentBuffer.renderFull();
 
   // Strategy: render app at current position, move cursor to TOP of app
   // Console.log will write at cursor (top of app), overwriting first line
@@ -916,11 +920,8 @@ export async function renderToTerminalReactive(
 
   isOurOutput = false;
 
-  // Initialize current buffer with initial output
-  const initialLines = initialOutput.split('\n');
-  for (let i = 0; i < initialLines.length && i < terminalHeight; i++) {
-    currentBuffer.writeAt(0, i, initialLines[i], terminalWidth);
-  }
+  // currentBuffer already has content from renderToBuffer in initial render
+  // No need to write again
 
   // Set up keyboard and mouse handler
   const keyHandler = (key: string) => {
