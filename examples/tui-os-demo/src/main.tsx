@@ -16,7 +16,7 @@ import {
   Text,
   renderToTerminalReactive,
   useInput,
-  useMouse,
+  useMouseDrag,
   useTerminalSize,
 } from '@zen/tui';
 
@@ -42,7 +42,7 @@ interface WindowState {
 
 const $windows = signal<WindowState[]>([]);
 const $focused = signal<string | null>(null);
-const $dragging = signal<boolean>(false);
+const $dragging = signal<{ windowId: string; offsetX: number; offsetY: number } | null>(null);
 let nextZIndex = 1;
 
 // ============================================================================
@@ -109,15 +109,6 @@ function focusWindow(id: string) {
     $windows.value = $windows.value.map((w) => (w.id === id ? { ...w, zIndex: nextZIndex++ } : w));
     $focused.value = id;
   });
-}
-
-function moveWindow(dx: number, dy: number) {
-  const id = $focused.value;
-  if (!id) return;
-
-  $windows.value = $windows.value.map((w) =>
-    w.id === id ? { ...w, x: Math.max(0, w.x + dx), y: Math.max(2, w.y + dy) } : w,
-  );
 }
 
 // ============================================================================
@@ -223,7 +214,7 @@ function getAppContent(app: string) {
 
 function Window({ win }: { win: WindowState }) {
   const isFocused = () => $focused.value === win.id;
-  const isDragging = () => $dragging.value && isFocused();
+  const isDragging = () => $dragging.value?.windowId === win.id;
 
   return (
     <Box
@@ -277,7 +268,7 @@ function ZenOS() {
     { key: '5', app: 'about', icon: 'ℹ️', name: 'About' },
   ];
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: demo app with many interactions
+  // Keyboard shortcuts
   useInput((input, key) => {
     // App shortcuts
     if (input === '1') openWindow('terminal');
@@ -289,19 +280,6 @@ function ZenOS() {
     // Window management
     if (key.escape) closeWindow();
 
-    // Toggle drag mode with 'd'
-    if (input === 'd' && $focused.value) {
-      $dragging.value = !$dragging.value;
-    }
-
-    // Move window with arrow keys (when in drag mode)
-    if ($dragging.value) {
-      if (key.leftArrow) moveWindow(-2, 0);
-      if (key.rightArrow) moveWindow(2, 0);
-      if (key.upArrow) moveWindow(0, -1);
-      if (key.downArrow) moveWindow(0, 1);
-    }
-
     // Tab to cycle windows
     if (key.tab && $windows.value.length > 1) {
       const currentId = $focused.value;
@@ -312,28 +290,69 @@ function ZenOS() {
     }
   });
 
-  // Mouse click handling
-  useMouse((event) => {
-    if (event.type !== 'click') return;
+  // Mouse drag handling for window movement
+  useMouseDrag({
+    onDragStart: (x, y, button) => {
+      if (button !== 'left') return false;
 
-    // Check if click is inside any window (reverse order for zIndex)
-    const sorted = [...$windows.value].sort((a, b) => b.zIndex - a.zIndex);
-    for (const win of sorted) {
-      if (
-        event.x >= win.x &&
-        event.x < win.x + win.width &&
-        event.y >= win.y &&
-        event.y < win.y + win.height
-      ) {
-        // Check if click is on close button (top right)
-        if (event.y === win.y && event.x >= win.x + win.width - 3) {
-          closeWindow(win.id);
-          return;
+      // Find window under cursor (top-most first)
+      const sorted = [...$windows.value].sort((a, b) => b.zIndex - a.zIndex);
+      for (const win of sorted) {
+        // Check if click is on title bar (first row of window)
+        if (
+          x >= win.x &&
+          x < win.x + win.width &&
+          y === win.y + 1 // Title bar is inside border
+        ) {
+          // Check if click is on close button (skip drag)
+          if (x >= win.x + win.width - 3) {
+            closeWindow(win.id);
+            return false;
+          }
+
+          // Start dragging
+          focusWindow(win.id);
+          $dragging.value = {
+            windowId: win.id,
+            offsetX: x - win.x,
+            offsetY: y - win.y,
+          };
+          return true;
         }
-        focusWindow(win.id);
-        return;
+
+        // Click inside window but not title bar - just focus
+        if (
+          x >= win.x &&
+          x < win.x + win.width &&
+          y >= win.y &&
+          y < win.y + win.height
+        ) {
+          focusWindow(win.id);
+          return false;
+        }
       }
-    }
+      return false;
+    },
+
+    onDragMove: (x, y) => {
+      const drag = $dragging.value;
+      if (!drag) return;
+
+      // Update window position
+      $windows.value = $windows.value.map((w) =>
+        w.id === drag.windowId
+          ? {
+              ...w,
+              x: Math.max(0, x - drag.offsetX),
+              y: Math.max(2, y - drag.offsetY), // Keep below menu bar
+            }
+          : w,
+      );
+    },
+
+    onDragEnd: () => {
+      $dragging.value = null;
+    },
   });
 
   return (
@@ -383,7 +402,7 @@ function ZenOS() {
                 <Text style={{ color: 'gray', bold: true }}>Welcome to ZenOS!</Text>
                 <Text> </Text>
                 <Text style={{ color: 'cyan' }}>Press 1-5 to open apps</Text>
-                <Text style={{ color: 'yellow' }}>Press 'd' to drag focused window</Text>
+                <Text style={{ color: 'yellow' }}>Drag title bar to move windows</Text>
                 <Text style={{ color: 'green' }}>Press Tab to cycle windows</Text>
                 <Text style={{ dim: true }}>Press Esc to close window</Text>
                 <Text style={{ dim: true }}>Press 'q' to quit</Text>
@@ -409,7 +428,7 @@ function ZenOS() {
             </Text>
           ))
         }
-        {() => ($dragging.value ? <Text style={{ color: 'yellow' }}> [DRAG MODE]</Text> : null)}
+        {() => ($dragging.value ? <Text style={{ color: 'yellow' }}> [DRAGGING]</Text> : null)}
       </Box>
     </Box>
   );
