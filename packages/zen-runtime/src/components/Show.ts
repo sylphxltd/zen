@@ -7,9 +7,10 @@
  * - Only renders active branch
  * - Destroys inactive branch (cleanup)
  * - Supports fallback
+ * - Container pattern (child inside container)
  */
 
-import { computed, effect, untrack } from '@zen/signal';
+import { effect, untrack } from '@zen/signal';
 import { disposeNode, onCleanup } from '@zen/signal';
 import { getPlatformOps } from '../platform-ops.js';
 import { type Reactive, resolve } from '../reactive-utils.js';
@@ -17,8 +18,8 @@ import { children } from '../utils/children.js';
 
 interface ShowProps<T> {
   when: Reactive<T>;
-  fallback?: any | (() => any);
-  children: any | ((value: T) => any);
+  fallback?: unknown | (() => unknown);
+  children: unknown | ((value: T) => unknown);
 }
 
 /**
@@ -35,90 +36,75 @@ interface ShowProps<T> {
  *   {(u) => <div>Hello {u.name}</div>}
  * </Show>
  */
-export function Show<T>(props: ShowProps<T>): any {
+export function Show<T>(props: ShowProps<T>): unknown {
   // IMPORTANT: Don't destructure props.children here!
   // Descriptor pattern provides lazy getter - only read when needed
-  // Use children() helper to delay reading until condition is true
   const c = children(() => props.children);
   const f = children(() => props.fallback);
 
-  // Get platform operations
   const ops = getPlatformOps();
 
-  // Anchor to mark position
-  const marker = ops.createMarker('show');
+  // Create container - child will be inside this node
+  const container = ops.createContainer('show');
 
-  // Track current node and condition
-  let currentNode: any = null;
+  // Track current rendered node
+  let currentNode: unknown = null;
   let previousCondition = false;
 
-  // ARCHITECTURE: Effects are immediate sync (not deferred)
-  // Parent check happens inside effect - if no parent yet, insertBefore is no-op
   const dispose = effect(() => {
     const condition = resolve(props.when);
     const conditionBool = !!condition;
 
-    // Only cleanup if condition changed
-    if (currentNode && previousCondition !== conditionBool) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
+    // Only update if condition changed
+    if (previousCondition !== conditionBool || currentNode === null) {
+      // Dispose previous node
+      if (currentNode) {
+        disposeNode(currentNode as object);
+        currentNode = null;
       }
-      // Dispose child component's owner
-      disposeNode(currentNode);
-      currentNode = null;
-    }
 
-    previousCondition = conditionBool;
+      previousCondition = conditionBool;
 
-    // Render appropriate branch (only if no current node)
-    if (conditionBool && !currentNode) {
-      // Truthy - render children
-      // Only now do we read props.children (via c())
-      // This triggers the lazy getter from descriptor pattern
-      currentNode = untrack(() => {
-        const child = c();
-        if (typeof child === 'function') {
-          return child(condition as T);
-        }
-        return child;
-      });
-    } else if (!conditionBool && !currentNode) {
-      // Falsy - render fallback (only if no current node)
-      // Only read fallback if condition is false
-      const fb = f();
-      if (fb) {
+      // Render appropriate branch
+      if (conditionBool) {
+        // Truthy - render children
         currentNode = untrack(() => {
-          if (typeof fb === 'function') {
-            return fb();
+          const child = c();
+          if (typeof child === 'function') {
+            return child(condition as T);
           }
-          return fb;
+          return child;
         });
+      } else {
+        // Falsy - render fallback
+        const fb = f();
+        if (fb) {
+          currentNode = untrack(() => {
+            if (typeof fb === 'function') {
+              return (fb as () => unknown)();
+            }
+            return fb;
+          });
+        }
       }
-    }
 
-    // Insert into tree
-    if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.insertBefore(parent, currentNode, marker);
+      // Update container
+      if (currentNode) {
+        ops.setChildren(container, [currentNode as object]);
+      } else {
+        ops.setChildren(container, []);
       }
+      ops.notifyUpdate(container);
     }
-
-    return undefined;
   });
 
-  // Register cleanup via owner system
+  // Cleanup on dispose
   onCleanup(() => {
     dispose();
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
-      }
-      disposeNode(currentNode);
+      disposeNode(currentNode as object);
     }
   });
 
-  return marker;
+  return container;
 }

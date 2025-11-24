@@ -240,36 +240,6 @@ function buildYogaTree(tuiNode: TUINode, yogaNodeMap: Map<TUINode, any>, Yoga: a
             yogaNode.insertChild(childYogaNode, yogaNode.getChildCount());
           }
         }
-        // Legacy: Handle deprecated markers (for backwards compatibility)
-        else if ('_type' in child && (child as any)._type === 'marker') {
-          const markerChildren = 'children' in child && Array.isArray((child as any).children)
-            ? (child as any).children
-            : [];
-
-          // Only add marker to layout if it has children
-          // Empty markers should NOT be added to prevent gap calculation issues
-          if (markerChildren.length > 0) {
-            const markerYogaNode = Yoga.Node.create();
-            yogaNodeMap.set(child as any, markerYogaNode);
-            markerYogaNode.setFlexGrow(1);
-            markerYogaNode.setFlexShrink(1);
-
-            for (const markerChild of markerChildren) {
-              if (typeof markerChild === 'string') {
-                const textYogaNode = Yoga.Node.create();
-                textYogaNode.setWidth(terminalWidth(markerChild));
-                textYogaNode.setHeight(1);
-                markerYogaNode.insertChild(textYogaNode, markerYogaNode.getChildCount());
-              } else if (typeof markerChild === 'object' && markerChild !== null && 'type' in markerChild) {
-                const childYogaNode = buildYogaTree(markerChild as TUINode, yogaNodeMap, Yoga);
-                markerYogaNode.insertChild(childYogaNode, markerYogaNode.getChildCount());
-              }
-            }
-
-            yogaNode.insertChild(markerYogaNode, yogaNode.getChildCount());
-          }
-          // Empty markers are NOT added to yoga tree to prevent gap issues
-        }
       }
     }
   }
@@ -324,38 +294,23 @@ function extractLayout(
             const childOffsetX = fragmentLayout?.x ?? layout.x;
             const childOffsetY = fragmentLayout?.y ?? layout.y;
             for (const fragmentChild of childNode.children) {
-              if (typeof fragmentChild === 'object' && fragmentChild !== null && 'type' in fragmentChild) {
-                extractLayout(fragmentChild as TUINode, yogaNodeMap, layoutMap, childOffsetX, childOffsetY);
+              if (
+                typeof fragmentChild === 'object' &&
+                fragmentChild !== null &&
+                'type' in fragmentChild
+              ) {
+                extractLayout(
+                  fragmentChild as TUINode,
+                  yogaNodeMap,
+                  layoutMap,
+                  childOffsetX,
+                  childOffsetY,
+                );
               }
             }
           } else {
             // Regular TUINode
             extractLayout(childNode, yogaNodeMap, layoutMap, layout.x, layout.y);
-          }
-        }
-        // Legacy: Handle deprecated markers (for backwards compatibility)
-        else if ('_type' in child && (child as any)._type === 'marker') {
-          const markerYogaNode = yogaNodeMap.get(child as any);
-          let markerLayout: LayoutResult | null = null;
-          if (markerYogaNode) {
-            markerLayout = {
-              x: layout.x + markerYogaNode.getComputedLeft(),
-              y: layout.y + markerYogaNode.getComputedTop(),
-              width: markerYogaNode.getComputedWidth(),
-              height: markerYogaNode.getComputedHeight(),
-            };
-            layoutMap.set(child as any, markerLayout);
-          }
-
-          // Process marker's children using marker's position as offset
-          const childOffsetX = markerLayout?.x ?? layout.x;
-          const childOffsetY = markerLayout?.y ?? layout.y;
-          if ('children' in child && Array.isArray((child as any).children)) {
-            for (const markerChild of (child as any).children) {
-              if (typeof markerChild === 'object' && markerChild !== null && 'type' in markerChild) {
-                extractLayout(markerChild as TUINode, yogaNodeMap, layoutMap, childOffsetX, childOffsetY);
-              }
-            }
           }
         }
       }

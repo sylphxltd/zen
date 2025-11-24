@@ -3,18 +3,17 @@
  *
  * Catch and handle errors in component tree
  *
- * Platform-agnostic implementation using marker pattern.
- *
  * Features:
  * - Catch render errors
  * - Display fallback UI
  * - Error recovery
+ * - Container pattern (child inside container)
  */
 
 import { effect, signal, untrack } from '@zen/signal';
 import { disposeNode, onCleanup } from '@zen/signal';
 import { getPlatformOps } from '../platform-ops.js';
-import { children } from '../utils/children.js';
+import { children as resolveChildren } from '../utils/children.js';
 
 interface ErrorBoundaryProps {
   fallback: (error: Error, reset: () => void) => unknown;
@@ -35,36 +34,27 @@ interface ErrorBoundaryProps {
  * </ErrorBoundary>
  */
 export function ErrorBoundary(props: ErrorBoundaryProps): unknown {
-  // Use children() helper to lazily resolve props
-  const c = children(() => props.children);
+  const c = resolveChildren(() => props.children);
 
-  // Get platform operations
   const ops = getPlatformOps();
 
-  // Anchor to mark position
-  const marker = ops.createMarker('error-boundary');
+  // Create container - content will be inside this node
+  const container = ops.createContainer('error-boundary');
 
   // Track current node and error state
-  let currentNode: Node | null = null;
+  let currentNode: unknown = null;
   const error = signal<Error | null>(null);
-  let errorHandler: ((event: ErrorEvent) => void) | undefined;
 
   const reset = () => {
     error.value = null;
   };
 
-  // ARCHITECTURE: Effects are immediate sync (not deferred)
-  // Parent check happens inside effect - if no parent yet, insertBefore is no-op
   const dispose = effect(() => {
     const err = error.value;
 
-    // Cleanup previous node
+    // Dispose previous node
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
-      }
-      disposeNode(currentNode);
+      disposeNode(currentNode as object);
       currentNode = null;
     }
 
@@ -84,44 +74,22 @@ export function ErrorBoundary(props: ErrorBoundaryProps): unknown {
       currentNode = untrack(() => props.fallback(renderError as Error, reset));
     }
 
-    // Insert into tree
+    // Update container
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.insertBefore(parent, currentNode, marker);
-      }
+      ops.setChildren(container, [currentNode as object]);
+    } else {
+      ops.setChildren(container, []);
     }
-
-    return undefined;
+    ops.notifyUpdate(container);
   });
 
-  // Global error handler (optional - catches async errors)
-  if (typeof window !== 'undefined') {
-    errorHandler = (event: ErrorEvent) => {
-      const parent = ops.getParent(marker);
-      if (parent && (parent as any).contains && (parent as any).contains(event.target)) {
-        event.preventDefault();
-        error.value = event.error;
-      }
-    };
-
-    window.addEventListener('error', errorHandler);
-  }
-
-  // Register cleanup via owner system
+  // Cleanup on dispose
   onCleanup(() => {
-    if (errorHandler && typeof window !== 'undefined') {
-      window.removeEventListener('error', errorHandler);
-    }
     dispose();
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
-      }
-      disposeNode(currentNode);
+      disposeNode(currentNode as object);
     }
   });
 
-  return marker;
+  return container;
 }

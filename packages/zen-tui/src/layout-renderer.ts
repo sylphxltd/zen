@@ -188,7 +188,10 @@ function renderNodeToBuffer(
   if (isScrollBox || hasBorder) {
     // For bordered boxes, clip children to content area
     childClipMinY = clipMinY !== undefined ? Math.max(clipMinY, contentY) : contentY;
-    childClipMaxY = clipMaxY !== undefined ? Math.min(clipMaxY, contentY + contentHeight) : contentY + contentHeight;
+    childClipMaxY =
+      clipMaxY !== undefined
+        ? Math.min(clipMaxY, contentY + contentHeight)
+        : contentY + contentHeight;
   }
 
   // Check if this node is completely outside the clipping region
@@ -223,15 +226,6 @@ function renderNodeToBuffer(
               .join('');
           }
         }
-        // Legacy: Handle deprecated markers (for backwards compatibility)
-        if (typeof child === 'object' && child !== null && '_type' in child && (child as any)._type === 'marker') {
-          const marker = child as { _type: string; children?: unknown[] };
-          if (marker.children && Array.isArray(marker.children)) {
-            return marker.children
-              .map((mc) => (typeof mc === 'string' || typeof mc === 'number' ? String(mc) : ''))
-              .join('');
-          }
-        }
         return '';
       })
       .join('');
@@ -248,7 +242,15 @@ function renderNodeToBuffer(
         const styledText = applyTextStyle(child, style);
         buffer.writeAt(contentX, contentY, styledText, contentWidth);
       } else if (typeof child === 'object' && child !== null && 'type' in child) {
-        renderNodeToBuffer(child as TUINode, buffer, layoutMap, offsetX, offsetY, clipMinY, clipMaxY);
+        renderNodeToBuffer(
+          child as TUINode,
+          buffer,
+          layoutMap,
+          offsetX,
+          offsetY,
+          clipMinY,
+          clipMaxY,
+        );
       }
     }
     return;
@@ -279,7 +281,11 @@ function renderNodeToBuffer(
               if (typeof fragmentChild === 'string') {
                 const styledText = applyTextStyle(fragmentChild, style);
                 buffer.writeAt(contentX, contentY, styledText, contentWidth);
-              } else if (typeof fragmentChild === 'object' && fragmentChild !== null && 'type' in fragmentChild) {
+              } else if (
+                typeof fragmentChild === 'object' &&
+                fragmentChild !== null &&
+                'type' in fragmentChild
+              ) {
                 renderNodeToBuffer(
                   fragmentChild as TUINode,
                   buffer,
@@ -302,28 +308,6 @@ function renderNodeToBuffer(
               childClipMinY,
               childClipMaxY,
             );
-          }
-        }
-        // Legacy: Handle deprecated markers (for backwards compatibility)
-        else if ('_type' in child && (child as any)._type === 'marker') {
-          const marker = child as any;
-          if (marker.children && Array.isArray(marker.children)) {
-            for (const markerChild of marker.children) {
-              if (typeof markerChild === 'string') {
-                const styledText = applyTextStyle(markerChild, style);
-                buffer.writeAt(contentX, contentY, styledText, contentWidth);
-              } else if (typeof markerChild === 'object' && markerChild !== null && 'type' in markerChild) {
-                renderNodeToBuffer(
-                  markerChild as TUINode,
-                  buffer,
-                  layoutMap,
-                  childOffsetX,
-                  childOffsetY,
-                  childClipMinY,
-                  childClipMaxY,
-                );
-              }
-            }
           }
         }
       }

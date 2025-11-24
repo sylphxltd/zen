@@ -1,26 +1,18 @@
 /**
- * Suspense - Loading boundary for async components
+ * ZenJS Suspense Component
  *
- * Shows fallback UI while lazy components are loading.
- * Works with lazy() for code splitting.
+ * Handle async loading states with fallback UI
  *
- * Platform-agnostic implementation using marker pattern.
- *
- * @example
- * ```tsx
- * const Heavy = lazy(() => import('./Heavy'));
- *
- * <Suspense fallback={<div>Loading...</div>}>
- *   <Heavy />
- *   <AnotherLazy />
- * </Suspense>
- * ```
+ * Features:
+ * - Shows fallback while children are loading
+ * - Supports nested suspense boundaries
+ * - Container pattern (child inside container)
  */
 
 import { effect, signal, untrack } from '@zen/signal';
 import { disposeNode, onCleanup } from '@zen/signal';
 import { getPlatformOps } from '../platform-ops.js';
-import { children } from '../utils/children.js';
+import { children as resolveChildren } from '../utils/children.js';
 
 interface SuspenseProps {
   fallback: unknown;
@@ -28,125 +20,63 @@ interface SuspenseProps {
 }
 
 /**
- * Check if a node is a lazy loading placeholder
+ * Suspense component - Async loading boundary
+ *
+ * @example
+ * <Suspense fallback={<Loading />}>
+ *   <AsyncComponent />
+ * </Suspense>
  */
-function isLazyLoading(node: any): boolean {
-  return node && node.nodeType === 8 && (node as any)._zenLazyLoading === true;
-}
+export function Suspense(props: SuspenseProps): unknown {
+  const c = resolveChildren(() => props.children);
+  const f = resolveChildren(() => props.fallback);
 
-/**
- * Check if node tree contains any loading placeholders
- */
-function hasLoadingChildren(node: any): boolean {
-  // Check if this node itself is loading
-  if (isLazyLoading(node)) {
-    return true;
-  }
-
-  // Check child nodes recursively
-  if (node?.hasChildNodes?.()) {
-    for (const child of Array.from(node.childNodes as any[])) {
-      if (hasLoadingChildren(child)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-/**
- * Suspense component
- */
-export function Suspense(props: SuspenseProps): any {
-  // Use children() helper to lazily resolve props
-  const c = children(() => props.children);
-  const f = children(() => props.fallback);
-
-  // Get platform operations
   const ops = getPlatformOps();
 
-  // Anchor to mark position
-  const marker = ops.createMarker('suspense');
+  // Create container - content will be inside this node
+  const container = ops.createContainer('suspense');
 
   // Track current node and loading state
-  let currentNode: any = null;
+  let currentNode: unknown = null;
   const isLoading = signal(false);
-  let intervalId: ReturnType<typeof setInterval> | undefined;
 
-  // Function to check and update loading state
-  const checkLoading = () => {
-    if (!currentNode) return;
-
-    const loading = hasLoadingChildren(currentNode);
-
-    if (loading !== isLoading.value) {
-      isLoading.value = loading;
-    }
-  };
-
-  // ARCHITECTURE: Effects are immediate sync (not deferred)
-  // Parent check happens inside effect - if no parent yet, insertBefore is no-op
   const dispose = effect(() => {
     const loading = isLoading.value;
 
-    // Cleanup previous node
+    // Dispose previous node
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
-      }
-      disposeNode(currentNode);
+      disposeNode(currentNode as object);
       currentNode = null;
     }
 
     // Render appropriate content
     if (loading) {
       // Show fallback
-      currentNode = untrack(() => {
-        const fb = f();
-        return fb;
-      });
+      currentNode = untrack(() => f());
     } else {
       // Show children
-      currentNode = untrack(() => {
-        const child = c();
-        return child;
-      });
+      currentNode = untrack(() => c());
     }
 
-    // Insert into tree
+    // Update container
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.insertBefore(parent, currentNode, marker);
-      }
+      ops.setChildren(container, [currentNode as object]);
+    } else {
+      ops.setChildren(container, []);
     }
-
-    return undefined;
+    ops.notifyUpdate(container);
   });
 
   // Initial render with children
   isLoading.value = false;
 
-  // Poll for loading state changes
-  // (Lazy components update their loading state asynchronously)
-  intervalId = setInterval(checkLoading, 16); // ~60fps
-
-  // Register cleanup via owner system
+  // Cleanup on dispose
   onCleanup(() => {
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
     dispose();
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
-      }
-      disposeNode(currentNode);
+      disposeNode(currentNode as object);
     }
   });
 
-  return marker;
+  return container;
 }

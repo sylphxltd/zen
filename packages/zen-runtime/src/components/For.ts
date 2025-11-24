@@ -5,7 +5,7 @@
  *
  * Features:
  * - Keyed reconciliation (only updates changed items)
- * - Efficient DOM operations (minimal moves)
+ * - Container pattern (children inside container, not siblings)
  * - Memory efficient (reuses nodes)
  */
 
@@ -14,11 +14,11 @@ import { disposeNode, onCleanup } from '@zen/signal';
 import { getPlatformOps } from '../platform-ops.js';
 import { type MaybeReactive, resolve } from '../reactive-utils.js';
 
-interface ForProps<T, U = any> {
+interface ForProps<T, U = unknown> {
   each: MaybeReactive<T[]>;
   children: (item: T, index: () => number) => U;
-  fallback?: any;
-  key?: (item: T, index: number) => any;
+  fallback?: unknown;
+  key?: (item: T, index: number) => unknown;
 }
 
 /**
@@ -45,122 +45,104 @@ interface ForProps<T, U = any> {
  *   {(item, index) => <div>{item.name}</div>}
  * </For>
  */
-export function For<T, U = any>(props: ForProps<T, U>): any {
+export function For<T, U = unknown>(props: ForProps<T, U>): unknown {
   const { each, children, fallback, key: keyFn } = props;
 
-  // Get platform operations
   const ops = getPlatformOps();
 
-  // Anchor node to mark position
-  const marker = ops.createMarker('for');
+  // Create container - children will be inside this node
+  const container = ops.createContainer('for');
 
-  // Track rendered items by key
-  const items = new Map<any, { node: U; index: number; item: T }>();
+  // Track rendered items by key for efficient updates
+  const itemCache = new Map<unknown, { node: U; index: number; item: T }>();
 
-  // Get parent for operations
-  let parent: any = null;
+  // Track if we're showing fallback
+  let showingFallback = false;
+  let fallbackNode: unknown = null;
 
-  // ARCHITECTURE: Effects are immediate sync (not deferred)
-  // Parent check happens inside effect - if no parent yet, operations are no-ops
   const dispose = effect(() => {
     // Resolve array - automatically tracks reactive dependencies
     const array = resolve(each) as T[];
 
-    // Show fallback if empty
-    if (array.length === 0 && fallback) {
-      // Clear existing items
-      for (const [, entry] of items) {
-        const entryParent = ops.getParent(entry.node as any);
-        if (entryParent) {
-          ops.removeChild(entryParent, entry.node as any);
-        }
-        disposeNode(entry.node as any);
+    // Handle empty array - show fallback
+    if (array.length === 0) {
+      // Dispose all cached items
+      for (const [, entry] of itemCache) {
+        disposeNode(entry.node as object);
       }
-      items.clear();
+      itemCache.clear();
 
-      // Insert fallback
-      if (!parent) parent = ops.getParent(marker);
-      if (parent) {
-        ops.insertBefore(parent, fallback, marker);
+      if (fallback && !showingFallback) {
+        fallbackNode = fallback;
+        showingFallback = true;
+        ops.setChildren(container, [fallbackNode as object]);
+        ops.notifyUpdate(container);
+      } else if (!fallback) {
+        ops.setChildren(container, []);
+        ops.notifyUpdate(container);
       }
       return;
     }
 
-    // Remove fallback if present
-    const fallbackParent = fallback ? ops.getParent(fallback) : null;
-    if (fallbackParent) {
-      ops.removeChild(fallbackParent, fallback);
+    // Clear fallback if showing
+    if (showingFallback) {
+      showingFallback = false;
+      fallbackNode = null;
     }
 
-    if (!parent) parent = ops.getParent(marker);
-    if (!parent) {
-      return;
-    }
-
-    // Build new items map
-    const newItems = new Map<any, { node: U; index: number; item: T }>();
-    const fragment = ops.createFragment();
+    // Build new children array
+    const newChildren: U[] = [];
+    const newCache = new Map<unknown, { node: U; index: number; item: T }>();
 
     for (let i = 0; i < array.length; i++) {
       const item = array[i];
-      // Use custom key function or item itself as key
       const itemKey = keyFn ? keyFn(item, i) : item;
-      let entry = items.get(itemKey);
+
+      let entry = itemCache.get(itemKey);
 
       if (entry) {
-        // Reuse existing node
+        // Reuse existing node, update index
         entry.index = i;
         entry.item = item;
-        newItems.set(itemKey, entry);
       } else {
         // Create new node
         const node = children(item, () => {
-          const entry = Array.from(newItems.values()).find((e) => e.item === item);
-          return entry ? entry.index : -1;
+          const cachedEntry = newCache.get(itemKey);
+          return cachedEntry ? cachedEntry.index : -1;
         });
-
         entry = { node, index: i, item };
-        newItems.set(itemKey, entry);
       }
 
-      ops.appendToFragment(fragment, entry.node as any);
+      newCache.set(itemKey, entry);
+      newChildren.push(entry.node);
     }
 
-    // Remove items no longer in array
-    for (const [itemKey, entry] of items) {
-      if (!newItems.has(itemKey)) {
-        const entryParent = ops.getParent(entry.node as any);
-        if (entryParent) {
-          ops.removeChild(entryParent, entry.node as any);
-        }
-        disposeNode(entry.node as any);
+    // Dispose items no longer in array
+    for (const [key, entry] of itemCache) {
+      if (!newCache.has(key)) {
+        disposeNode(entry.node as object);
       }
     }
 
-    // Update items map
-    items.clear();
-    for (const [itemKey, entry] of newItems) {
-      items.set(itemKey, entry);
+    // Update cache
+    itemCache.clear();
+    for (const [key, entry] of newCache) {
+      itemCache.set(key, entry);
     }
 
-    // Insert all nodes in correct order
-    ops.insertBefore(parent, fragment, marker);
-
-    return undefined;
+    // Update container children
+    ops.setChildren(container, newChildren as object[]);
+    ops.notifyUpdate(container);
   });
 
-  // Register cleanup via owner system
+  // Cleanup on dispose
   onCleanup(() => {
     dispose();
-    for (const [, entry] of items) {
-      const entryParent = ops.getParent(entry.node as any);
-      if (entryParent) {
-        ops.removeChild(entryParent, entry.node as any);
-      }
-      disposeNode(entry.node as any);
+    for (const [, entry] of itemCache) {
+      disposeNode(entry.node as object);
     }
-    items.clear();
+    itemCache.clear();
   });
 
-  return marker;
+  return container;
 }

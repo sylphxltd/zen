@@ -24,16 +24,6 @@ interface ReactElement {
   props: Props;
 }
 
-/**
- * @deprecated Use TUINode with type: 'fragment' instead
- */
-interface TUIMarker {
-  _type: 'marker';
-  _kind: string;
-  children: (TUINode | string)[];
-  parentNode?: TUINode;
-}
-
 interface SignalLike {
   _kind: string;
   value: unknown;
@@ -88,15 +78,6 @@ function isTUINode(child: unknown): child is TUINode {
   return typeof child === 'object' && child !== null && 'type' in child && !('$$typeof' in child);
 }
 
-function isTUIMarker(child: unknown): child is TUIMarker {
-  return (
-    typeof child === 'object' &&
-    child !== null &&
-    '_type' in child &&
-    (child as TUIMarker)._type === 'marker'
-  );
-}
-
 /**
  * Handle component descriptor - Phase 2 execution
  */
@@ -124,15 +105,6 @@ function handleTUINode(parent: TUINode, node: TUINode): void {
   parent.children.push(node);
   try {
     node.parentNode = parent;
-  } catch {
-    // Object is frozen/sealed, skip parentNode assignment
-  }
-}
-
-function handleTUIMarker(parent: TUINode, marker: TUIMarker): void {
-  parent.children.push(marker);
-  try {
-    marker.parentNode = parent;
   } catch {
     // Object is frozen/sealed, skip parentNode assignment
   }
@@ -168,7 +140,7 @@ function handleReactiveFunction(parent: TUINode, fn: () => unknown): void {
   // Fragment is a first-class TUINode that renderers naturally support
   const fragment: TUINode = {
     type: 'fragment',
-    props: { _reactive: true },  // Mark as reactive for debugging
+    props: { _reactive: true }, // Mark as reactive for debugging
     children: [],
   };
 
@@ -271,11 +243,6 @@ export function appendChild(parent: TUINode, child: unknown): void {
     return;
   }
 
-  if (isTUIMarker(child)) {
-    handleTUIMarker(parent, child);
-    return;
-  }
-
   if (isTUINode(child)) {
     handleTUINode(parent, child);
     return;
@@ -302,7 +269,7 @@ export function appendChild(parent: TUINode, child: unknown): void {
  */
 export function Fragment(props: { children?: unknown }): TUINode {
   const node: TUINode = {
-    type: 'fragment',  // Proper fragment type, not box
+    type: 'fragment', // Proper fragment type, not box
     props: {},
     children: [],
   };

@@ -228,12 +228,10 @@ export function Provider<T>(context: Context<T>, props: { value: T; children: an
 
   const childArray = Array.isArray(resolved) ? resolved : [resolved];
 
-  const fragment = ops.createFragment();
-  for (const child of childArray) {
-    if (child) {
-      ops.appendToFragment(fragment, child);
-    }
-  }
+  // Use container pattern - children are stored INSIDE the container
+  const container = ops.createContainer('context-provider');
+  const validChildren = childArray.filter((child) => child != null);
+  ops.setChildren(container, validChildren);
 
-  return fragment;
+  return container;
 }

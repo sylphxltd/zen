@@ -72,35 +72,6 @@ export function buildPersistentTree(
     return fragment;
   }
 
-  // Legacy: Handle deprecated marker (reactive container)
-  if ('_type' in node && (node as any)._type === 'marker') {
-    const marker = node as any;
-
-    // Create a persistent fragment element for this marker
-    const fragment = new TUIElement('fragment', {}, {});
-
-    // Function to rebuild fragment children from marker
-    const rebuildChildren = () => {
-      fragment.children = [];
-
-      if (marker.children && marker.children.length > 0) {
-        for (const child of marker.children) {
-          const childElement = buildPersistentTree(child);
-          if (childElement) {
-            fragment.appendChild(childElement);
-          }
-        }
-      }
-
-      fragment.markDirty();
-    };
-
-    rebuildChildren();
-    marker.onUpdate = rebuildChildren;
-
-    return fragment;
-  }
-
   // Handle TUINode (element)
   if ('type' in node && typeof node.type === 'string') {
     const tuiNode = node as TUINode;

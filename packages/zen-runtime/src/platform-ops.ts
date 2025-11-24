@@ -9,54 +9,71 @@
  * all platforms without direct DOM dependencies.
  */
 
-export interface PlatformOps<TNode = any, TMarker = any, TFragment = any> {
+export interface PlatformOps<TNode = unknown> {
   /**
-   * Create a marker node to track insertion points
-   * Web: document.createComment()
-   * TUI: Virtual marker object
-   * Native: Placeholder view
-   */
-  createMarker(name: string): TMarker;
-
-  /**
-   * Create a fragment to batch multiple node operations
-   * Web: document.createDocumentFragment()
-   * TUI: Array of virtual nodes
+   * Create a reactive container node
+   *
+   * Container nodes hold children that can be updated reactively.
+   * This is the primary abstraction for For, Show, Switch, etc.
+   *
+   * TUI: TUINode { type: 'fragment', children: [] }
+   * Web: Wrapper element or fragment
    * Native: Container view
    */
-  createFragment(): TFragment;
+  createContainer(name: string): TNode;
 
   /**
-   * Insert a child node before a reference node
-   * Web: parentNode.insertBefore(child, ref)
-   * TUI: Insert in virtual tree
-   * Native: Add subview at index
+   * Set the children of a container node
+   * Replaces all existing children with new ones
    */
-  insertBefore(parent: TNode, child: TNode | TFragment, reference: TNode | TMarker): void;
+  setChildren(container: TNode, children: TNode[]): void;
 
   /**
-   * Remove a child node from its parent
-   * Web: parentNode.removeChild(child)
-   * TUI: Remove from virtual tree
-   * Native: Remove subview
+   * Append a single child to a container
+   */
+  appendChild(container: TNode, child: TNode): void;
+
+  /**
+   * Remove a child from its parent container
    */
   removeChild(parent: TNode, child: TNode): void;
 
   /**
    * Get the parent of a node
-   * Web: node.parentNode
-   * TUI: node.parentNode from virtual tree
-   * Native: view.superview
    */
-  getParent(node: TNode | TMarker): TNode | null;
+  getParent(node: TNode): TNode | null;
 
   /**
-   * Append child to fragment
-   * Web: fragment.appendChild(child)
-   * TUI: Push to virtual array
-   * Native: Add to container
+   * Notify the renderer that a node has been updated
+   * Triggers re-render for the affected subtree
    */
-  appendToFragment(fragment: TFragment, child: TNode): void;
+  notifyUpdate(node: TNode): void;
+
+  // ============================================
+  // DEPRECATED - Legacy marker pattern
+  // These methods are kept for backwards compatibility
+  // New code should use createContainer + setChildren
+  // ============================================
+
+  /**
+   * @deprecated Use createContainer instead
+   */
+  createMarker?(name: string): TNode;
+
+  /**
+   * @deprecated Use setChildren instead
+   */
+  createFragment?(): TNode[];
+
+  /**
+   * @deprecated Use setChildren instead
+   */
+  insertBefore?(parent: TNode, child: TNode | TNode[], reference: TNode): void;
+
+  /**
+   * @deprecated Use setChildren instead
+   */
+  appendToFragment?(fragment: TNode[], child: TNode): void;
 }
 
 /**

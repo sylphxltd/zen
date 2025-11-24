@@ -3,88 +3,66 @@
  *
  * Virtual node implementation of platform operations for terminal UI.
  * Registered during @zen/tui initialization.
+ *
+ * Uses container pattern: reactive content is stored as children inside
+ * fragment nodes, not as siblings of a marker.
  */
 
 import type { PlatformOps } from '@zen/runtime';
 import { getCurrentParent } from './parent-context.js';
-import type { TUIMarker, TUINode } from './types.js';
-
-/**
- * Fragment for TUI (array of nodes)
- */
-export type TUIFragment = (TUINode | string)[];
+import { scheduleNodeUpdate } from './render-context.js';
+import type { TUINode } from './types.js';
 
 /**
  * TUI platform operations using virtual node tree
+ *
+ * All reactive containers (For, Show, Switch, etc.) create fragment nodes
+ * and manage children inside them. This is simpler than the marker pattern
+ * and unifies all reactive content handling.
  */
-export const tuiPlatformOps: PlatformOps<TUINode, TUIMarker, TUIFragment> = {
-  createMarker(name: string): TUIMarker {
-    // Get current parent from context (set during appendChild/handleDescriptor)
-    // This ensures runtime components can access parent immediately in effects
+export const tuiPlatformOps: PlatformOps<TUINode> = {
+  /**
+   * Create a reactive container (fragment node)
+   *
+   * Container nodes hold children that can be updated via setChildren.
+   * This is used by For, Show, Switch, Suspense, ErrorBoundary.
+   */
+  createContainer(name: string): TUINode {
     const parent = getCurrentParent();
 
-    const marker: TUIMarker = {
-      _type: 'marker',
-      _name: name,
+    const container: TUINode = {
+      type: 'fragment',
+      props: { _containerName: name },
+      children: [],
     };
 
     // Set parentNode immediately if parent is available
     if (parent) {
       try {
-        marker.parentNode = parent;
+        container.parentNode = parent;
       } catch {
         // Object is frozen/sealed, skip parentNode assignment
       }
     }
 
-    return marker;
+    return container;
   },
 
-  createFragment(): TUIFragment {
-    return [];
-  },
+  /**
+   * Set the children of a container node
+   *
+   * Replaces all existing children with new ones.
+   * This is the primary way to update reactive content.
+   */
+  setChildren(container: TUINode, children: TUINode[]): void {
+    // Update children array
+    container.children = children;
 
-  insertBefore(
-    parent: TUINode,
-    child: TUINode | TUIFragment,
-    reference: TUINode | TUIMarker,
-  ): void {
-    // Find reference index
-    const refIndex = parent.children.findIndex((c) => c === reference);
-
-    if (refIndex === -1) {
-      // Reference not found, append to end
-      if (Array.isArray(child)) {
-        parent.children.push(...child);
-      } else {
-        parent.children.push(child);
-        // Try to set parentNode, but don't fail if object is frozen/sealed
+    // Set parentNode for all children
+    for (const child of children) {
+      if (typeof child === 'object' && child !== null) {
         try {
-          child.parentNode = parent;
-        } catch {
-          // Object is frozen/sealed, skip parentNode assignment
-        }
-      }
-    } else {
-      // Insert before reference
-      if (Array.isArray(child)) {
-        parent.children.splice(refIndex, 0, ...child);
-        // Set parent for all nodes in fragment
-        for (const node of child) {
-          if (typeof node !== 'string') {
-            // Try to set parentNode, but don't fail if object is frozen/sealed
-            try {
-              node.parentNode = parent;
-            } catch {
-              // Object is frozen/sealed, skip parentNode assignment
-            }
-          }
-        }
-      } else {
-        parent.children.splice(refIndex, 0, child);
-        // Try to set parentNode, but don't fail if object is frozen/sealed
-        try {
-          child.parentNode = parent;
+          (child as TUINode).parentNode = container;
         } catch {
           // Object is frozen/sealed, skip parentNode assignment
         }
@@ -92,11 +70,29 @@ export const tuiPlatformOps: PlatformOps<TUINode, TUIMarker, TUIFragment> = {
     }
   },
 
+  /**
+   * Append a single child to a container
+   */
+  appendChild(container: TUINode, child: TUINode): void {
+    container.children.push(child);
+
+    // Set parentNode
+    try {
+      child.parentNode = container;
+    } catch {
+      // Object is frozen/sealed, skip parentNode assignment
+    }
+  },
+
+  /**
+   * Remove a child from its parent container
+   */
   removeChild(parent: TUINode, child: TUINode): void {
     const index = parent.children.findIndex((c) => c === child);
     if (index !== -1) {
       parent.children.splice(index, 1);
-      // Try to clear parentNode, but don't fail if object is frozen/sealed
+
+      // Clear parentNode
       try {
         child.parentNode = undefined;
       } catch {
@@ -105,11 +101,17 @@ export const tuiPlatformOps: PlatformOps<TUINode, TUIMarker, TUIFragment> = {
     }
   },
 
-  getParent(node: TUINode | TUIMarker): TUINode | null {
+  /**
+   * Get the parent of a node
+   */
+  getParent(node: TUINode): TUINode | null {
     return node.parentNode || null;
   },
 
-  appendToFragment(fragment: TUIFragment, child: TUINode): void {
-    fragment.push(child);
+  /**
+   * Notify the renderer that a node has been updated
+   */
+  notifyUpdate(node: TUINode): void {
+    scheduleNodeUpdate(node, '');
   },
 };

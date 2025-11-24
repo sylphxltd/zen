@@ -7,40 +7,57 @@
  * - Only renders first matching branch
  * - Efficient branch switching
  * - Supports fallback
+ * - Container pattern (child inside container)
  */
 
 import { effect, untrack } from '@zen/signal';
 import type { AnySignal } from '@zen/signal';
 import { disposeNode, onCleanup } from '@zen/signal';
 import { getPlatformOps } from '../platform-ops.js';
-import { children } from '../utils/children.js';
+import { children as resolveChildren } from '../utils/children.js';
 
 interface SwitchProps {
-  fallback?: any | (() => any);
-  children: any[];
+  fallback?: unknown | (() => unknown);
+  children: unknown[];
 }
 
 interface MatchProps<T> {
   when: T | AnySignal | (() => T);
-  children: any | ((value: T) => any);
+  children: unknown | ((value: T) => unknown);
+}
+
+// Symbol to identify Match config objects
+const MATCH_CONFIG = Symbol('match-config');
+
+interface MatchConfig<T> {
+  [MATCH_CONFIG]: true;
+  when: T | AnySignal | (() => T);
+  children: unknown | ((value: T) => unknown);
 }
 
 /**
  * Match component - Single branch in Switch
+ *
+ * Returns a config object that Switch consumes, not a real node.
  *
  * @example
  * <Match when={route === 'home'}>
  *   <Home />
  * </Match>
  */
-export function Match<T>(props: MatchProps<T>): any {
-  const ops = getPlatformOps();
-  const marker = ops.createMarker('match');
+export function Match<T>(props: MatchProps<T>): MatchConfig<T> {
+  return {
+    [MATCH_CONFIG]: true,
+    when: props.when,
+    children: props.children,
+  };
+}
 
-  // Store props for Switch to access
-  (marker as any)._matchProps = props;
-
-  return marker;
+/**
+ * Check if an object is a Match config
+ */
+function isMatchConfig(obj: unknown): obj is MatchConfig<unknown> {
+  return typeof obj === 'object' && obj !== null && MATCH_CONFIG in obj;
 }
 
 /**
@@ -52,54 +69,42 @@ export function Match<T>(props: MatchProps<T>): any {
  *   <Match when={route === 'about'}><About /></Match>
  * </Switch>
  */
-export function Switch(props: SwitchProps): any {
+export function Switch(props: SwitchProps): unknown {
   const { fallback, children } = props;
 
-  // Get platform operations
   const ops = getPlatformOps();
 
-  // Anchor
-  const marker = ops.createMarker('switch');
+  // Create container - matched child will be inside this node
+  const container = ops.createContainer('switch');
 
-  // Track current node
-  let currentNode: any = null;
+  // Track current rendered node
+  let currentNode: unknown = null;
 
-  // Effect to evaluate conditions
   const dispose = effect(() => {
-    // Cleanup previous
+    // Dispose previous node
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
-      }
-      disposeNode(currentNode);
+      disposeNode(currentNode as object);
       currentNode = null;
     }
 
     // Find first matching branch
     for (const child of children) {
-      const matchProps = (child as any)._matchProps;
+      if (isMatchConfig(child)) {
+        const { when, children: matchChildren } = child;
 
-      if (matchProps) {
-        // IMPORTANT: Don't destructure matchProps.children here!
-        // Use children() helper to delay reading until condition matches
-        const { when } = matchProps;
-        const c = children(() => matchProps.children);
-
-        // Evaluate condition
-        const condition = typeof when === 'function' ? when() : when;
+        // Evaluate condition (triggers reactive tracking)
+        const condition = typeof when === 'function' ? (when as () => unknown)() : when;
 
         if (condition) {
           // Found match - render
-          // Only now read the matched branch's children
+          const c = resolveChildren(() => matchChildren);
           currentNode = untrack(() => {
-            const matchChildren = c();
-            if (typeof matchChildren === 'function') {
-              return matchChildren(condition);
+            const resolved = c();
+            if (typeof resolved === 'function') {
+              return (resolved as (value: unknown) => unknown)(condition);
             }
-            return matchChildren;
+            return resolved;
           });
-
           break;
         }
       }
@@ -109,34 +114,28 @@ export function Switch(props: SwitchProps): any {
     if (!currentNode && fallback) {
       currentNode = untrack(() => {
         if (typeof fallback === 'function') {
-          return fallback();
+          return (fallback as () => unknown)();
         }
         return fallback;
       });
     }
 
-    // Insert into tree
+    // Update container
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.insertBefore(parent, currentNode, marker);
-      }
+      ops.setChildren(container, [currentNode as object]);
+    } else {
+      ops.setChildren(container, []);
     }
-
-    return undefined;
+    ops.notifyUpdate(container);
   });
 
-  // Register cleanup via owner system
+  // Cleanup on dispose
   onCleanup(() => {
     dispose();
     if (currentNode) {
-      const parent = ops.getParent(marker);
-      if (parent) {
-        ops.removeChild(parent, currentNode);
-      }
-      disposeNode(currentNode);
+      disposeNode(currentNode as object);
     }
   });
 
-  return marker;
+  return container;
 }

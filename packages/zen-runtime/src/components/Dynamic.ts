@@ -49,11 +49,6 @@ export function Dynamic<P = any>(props: DynamicProps<P>): any {
 
   // Warn in development
   if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      '[Zen] Dynamic is deprecated. Use reactive function children instead:\n' +
-        '  {() => <MyComponent />}\n' +
-        'See: https://zen.dev/docs/reactivity#dynamic-components',
-    );
   }
 
   return component(restProps as P);

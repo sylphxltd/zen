@@ -2,7 +2,14 @@
  * TUI Virtual Node Types
  */
 
-export type TUINodeType = 'box' | 'text' | 'component';
+/**
+ * Node types:
+ * - 'box': Container with layout (flexbox)
+ * - 'text': Text content
+ * - 'component': Component wrapper
+ * - 'fragment': Transparent container for reactive children (like React Fragment)
+ */
+export type TUINodeType = 'box' | 'text' | 'component' | 'fragment';
 
 export interface TUIStyle {
   // Layout
@@ -14,6 +21,7 @@ export interface TUIStyle {
   maxHeight?: number;
 
   // Flexbox
+  flex?: number; // Shorthand for flexGrow/flexShrink
   flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
   flexGrow?: number;
   flexShrink?: number;
@@ -54,19 +62,22 @@ export interface TUIStyle {
   underline?: boolean;
   strikethrough?: boolean;
   dim?: boolean;
-}
+  inverse?: boolean; // Swap foreground/background colors
 
-export interface TUIMarker {
-  _type: 'marker';
-  _name: string;
-  parentNode?: TUINode;
+  // Overflow
+  overflow?: 'visible' | 'hidden' | 'scroll';
 }
 
 export interface TUINode {
   type: TUINodeType;
   tagName?: string;
   props: Record<string, any>;
-  children: Array<TUINode | TUIMarker | string>;
+  /**
+   * Children can be:
+   * - TUINode (including fragment nodes for reactive content)
+   * - string (text content)
+   */
+  children: Array<TUINode | string>;
   parentNode?: TUINode;
   style?: TUIStyle;
 }
@@ -75,4 +86,26 @@ export interface RenderOutput {
   text: string;
   width: number;
   height: number;
+}
+
+/**
+ * Mouse click event passed to onClick handlers
+ */
+export interface MouseClickEvent {
+  /** Screen column (1-indexed) */
+  x: number;
+  /** Screen row (1-indexed) */
+  y: number;
+  /** X position relative to element (0-indexed) */
+  localX: number;
+  /** Y position relative to element (0-indexed) */
+  localY: number;
+  /** Mouse button that was clicked */
+  button: 'left' | 'middle' | 'right';
+  /** Ctrl key was held */
+  ctrl?: boolean;
+  /** Shift key was held */
+  shift?: boolean;
+  /** Meta key was held */
+  meta?: boolean;
 }
