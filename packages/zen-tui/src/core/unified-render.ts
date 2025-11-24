@@ -40,29 +40,9 @@ import type { TUINode } from './types.js';
 import { type LayoutMap, computeLayout } from './yoga-layout.js';
 
 /**
- * Find a node with __mouseId by walking up from hit results
- * Returns the node and its mouseId
- */
-function findMouseTarget(
-  hits: Array<{ node: TUINode; localX: number; localY: number }>,
-): { node: TUINode; mouseId: string; localX: number; localY: number } | null {
-  // hits are in root-to-leaf order, so we search from the end (deepest first)
-  for (let i = hits.length - 1; i >= 0; i--) {
-    const hit = hits[i];
-    const mouseId = hit.node.props?.__mouseId as string | undefined;
-    if (mouseId) {
-      return { node: hit.node, mouseId, localX: hit.localX, localY: hit.localY };
-    }
-  }
-  return null;
-}
-
-/**
  * Find MouseProvider context by walking up from hit results
  */
-function findMouseContext(
-  hits: Array<{ node: TUINode }>,
-): MouseContextValue | null {
+function findMouseContext(hits: Array<{ node: TUINode }>): MouseContextValue | null {
   // hits are in root-to-leaf order, check from root first
   for (const hit of hits) {
     const ctx = hit.node.props?.__mouseContext as MouseContextValue | undefined;
@@ -261,40 +241,41 @@ export async function renderApp(createApp: () => unknown): Promise<() => void> {
     // Try mouse event first - always try to parse, as MouseProvider may enable mouse independently
     const mouseEvent = parseMouseEvent(key);
     if (mouseEvent) {
-        // Hit test - get all nodes from root to deepest hit
-        const hits = hitTestAll(mouseEvent.x, mouseEvent.y);
+      // Hit test - get all nodes from root to deepest hit
+      const hits = hitTestAll(mouseEvent.x, mouseEvent.y);
 
-        // Find MouseProvider context and dispatch to composable system
-        const mouseContext = findMouseContext(hits);
+      // Find MouseProvider context and dispatch to composable system
+      const mouseContext = findMouseContext(hits);
 
-        if (mouseContext) {
-          // Find the target node with __mouseId
-          const target = findMouseTarget(hits);
-          mouseContext.dispatchMouseEvent(
-            mouseEvent,
-            target?.node || null,
-            target?.localX || 0,
-            target?.localY || 0,
-          );
+      if (mouseContext) {
+        // Find ALL nodes with __mouseId in the hit chain (from deepest to root)
+        // and dispatch to each - this allows nested Pressable/Hoverable to work
+        for (let i = hits.length - 1; i >= 0; i--) {
+          const hit = hits[i];
+          const mouseId = hit.node.props?.__mouseId as string | undefined;
+          if (mouseId) {
+            mouseContext.dispatchMouseEvent(mouseEvent, hit.node, hit.localX, hit.localY);
+          }
         }
+      }
 
-        // Legacy: dispatch to global useMouse handlers
-        dispatchGlobalMouseEvent(mouseEvent);
+      // Legacy: dispatch to global useMouse handlers
+      dispatchGlobalMouseEvent(mouseEvent);
 
-        // Legacy: auto-dispatch onClick for backward compatibility
-        const hit = hits.length > 0 ? hits[hits.length - 1] : null;
-        if (mouseEvent.type === 'mouseup' && hit?.node.props?.onClick) {
-          hit.node.props.onClick({
-            x: mouseEvent.x,
-            y: mouseEvent.y,
-            localX: hit.localX,
-            localY: hit.localY,
-            button: mouseEvent.button,
-            ctrl: mouseEvent.ctrl,
-            shift: mouseEvent.shift,
-            meta: mouseEvent.meta,
-          });
-        }
+      // Legacy: auto-dispatch onClick for backward compatibility
+      const hit = hits.length > 0 ? hits[hits.length - 1] : null;
+      if (mouseEvent.type === 'mouseup' && hit?.node.props?.onClick) {
+        hit.node.props.onClick({
+          x: mouseEvent.x,
+          y: mouseEvent.y,
+          localX: hit.localX,
+          localY: hit.localY,
+          button: mouseEvent.button,
+          ctrl: mouseEvent.ctrl,
+          shift: mouseEvent.shift,
+          meta: mouseEvent.meta,
+        });
+      }
 
       queueMicrotask(() => {
         if (isRunning) flushUpdates();
