@@ -438,4 +438,4 @@ function ZenOS() {
 // Start
 // ============================================================================
 
-await renderToTerminalReactive(() => <ZenOS />, { fullscreen: true });
+await renderToTerminalReactive(() => <ZenOS />, { fullscreen: true, mouse: true });
