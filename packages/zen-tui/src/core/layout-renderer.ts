@@ -96,6 +96,27 @@ function applyTextStyle(text: string, style: TUIStyle = {}): string {
 }
 
 /**
+ * Fill a rectangular area with spaces (clear background)
+ */
+function fillArea(
+  buffer: TerminalBuffer,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  bgColor?: string,
+): void {
+  const bgCode = bgColor ? getBgColorCode(bgColor) : '';
+  const resetCode = bgColor ? '\x1b[49m' : '';
+  const fillChar = bgCode + ' ' + resetCode;
+  const fillLine = bgCode + ' '.repeat(width) + resetCode;
+
+  for (let row = 0; row < height; row++) {
+    buffer.writeAt(x, y + row, fillLine, width, true); // replace=true to clear existing content
+  }
+}
+
+/**
  * Render box border
  */
 function renderBorder(
@@ -106,7 +127,11 @@ function renderBorder(
   height: number,
   borderStyle: string,
   borderColor?: string,
+  backgroundColor?: string,
 ): void {
+  // First, fill the entire box area with background (clears previous content)
+  fillArea(buffer, x, y, width, height, backgroundColor);
+
   const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
 
   const colorFn = borderColor ? getColorFn(borderColor) : (s: string) => s;
@@ -164,15 +189,24 @@ function renderNodeToBuffer(
   // Get style (resolve functions)
   const style = typeof node.style === 'function' ? node.style() : node.style || {};
 
-  // Render border if specified
+  // Render border if specified (also fills background to clear previous content)
   if (style.borderStyle && style.borderStyle !== 'none') {
     const borderStyle =
       typeof style.borderStyle === 'function' ? style.borderStyle() : style.borderStyle;
     const borderColor =
       typeof style.borderColor === 'function' ? style.borderColor() : style.borderColor;
+    const backgroundColor =
+      typeof style.backgroundColor === 'function' ? style.backgroundColor() : style.backgroundColor;
 
     if (borderStyle && borderStyle !== 'none') {
-      renderBorder(buffer, x, y, width, height, borderStyle, borderColor);
+      renderBorder(buffer, x, y, width, height, borderStyle, borderColor, backgroundColor);
+    }
+  } else if (style.backgroundColor) {
+    // Fill background even without border
+    const backgroundColor =
+      typeof style.backgroundColor === 'function' ? style.backgroundColor() : style.backgroundColor;
+    if (backgroundColor) {
+      fillArea(buffer, x, y, width, height, backgroundColor);
     }
   }
 

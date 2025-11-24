@@ -54,8 +54,28 @@ function pointInRect(x: number, y: number, rect: LayoutResult): boolean {
 }
 
 /**
+ * Get zIndex value from a node's style
+ */
+function getZIndex(node: TUINode): number {
+  const style = typeof node.style === 'function' ? node.style() : node.style;
+  if (!style) return 0;
+  const zIndex = typeof style.zIndex === 'function' ? style.zIndex() : style.zIndex;
+  return typeof zIndex === 'number' ? zIndex : 0;
+}
+
+/**
+ * Check if a node is absolute positioned
+ */
+function isAbsolutePositioned(node: TUINode): boolean {
+  const style = typeof node.style === 'function' ? node.style() : node.style;
+  if (!style) return false;
+  const position = typeof style.position === 'function' ? style.position() : style.position;
+  return position === 'absolute';
+}
+
+/**
  * Find the deepest element at the given coordinates
- * Traverses the tree in depth-first order, returning the most nested hit
+ * Traverses the tree respecting zIndex for absolute positioned elements
  */
 function findElementAtPoint(
   node: TUINode,
@@ -71,37 +91,62 @@ function findElementAtPoint(
     return null;
   }
 
-  // Check children (deepest match wins)
+  // Check children - need to handle absolute positioned elements specially
   if (node.children) {
-    // Iterate in reverse to find topmost (last rendered) element first
-    for (let i = node.children.length - 1; i >= 0; i--) {
-      const child = node.children[i];
+    // Separate absolute and normal flow children that contain the point
+    const absoluteHits: Array<{ node: TUINode; zIndex: number }> = [];
+    const normalHits: TUINode[] = [];
 
-      // Skip string children
+    for (const child of node.children) {
       if (typeof child === 'string') continue;
+      if (typeof child !== 'object' || child === null || !('type' in child)) continue;
 
-      // Handle TUINode children
-      if (typeof child === 'object' && child !== null && 'type' in child) {
-        const childNode = child as TUINode;
+      const childNode = child as TUINode;
 
-        // Handle fragment nodes - check their children
-        if (childNode.type === 'fragment') {
-          for (let j = childNode.children.length - 1; j >= 0; j--) {
-            const fragmentChild = childNode.children[j];
-            if (
-              typeof fragmentChild === 'object' &&
-              fragmentChild !== null &&
-              'type' in fragmentChild
-            ) {
-              const hit = findElementAtPoint(fragmentChild as TUINode, x, y, layoutMap);
-              if (hit) return hit;
+      // Handle fragment nodes
+      if (childNode.type === 'fragment') {
+        for (const fragmentChild of childNode.children) {
+          if (
+            typeof fragmentChild === 'object' &&
+            fragmentChild !== null &&
+            'type' in fragmentChild
+          ) {
+            const fc = fragmentChild as TUINode;
+            const fcLayout = layoutMap.get(fc);
+            if (fcLayout && pointInRect(x, y, fcLayout)) {
+              if (isAbsolutePositioned(fc)) {
+                absoluteHits.push({ node: fc, zIndex: getZIndex(fc) });
+              } else {
+                normalHits.push(fc);
+              }
             }
           }
-        } else {
-          const hit = findElementAtPoint(childNode, x, y, layoutMap);
-          if (hit) return hit;
+        }
+      } else {
+        const childLayout = layoutMap.get(childNode);
+        if (childLayout && pointInRect(x, y, childLayout)) {
+          if (isAbsolutePositioned(childNode)) {
+            absoluteHits.push({ node: childNode, zIndex: getZIndex(childNode) });
+          } else {
+            normalHits.push(childNode);
+          }
         }
       }
+    }
+
+    // Sort absolute positioned elements by zIndex (highest first)
+    absoluteHits.sort((a, b) => b.zIndex - a.zIndex);
+
+    // Check absolute positioned children first (highest zIndex wins)
+    for (const { node: absChild } of absoluteHits) {
+      const hit = findElementAtPoint(absChild, x, y, layoutMap);
+      if (hit) return hit;
+    }
+
+    // Then check normal flow children in reverse order (last rendered first)
+    for (let i = normalHits.length - 1; i >= 0; i--) {
+      const hit = findElementAtPoint(normalHits[i], x, y, layoutMap);
+      if (hit) return hit;
     }
   }
 
@@ -145,7 +190,7 @@ export function hitTest(x: number, y: number): HitTestResult | null {
 
 /**
  * Find all elements at the given coordinates (not just the deepest)
- * Returns elements from root to leaf order
+ * Returns elements from root to leaf order, respecting zIndex for absolute positioned elements
  */
 export function hitTestAll(x: number, y: number): HitTestResult[] {
   if (!currentLayoutMap || !currentRootNode) {
@@ -168,25 +213,56 @@ export function hitTestAll(x: number, y: number): HitTestResult[] {
       localY: layoutY - layout.y,
     });
 
-    // Check children
+    // Check children - handle absolute positioned elements specially
     if (node.children) {
+      // Separate absolute and normal flow children
+      const absoluteHits: Array<{ node: TUINode; zIndex: number }> = [];
+      const normalChildren: TUINode[] = [];
+
       for (const child of node.children) {
-        if (typeof child === 'object' && child !== null && 'type' in child) {
-          const childNode = child as TUINode;
-          if (childNode.type === 'fragment') {
-            for (const fragmentChild of childNode.children) {
-              if (
-                typeof fragmentChild === 'object' &&
-                fragmentChild !== null &&
-                'type' in fragmentChild
-              ) {
-                collectHits(fragmentChild as TUINode);
+        if (typeof child !== 'object' || child === null || !('type' in child)) continue;
+
+        const childNode = child as TUINode;
+        if (childNode.type === 'fragment') {
+          for (const fragmentChild of childNode.children) {
+            if (
+              typeof fragmentChild === 'object' &&
+              fragmentChild !== null &&
+              'type' in fragmentChild
+            ) {
+              const fc = fragmentChild as TUINode;
+              const fcLayout = currentLayoutMap?.get(fc);
+              if (fcLayout && pointInRect(layoutX, layoutY, fcLayout)) {
+                if (isAbsolutePositioned(fc)) {
+                  absoluteHits.push({ node: fc, zIndex: getZIndex(fc) });
+                } else {
+                  normalChildren.push(fc);
+                }
               }
             }
-          } else {
-            collectHits(childNode);
+          }
+        } else {
+          const childLayout = currentLayoutMap?.get(childNode);
+          if (childLayout && pointInRect(layoutX, layoutY, childLayout)) {
+            if (isAbsolutePositioned(childNode)) {
+              absoluteHits.push({ node: childNode, zIndex: getZIndex(childNode) });
+            } else {
+              normalChildren.push(childNode);
+            }
           }
         }
+      }
+
+      // Process normal flow children first (in tree order)
+      for (const child of normalChildren) {
+        collectHits(child);
+      }
+
+      // Then process absolute positioned children sorted by zIndex (lowest first)
+      // so that highest zIndex ends up at the end of results (most recent = topmost)
+      absoluteHits.sort((a, b) => a.zIndex - b.zIndex);
+      for (const { node: absChild } of absoluteHits) {
+        collectHits(absChild);
       }
     }
   }
