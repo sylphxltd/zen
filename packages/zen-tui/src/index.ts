@@ -61,8 +61,11 @@ export {
 // ============================================================================
 // Core - Rendering infrastructure
 // ============================================================================
+// Legacy render APIs (deprecated - use renderApp instead)
 export { render, renderToTerminal, renderToTerminalReactive } from './core/render.js';
 export { renderToTerminalPersistent } from './core/persistent-renderer.js';
+// New unified render API
+export { renderApp } from './core/unified-render.js';
 export { Fragment } from './core/jsx-runtime.js';
 export type { TUINode, TUIStyle, RenderOutput, MouseClickEvent } from './core/types.js';
 
@@ -81,6 +84,25 @@ export { Spacer } from './primitives/Spacer.js';
 export { ScrollBox } from './layout/ScrollBox.js';
 export { Scrollbar } from './layout/Scrollbar.js';
 export { Divider } from './layout/Divider.js';
+export { FullscreenLayout, type FullscreenLayoutProps } from './layout/FullscreenLayout.js';
+
+// ============================================================================
+// Providers - Capability providers
+// ============================================================================
+export {
+  MouseProvider,
+  type MouseProviderProps,
+  type PressEvent,
+  type DragEvent,
+  type HoverEvent,
+} from './providers/index.js';
+
+// ============================================================================
+// Interactive - Composable interaction behaviors
+// ============================================================================
+export { Pressable, type PressableProps } from './interactive/Pressable.js';
+export { Draggable, type DraggableProps } from './interactive/Draggable.js';
+export { Hoverable, type HoverableProps } from './interactive/Hoverable.js';
 
 // ============================================================================
 // Input - Forms and user input
