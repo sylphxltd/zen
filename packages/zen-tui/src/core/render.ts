@@ -14,15 +14,15 @@ import cliBoxes from 'cli-boxes';
 import sliceAnsi from 'slice-ansi';
 import stringWidth from 'string-width';
 import stripAnsi from 'strip-ansi';
-import { renderToBuffer } from './layout-renderer.js';
+import { dispatchInput } from '../hooks/useInput.js';
+import { dispatchMouseEvent } from '../hooks/useMouse.js';
+import { clearHitTestLayout, hitTest, setHitTestLayout } from '../utils/hit-test.js';
 import { parseMouseEvent } from '../utils/mouse-parser.js';
+import { renderToBuffer } from './layout-renderer.js';
 import { setRenderContext } from './render-context.js';
 import { TerminalBuffer } from './terminal-buffer.js';
 import type { RenderOutput, TUINode, TUIStyle } from './types.js';
-import { dispatchInput } from '../hooks/useInput.js';
-import { dispatchMouseEvent } from '../hooks/useMouse.js';
 import { type LayoutMap, computeLayout } from './yoga-layout.js';
-import { setHitTestLayout, clearHitTestLayout, hitTest } from '../utils/hit-test.js';
 
 // Force chalk color level (Bun workaround - must be after chalk import)
 (chalk as any).level = 3;
@@ -188,7 +188,21 @@ function insertContent(
   const contentWidth = stringWidth(content);
   const after = sliceAnsi(line, x + contentWidth);
 
-  boxLines[y] = before + content + after;
+  // If content has a background color and 'after' has content (like borders),
+  // we need to reset the background before 'after' to prevent bleeding
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape codes require control characters
+  const contentHasBg = /\x1b\[4[0-9]m/.test(content);
+
+  // Check if 'after' starts with a background reset or background color code
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape codes require control characters
+  const afterStartsWithBgCode = /^\x1b\[(49|4[0-9])m/.test(after);
+
+  if (contentHasBg && !afterStartsWithBgCode && stripAnsi(after).trim()) {
+    // Reset background before 'after' content
+    boxLines[y] = `${before + content}\x1b[49m${after}`;
+  } else {
+    boxLines[y] = before + content + after;
+  }
 }
 
 /**
@@ -224,9 +238,25 @@ function mergeBoxesSideBySide(boxes: string[], gap = 0): string[] {
   for (let i = 0; i < maxHeight; i++) {
     let line = '';
     for (let j = 0; j < paddedBoxLines.length; j++) {
-      line += paddedBoxLines[j][i] || '';
+      const boxLine = paddedBoxLines[j][i] || '';
+      line += boxLine;
+
+      // Add gap between boxes, but check if previous box has background color
       if (j < paddedBoxLines.length - 1) {
+        // If boxLine has background color, reset it before gap
+        // biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape codes require control characters
+        const hasBg = /\x1b\[4[0-9]m/.test(boxLine);
+        if (hasBg && !boxLine.endsWith('\x1b[49m')) {
+          line += '\x1b[49m';
+        }
         line += gapStr;
+      } else {
+        // Last box in row - reset background if it has one
+        // biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape codes require control characters
+        const hasBg = /\x1b\[4[0-9]m/.test(boxLine);
+        if (hasBg && !boxLine.endsWith('\x1b[49m')) {
+          line += '\x1b[49m';
+        }
       }
     }
     mergedLines.push(line);
@@ -299,7 +329,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
             for (const fragmentChild of fragmentNode.children) {
               if (typeof fragmentChild === 'string') {
                 childBoxes.push(applyTextStyle(fragmentChild, node.style));
-              } else if (fragmentChild && typeof fragmentChild === 'object' && 'type' in fragmentChild) {
+              } else if (
+                fragmentChild &&
+                typeof fragmentChild === 'object' &&
+                'type' in fragmentChild
+              ) {
                 const childOutput = renderNode(fragmentChild as TUINode, width - paddingLeft * 2);
                 childBoxes.push(childOutput.text);
               }
@@ -310,7 +344,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
               for (const markerChild of (child as any).children) {
                 if (typeof markerChild === 'string') {
                   childBoxes.push(applyTextStyle(markerChild, node.style));
-                } else if (markerChild && typeof markerChild === 'object' && 'type' in markerChild) {
+                } else if (
+                  markerChild &&
+                  typeof markerChild === 'object' &&
+                  'type' in markerChild
+                ) {
                   const childOutput = renderNode(markerChild, width - paddingLeft * 2);
                   childBoxes.push(childOutput.text);
                 }
@@ -349,7 +387,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
                 const textContent = applyTextStyle(fragmentChild, node.style);
                 insertContent(lines, textContent, paddingLeft, currentY, width);
                 currentY += 1;
-              } else if (fragmentChild && typeof fragmentChild === 'object' && 'type' in fragmentChild) {
+              } else if (
+                fragmentChild &&
+                typeof fragmentChild === 'object' &&
+                'type' in fragmentChild
+              ) {
                 const childOutput = renderNode(fragmentChild as TUINode, width - paddingLeft * 2);
                 const childLines = childOutput.text.split('\n');
                 for (const childLine of childLines) {
@@ -368,7 +410,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
                   const textContent = applyTextStyle(markerChild, node.style);
                   insertContent(lines, textContent, paddingLeft, currentY, width);
                   currentY += 1;
-                } else if (markerChild && typeof markerChild === 'object' && 'type' in markerChild) {
+                } else if (
+                  markerChild &&
+                  typeof markerChild === 'object' &&
+                  'type' in markerChild
+                ) {
                   const childOutput = renderNode(markerChild, width - paddingLeft * 2);
                   const childLines = childOutput.text.split('\n');
                   for (const childLine of childLines) {
@@ -412,7 +458,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
             for (const fragmentChild of fragmentNode.children) {
               if (typeof fragmentChild === 'string') {
                 childBoxes.push(applyTextStyle(fragmentChild, node.style));
-              } else if (fragmentChild && typeof fragmentChild === 'object' && 'type' in fragmentChild) {
+              } else if (
+                fragmentChild &&
+                typeof fragmentChild === 'object' &&
+                'type' in fragmentChild
+              ) {
                 const childOutput = renderNode(fragmentChild as TUINode, width - paddingLeft * 2);
                 childBoxes.push(childOutput.text);
               }
@@ -423,7 +473,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
               for (const markerChild of (child as any).children) {
                 if (typeof markerChild === 'string') {
                   childBoxes.push(applyTextStyle(markerChild, node.style));
-                } else if (markerChild && typeof markerChild === 'object' && 'type' in markerChild) {
+                } else if (
+                  markerChild &&
+                  typeof markerChild === 'object' &&
+                  'type' in markerChild
+                ) {
                   const childOutput = renderNode(markerChild, width - paddingLeft * 2);
                   childBoxes.push(childOutput.text);
                 }
@@ -455,7 +509,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
               if (typeof fragmentChild === 'string') {
                 const textContent = applyTextStyle(fragmentChild, node.style);
                 childrenLines.push(textContent);
-              } else if (fragmentChild && typeof fragmentChild === 'object' && 'type' in fragmentChild) {
+              } else if (
+                fragmentChild &&
+                typeof fragmentChild === 'object' &&
+                'type' in fragmentChild
+              ) {
                 const childOutput = renderNode(fragmentChild as TUINode, width - paddingLeft * 2);
                 childrenLines.push(...childOutput.text.split('\n'));
               }
@@ -467,7 +525,11 @@ function renderNode(node: TUINode, parentWidth: number): RenderOutput {
                 if (typeof markerChild === 'string') {
                   const textContent = applyTextStyle(markerChild, node.style);
                   childrenLines.push(textContent);
-                } else if (markerChild && typeof markerChild === 'object' && 'type' in markerChild) {
+                } else if (
+                  markerChild &&
+                  typeof markerChild === 'object' &&
+                  'type' in markerChild
+                ) {
                   const childOutput = renderNode(markerChild, width - paddingLeft * 2);
                   childrenLines.push(...childOutput.text.split('\n'));
                 }
@@ -715,7 +777,7 @@ export async function renderToTerminalReactive(
           // For fullscreen mode, clear and redraw
           if (options.fullscreen) {
             process.stdout.write('\x1b[2J'); // Clear screen
-            process.stdout.write('\x1b[H');  // Move to top-left
+            process.stdout.write('\x1b[H'); // Move to top-left
           }
           flushUpdates();
         }
@@ -781,7 +843,9 @@ export async function renderToTerminalReactive(
   }
 
   // Helper: Remove Static nodes from tree (for rendering dynamic content only)
-  function removeStaticNodes(node: TUINode | TUINode[] | null | undefined): TUINode | TUINode[] | null {
+  function removeStaticNodes(
+    node: TUINode | TUINode[] | null | undefined,
+  ): TUINode | TUINode[] | null {
     if (!node) return null;
 
     if (Array.isArray(node)) {
@@ -1067,9 +1131,14 @@ export async function renderToTerminalReactive(
       const mouseEvent = parseMouseEvent(key);
       if (mouseEvent) {
         // Auto-dispatch onClick handlers for mouseup (click complete)
-        if (mouseEvent.type === 'mouseup' && (mouseEvent.button === 'left' || mouseEvent.button === 'middle' || mouseEvent.button === 'right')) {
+        if (
+          mouseEvent.type === 'mouseup' &&
+          (mouseEvent.button === 'left' ||
+            mouseEvent.button === 'middle' ||
+            mouseEvent.button === 'right')
+        ) {
           const hit = hitTest(mouseEvent.x, mouseEvent.y);
-          if (hit && hit.node.props?.onClick) {
+          if (hit?.node.props?.onClick) {
             // Call onClick with event info
             hit.node.props.onClick({
               x: mouseEvent.x,
