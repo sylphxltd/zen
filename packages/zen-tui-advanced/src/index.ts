@@ -53,7 +53,7 @@ export { Splitter, type SplitterProps, Pane, type PaneProps } from './layout/Spl
 // ============================================================================
 // Input - Advanced input components
 // ============================================================================
-// export { TextArea, type TextAreaProps } from './input/TextArea.js';
+export { TextArea, type TextAreaProps } from './input/TextArea.js';
 
 // ============================================================================
 // Navigation - Menu and navigation
