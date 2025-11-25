@@ -94,6 +94,7 @@ const NARROW_EMOJI_BASE = new Set([
   '♣',
   '♥',
   '♦', // Card suits
+  '🖥', // Desktop computer (displays as width 1 in many terminals despite Unicode width 2)
 ]);
 
 // Cached segmenter for performance
