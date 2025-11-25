@@ -5,7 +5,7 @@
  * Supports priority-based focus management where handlers can "consume" events.
  */
 
-import { onCleanup } from '@zen/runtime';
+import { getOwner, onCleanup, type Owner } from '@zen/runtime';
 
 /**
  * Input handler function.
@@ -56,14 +56,22 @@ export interface UseInputOptions {
 interface RegisteredHandler {
   handler: InputHandler;
   priority: number;
+  owner: Owner | null;
 }
 
-// Global registry of input handlers with priority
+// Global registry of input handlers - keyed by owner for re-render safety
+// Using owner as key ensures handlers are updated rather than duplicated on re-render
 const inputHandlers: Set<RegisteredHandler> = new Set();
+
+// Track registered handlers by owner to update them on re-render
+const ownerToHandler: WeakMap<Owner, RegisteredHandler> = new WeakMap();
 
 /**
  * Register a keyboard input handler
  * Similar to React Ink's useInput hook
+ *
+ * Handles re-renders properly by updating existing handlers instead of
+ * accumulating duplicates. Uses owner-based tracking for cleanup.
  *
  * @param handler - The input handler function. Return `true` to stop propagation.
  * @param options - Options including isActive and priority
@@ -84,14 +92,41 @@ const inputHandlers: Set<RegisteredHandler> = new Set();
 export function useInput(handler: InputHandler, options?: UseInputOptions): void {
   const isActive = options?.isActive ?? true;
   const priority = options?.priority ?? 0;
+  const owner = getOwner();
 
+  // If this owner already has a handler registered, update it (handles re-renders)
+  if (owner) {
+    const existing = ownerToHandler.get(owner);
+    if (existing) {
+      if (isActive) {
+        // Update existing handler - this is a re-render
+        existing.handler = handler;
+        existing.priority = priority;
+      } else {
+        // Handler became inactive, remove it
+        inputHandlers.delete(existing);
+        ownerToHandler.delete(owner);
+      }
+      return;
+    }
+  }
+
+  // New handler registration
   if (isActive) {
-    const registered: RegisteredHandler = { handler, priority };
+    const registered: RegisteredHandler = { handler, priority, owner };
     inputHandlers.add(registered);
+
+    // Track by owner for re-render detection
+    if (owner) {
+      ownerToHandler.set(owner, registered);
+    }
 
     // Cleanup when component unmounts
     onCleanup(() => {
       inputHandlers.delete(registered);
+      if (owner) {
+        ownerToHandler.delete(owner);
+      }
     });
   }
 }
