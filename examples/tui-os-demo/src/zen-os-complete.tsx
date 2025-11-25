@@ -15,14 +15,15 @@
 
 import { Box, Draggable, Hoverable, MouseProvider, Pressable, Text, signal } from '@zen/tui';
 import {
+  $focusedWindowId,
+  $sortedWindows,
+  $taskbarItems,
   Window,
   closeWindow,
   focusWindow,
   minimizeWindow,
   openWindow,
   toggleMaximize,
-  $focusedWindowId,
-  $taskbarItems,
 } from '@zen/tui-advanced';
 import { Calculator } from './apps/Calculator.js';
 import { FileManager } from './apps/FileManager.js';
@@ -122,12 +123,7 @@ function ZenOS() {
 
           {/* Desktop icons */}
           {desktopIcons.map((iconData) => (
-            <Box
-              key={iconData.id}
-              position="absolute"
-              left={iconData.x}
-              top={iconData.y}
-            >
+            <Box key={iconData.id} position="absolute" left={iconData.x} top={iconData.y}>
               <Pressable onPress={() => launchApp(iconData.app)}>
                 <Hoverable>
                   {(isHovered) => (
@@ -153,9 +149,9 @@ function ZenOS() {
 
           {/* Windows */}
           {() =>
-            $taskbarItems.value.map((item) => (
-              <Window key={item.id} windowId={item.id}>
-                {getAppContent(item.app)}
+            $sortedWindows.value.map((window) => (
+              <Window key={window.id} window={window}>
+                {getAppContent(window.app)}
               </Window>
             ))
           }
@@ -196,7 +192,7 @@ function ZenOS() {
                 <Pressable
                   key={item.id}
                   onPress={() => {
-                    if (item.minimized) {
+                    if (item.isMinimized) {
                       toggleMaximize(item.id);
                     }
                     focusWindow(item.id);
@@ -206,9 +202,7 @@ function ZenOS() {
                     {(isHovered) => (
                       <Box
                         paddingX={2}
-                        backgroundColor={
-                          isFocused ? 'cyan' : isHovered ? 'blue' : 'gray'
-                        }
+                        backgroundColor={isFocused ? 'cyan' : isHovered ? 'blue' : 'gray'}
                         borderStyle="single"
                         borderColor={isFocused ? 'white' : 'gray'}
                       >
