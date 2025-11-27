@@ -224,8 +224,7 @@ export function TextArea(props: TextAreaProps) {
             // Edge case: single wide character wider than contentWidth
             // Take at least one grapheme to avoid infinite loop
             const firstGrapheme = graphemes.find(
-              (_, i) =>
-                graphemes.slice(0, i).reduce((sum, g) => sum + g.length, 0) >= startCol,
+              (_, i) => graphemes.slice(0, i).reduce((sum, g) => sum + g.length, 0) >= startCol,
             );
             if (firstGrapheme) {
               result.push({
@@ -375,7 +374,8 @@ export function TextArea(props: TextAreaProps) {
         }
 
         // Delete the grapheme by reconstructing the line
-        const newLine = line.slice(0, prevCharIndex) + line.slice(prevCharIndex + graphemeToDelete.length);
+        const newLine =
+          line.slice(0, prevCharIndex) + line.slice(prevCharIndex + graphemeToDelete.length);
         currentLines[row] = newLine;
         newCol = prevCharIndex;
       } else if (row > 0) {
@@ -405,7 +405,9 @@ export function TextArea(props: TextAreaProps) {
         }
 
         // Delete the grapheme by reconstructing the line
-        const newLine = line.slice(0, graphemeStartIndex) + line.slice(graphemeStartIndex + graphemeToDelete.length);
+        const newLine =
+          line.slice(0, graphemeStartIndex) +
+          line.slice(graphemeStartIndex + graphemeToDelete.length);
         currentLines[row] = newLine;
       } else if (row < currentLines.length - 1) {
         // Merge with next line
