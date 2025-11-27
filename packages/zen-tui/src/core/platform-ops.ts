@@ -34,6 +34,11 @@ export const tuiPlatformOps: PlatformOps<TUINode> = {
       type: 'fragment',
       props: { _containerName: name },
       children: [],
+      // Ensure fragments take up available space for proper flex layout
+      style: {
+        flex: 1,
+        flexDirection: 'column',
+      },
     };
 
     // Set parentNode immediately if parent is available

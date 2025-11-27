@@ -230,7 +230,10 @@ export function disposeOwner(owner: Owner): void {
  * Called by jsx-runtime after component renders
  */
 export function attachNodeToOwner(node: Node, owner: Owner): void {
-  nodeOwners.set(node, owner);
+  // WeakMap requires object keys - guard against null/undefined
+  if (node != null && owner != null) {
+    nodeOwners.set(node, owner);
+  }
 }
 
 /**

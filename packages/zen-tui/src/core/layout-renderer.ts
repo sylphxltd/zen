@@ -54,6 +54,9 @@ function getColorFn(color: string) {
  * Apply text styling using raw ANSI codes
  */
 function applyTextStyle(text: string, style: TUIStyle = {}): string {
+  // Skip empty strings - no need for escape codes
+  if (!text) return '';
+
   let codes = '';
   let resetCodes = '';
 
@@ -90,6 +93,13 @@ function applyTextStyle(text: string, style: TUIStyle = {}): string {
   if (style.dim) {
     codes += '\x1b[2m';
     resetCodes = `\x1b[22m${resetCodes}`; // reset dim
+  }
+  if (style.inverse) {
+    const inverse = typeof style.inverse === 'function' ? style.inverse() : style.inverse;
+    if (inverse) {
+      codes += '\x1b[7m';
+      resetCodes = `\x1b[27m${resetCodes}`; // reset inverse
+    }
   }
 
   return codes + text + resetCodes;
@@ -230,16 +240,24 @@ function renderNodeToBuffer(
   const scrollOffset = isScrollBox && node.props?.scrollOffset ? node.props.scrollOffset.value : 0;
 
   // Set viewport clipping bounds for children
-  // Apply clipping for any box with border (to prevent content overflow into borders)
+  // Apply clipping for: ScrollBox, bordered boxes, or overflow: 'hidden'
+  const hasOverflowHidden = style.overflow === 'hidden';
   let childClipMinY = clipMinY;
   let childClipMaxY = clipMaxY;
-  if (isScrollBox || hasBorder) {
-    // For bordered boxes, clip children to content area
+  let childClipMinX = undefined as number | undefined;
+  let childClipMaxX = undefined as number | undefined;
+  if (isScrollBox || hasBorder || hasOverflowHidden) {
+    // Clip children to content area
     childClipMinY = clipMinY !== undefined ? Math.max(clipMinY, contentY) : contentY;
     childClipMaxY =
       clipMaxY !== undefined
         ? Math.min(clipMaxY, contentY + contentHeight)
         : contentY + contentHeight;
+    // Also clip X for overflow: hidden
+    if (hasOverflowHidden) {
+      childClipMinX = contentX;
+      childClipMaxX = contentX + contentWidth;
+    }
   }
 
   // Check if this node is completely outside the clipping region
@@ -259,26 +277,39 @@ function renderNodeToBuffer(
       }
     }
 
-    // Collect text from all children including fragment nodes
-    const textContent = node.children
-      .map((child) => {
-        if (typeof child === 'string') {
-          return child;
-        }
-        // Handle fragment nodes - extract their string/number children
-        if (typeof child === 'object' && child !== null && 'type' in child) {
-          const childNode = child as TUINode;
-          if (childNode.type === 'fragment' && Array.isArray(childNode.children)) {
-            return childNode.children
-              .map((fc) => (typeof fc === 'string' || typeof fc === 'number' ? String(fc) : ''))
-              .join('');
+    // Collect styled text from all children including nested Text nodes
+    // Each segment has its own style that may override parent style
+    const collectStyledText = (
+      children: (string | TUINode)[],
+      parentStyle: TUIStyle,
+    ): string => {
+      return children
+        .map((child) => {
+          if (typeof child === 'string') {
+            // Skip empty strings entirely
+            if (!child) return '';
+            return applyTextStyle(child, parentStyle);
           }
-        }
-        return '';
-      })
-      .join('');
+          if (typeof child === 'object' && child !== null && 'type' in child) {
+            const childNode = child as TUINode;
+            // Nested Text node - merge styles (child overrides parent)
+            if (childNode.type === 'text') {
+              const childStyle =
+                typeof childNode.style === 'function' ? childNode.style() : childNode.style || {};
+              const mergedStyle = { ...parentStyle, ...childStyle };
+              return collectStyledText(childNode.children, mergedStyle);
+            }
+            // Fragment nodes - inherit parent style
+            if (childNode.type === 'fragment' && Array.isArray(childNode.children)) {
+              return collectStyledText(childNode.children, parentStyle);
+            }
+          }
+          return '';
+        })
+        .join('');
+    };
 
-    const styledText = applyTextStyle(textContent, node.style);
+    const styledText = collectStyledText(node.children, node.style);
     buffer.writeAt(contentX, contentY, styledText, contentWidth);
     return;
   }

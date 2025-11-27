@@ -168,15 +168,19 @@ function applyStylesToYogaNode(yogaNode: any, style: TUIStyle, Yoga: any) {
     yogaNode.setMargin(Yoga.EDGE_BOTTOM, style.marginY);
   }
 
-  // Flex
-  if (typeof style.flex === 'number') {
-    yogaNode.setFlex(style.flex);
+  // Flex - resolve functions
+  const flexValue = typeof style.flex === 'function' ? style.flex() : style.flex;
+  if (typeof flexValue === 'number') {
+    yogaNode.setFlex(flexValue);
   }
-  if (typeof style.flexGrow === 'number') {
-    yogaNode.setFlexGrow(style.flexGrow);
+  const flexGrowValue = typeof style.flexGrow === 'function' ? style.flexGrow() : style.flexGrow;
+  if (typeof flexGrowValue === 'number') {
+    yogaNode.setFlexGrow(flexGrowValue);
   }
-  if (typeof style.flexShrink === 'number') {
-    yogaNode.setFlexShrink(style.flexShrink);
+  const flexShrinkValue =
+    typeof style.flexShrink === 'function' ? style.flexShrink() : style.flexShrink;
+  if (typeof flexShrinkValue === 'number') {
+    yogaNode.setFlexShrink(flexShrinkValue);
   }
 
   // Gap - space between flex children
@@ -227,6 +231,27 @@ function buildYogaTree(tuiNode: TUINode, yogaNodeMap: Map<TUINode, any>, Yoga: a
   applyStylesToYogaNode(yogaNode, style, Yoga);
 
   // Calculate total content width for text nodes
+  // Helper to recursively collect text width from all children (including nested Text nodes)
+  const collectTextWidth = (children: (string | TUINode)[]): number => {
+    let width = 0;
+    for (const child of children) {
+      if (typeof child === 'string') {
+        width += terminalWidth(child);
+      } else if (typeof child === 'object' && child !== null && 'type' in child) {
+        const childNode = child as TUINode;
+        // For nested Text nodes, recursively collect their text width
+        if (childNode.type === 'text' && childNode.children) {
+          width += collectTextWidth(childNode.children);
+        }
+        // For fragments, also collect their children's width
+        if (childNode.type === 'fragment' && childNode.children) {
+          width += collectTextWidth(childNode.children);
+        }
+      }
+    }
+    return width;
+  };
+
   let totalTextWidth = 0;
   let hasStringChildren = false;
 
@@ -242,6 +267,14 @@ function buildYogaTree(tuiNode: TUINode, yogaNodeMap: Map<TUINode, any>, Yoga: a
         textYogaNode.setHeight(1);
         yogaNode.insertChild(textYogaNode, yogaNode.getChildCount());
       } else if (typeof child === 'object' && child !== null) {
+        // For nested Text nodes within a parent Text, count their width
+        if ('type' in child) {
+          const childNode = child as TUINode;
+          if (childNode.type === 'text' && childNode.children) {
+            hasStringChildren = true;
+            totalTextWidth += collectTextWidth(childNode.children);
+          }
+        }
         if ('type' in child) {
           const childNode = child as TUINode;
 
@@ -249,8 +282,33 @@ function buildYogaTree(tuiNode: TUINode, yogaNodeMap: Map<TUINode, any>, Yoga: a
           if (childNode.type === 'fragment') {
             // Create yoga node for fragment (for layout tracking)
             const fragmentYogaNode = Yoga.Node.create();
-            fragmentYogaNode.setFlexGrow(1);
-            fragmentYogaNode.setFlexShrink(1);
+
+            // Get fragment's own style if available
+            const fragmentStyle =
+              typeof childNode.style === 'function' ? childNode.style() : childNode.style || {};
+
+            // Apply fragment's flex settings if specified, otherwise use defaults
+            const fragmentFlex =
+              typeof fragmentStyle.flex === 'function' ? fragmentStyle.flex() : fragmentStyle.flex;
+            if (typeof fragmentFlex === 'number') {
+              fragmentYogaNode.setFlex(fragmentFlex);
+            } else {
+              fragmentYogaNode.setFlexGrow(1);
+              fragmentYogaNode.setFlexShrink(1);
+            }
+
+            // CRITICAL: Fragment must have proper flexDirection for layout
+            // Use fragment's own style if set, otherwise inherit from parent
+            if (fragmentStyle.flexDirection === 'row') {
+              fragmentYogaNode.setFlexDirection(Yoga.FLEX_DIRECTION_ROW);
+            } else if (fragmentStyle.flexDirection === 'column') {
+              fragmentYogaNode.setFlexDirection(Yoga.FLEX_DIRECTION_COLUMN);
+            } else if (style.flexDirection === 'row') {
+              fragmentYogaNode.setFlexDirection(Yoga.FLEX_DIRECTION_ROW);
+            } else {
+              // Default to column for TUI layouts (matches Box default behavior)
+              fragmentYogaNode.setFlexDirection(Yoga.FLEX_DIRECTION_COLUMN);
+            }
             yogaNodeMap.set(childNode, fragmentYogaNode);
 
             // Process fragment's children
