@@ -673,4 +673,453 @@ describe('TextArea Component', () => {
       expect(values[values.length - 1]).toBe('🎉ab');
     });
   });
+
+  describe('Scrolling Behavior', () => {
+    it('should handle content exceeding visible rows', async () => {
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          rows: 3, // Only 3 visible rows
+          cols: 20,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Type multiple lines (more than rows=3)
+      dispatchInput('Line1');
+      dispatchInput('\r'); // Enter
+      dispatchInput('Line2');
+      dispatchInput('\r');
+      dispatchInput('Line3');
+      dispatchInput('\r');
+      dispatchInput('Line4');
+      dispatchInput('\r');
+      dispatchInput('Line5');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      const finalValue = values[values.length - 1];
+      expect(finalValue).toContain('Line1');
+      expect(finalValue).toContain('Line5');
+      expect(finalValue.split('\n').length).toBe(5);
+    });
+
+    it('should scroll to keep cursor visible when adding lines', async () => {
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          rows: 2,
+          cols: 20,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Add 5 lines - cursor should stay visible via auto-scroll
+      for (let i = 1; i <= 5; i++) {
+        dispatchInput(`L${i}`);
+        if (i < 5) dispatchInput('\r');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('L1\nL2\nL3\nL4\nL5');
+    });
+  });
+
+  describe('Cursor Movement Edge Cases', () => {
+    it('should handle Home key at start of line', async () => {
+      const values: string[] = [];
+      const value = signal('Hello');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Press Home (already at start), then type
+      dispatchInput('\x1B[H'); // Home
+      dispatchInput('X');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('XHello');
+    });
+
+    it('should handle End key at end of line', async () => {
+      const values: string[] = [];
+      const value = signal('Hello');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Press End twice (should stay at end)
+      dispatchInput('\x1B[F'); // End
+      dispatchInput('\x1B[F'); // End again
+      dispatchInput('!');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('Hello!');
+    });
+
+    it('should handle arrow keys at boundaries', async () => {
+      const values: string[] = [];
+      const value = signal('AB');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Start at position 0
+      // Left arrow at start should do nothing
+      dispatchInput('\x1B[D'); // Left
+      dispatchInput('X');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('XAB');
+    });
+
+    it('should move between lines with up/down arrows', async () => {
+      const values: string[] = [];
+      const value = signal('Line1\nLine2\nLine3');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Move to end of first line
+      dispatchInput('\x1B[F'); // End (goes to end of Line1)
+      // Move down
+      dispatchInput('\x1B[B'); // Down
+      dispatchInput('X');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Cursor should now be in Line2
+      expect(values[values.length - 1]).toContain('Line2');
+    });
+  });
+
+  describe('Multi-line Editing', () => {
+    it('should join lines when backspace at start of line', async () => {
+      const values: string[] = [];
+      const value = signal('Line1\nLine2');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Move to start of Line2
+      dispatchInput('\x1B[B'); // Down
+      dispatchInput('\x1B[H'); // Home
+      // Backspace should join lines
+      dispatchInput('\x7f');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('Line1Line2');
+    });
+
+    it('should join lines when delete at end of line', async () => {
+      const values: string[] = [];
+      const value = signal('Line1\nLine2');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Move to end of Line1
+      dispatchInput('\x1B[F'); // End
+      // Delete should join with next line
+      dispatchInput('\x1B[3~'); // Delete key
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('Line1Line2');
+    });
+
+    it('should split line correctly when Enter in middle', async () => {
+      const values: string[] = [];
+      const value = signal('HelloWorld');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Move cursor to after "Hello" (position 5)
+      dispatchInput('\x1B[C'); // Right x5
+      dispatchInput('\x1B[C');
+      dispatchInput('\x1B[C');
+      dispatchInput('\x1B[C');
+      dispatchInput('\x1B[C');
+      // Press Enter
+      dispatchInput('\r');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('Hello\nWorld');
+    });
+  });
+
+  describe('Edge Cases with Long Content', () => {
+    it('should handle very long single line', async () => {
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          cols: 10,
+          wrap: true,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Type 100 characters
+      const longText = 'A'.repeat(100);
+      for (const char of longText) {
+        dispatchInput(char);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1].length).toBe(100);
+    });
+
+    it('should handle empty lines correctly', async () => {
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Create empty lines
+      dispatchInput('\r');
+      dispatchInput('\r');
+      dispatchInput('X');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('\n\nX');
+    });
+
+    it('should preserve trailing newlines', async () => {
+      const values: string[] = [];
+      const value = signal('Text');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Move to end and add newlines
+      dispatchInput('\x1B[F'); // End
+      dispatchInput('\r');
+      dispatchInput('\r');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('Text\n\n');
+    });
+  });
+
+  describe('Wide Character Edge Cases', () => {
+    it('should handle cursor left through CJK character', async () => {
+      const values: string[] = [];
+      const value = signal('A大B');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Go to end, then left twice (should skip over 大 as one unit)
+      dispatchInput('\x1B[F'); // End (after B)
+      dispatchInput('\x1B[D'); // Left (before B, after 大)
+      dispatchInput('\x1B[D'); // Left (before 大, after A)
+      dispatchInput('X');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('AX大B');
+    });
+
+    it('should delete entire CJK character with backspace', async () => {
+      const values: string[] = [];
+      const value = signal('大');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Go to end and backspace
+      dispatchInput('\x1B[F'); // End
+      dispatchInput('\x7f'); // Backspace
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('');
+    });
+
+    it('should handle emoji with ZWJ sequences', async () => {
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          cols: 20,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Type family emoji (ZWJ sequence)
+      dispatchInput('👨‍👩‍👧');
+      dispatchInput('a');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('👨‍👩‍👧a');
+    });
+  });
+
+  describe('No Cols Specified (Flexible Width)', () => {
+    it('should work without cols specified', async () => {
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          // No cols - should use flex width
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      dispatchInput('Hello World');
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('Hello World');
+    });
+  });
 });
