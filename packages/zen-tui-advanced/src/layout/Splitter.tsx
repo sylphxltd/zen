@@ -25,26 +25,36 @@
  * ```
  */
 
-import { Box, type Signal, Text, computed, signal, useInput, useTerminalSize } from '@zen/tui';
+import {
+  type MaybeReactive,
+  Box,
+  type Signal,
+  Text,
+  computed,
+  resolve,
+  signal,
+  useInput,
+  useTerminalSize,
+} from '@zen/tui';
 
 export interface SplitterProps {
-  /** Split direction */
-  orientation?: 'horizontal' | 'vertical';
+  /** Split direction - supports MaybeReactive */
+  orientation?: MaybeReactive<'horizontal' | 'vertical'>;
 
-  /** Initial sizes (percentage or fixed) - must sum to 100 if percentages */
-  sizes?: number[];
+  /** Initial sizes (percentage or fixed) - must sum to 100 if percentages - supports MaybeReactive */
+  sizes?: MaybeReactive<number[]>;
 
-  /** Show divider between panes */
-  showDivider?: boolean;
+  /** Show divider between panes - supports MaybeReactive */
+  showDivider?: MaybeReactive<boolean>;
 
-  /** Divider character */
-  dividerChar?: string;
+  /** Divider character - supports MaybeReactive */
+  dividerChar?: MaybeReactive<string>;
 
-  /** Allow keyboard resizing with [ and ] */
-  resizable?: boolean;
+  /** Allow keyboard resizing with [ and ] - supports MaybeReactive */
+  resizable?: MaybeReactive<boolean>;
 
-  /** Focus index for resize */
-  focusedPane?: number;
+  /** Focus index for resize - supports MaybeReactive */
+  focusedPane?: MaybeReactive<number>;
 
   /** Children must be Pane components */
   children?: any;
@@ -65,10 +75,14 @@ export interface PaneProps {
  * Pane Component
  *
  * Individual pane within a Splitter. Must be direct child of Splitter.
+ * Note: Pane is a marker component - its children are extracted by Splitter.
  */
 export function Pane(props: PaneProps) {
+  // This function is actually never called directly in our pattern.
+  // Splitter extracts pane.props.children and wraps them in its own Box.
+  // We keep this for type safety and documentation purposes.
   const { children } = props;
-  return <Box flexDirection="column">{children}</Box>;
+  return <>{children}</>;
 }
 
 /**
@@ -77,15 +91,15 @@ export function Pane(props: PaneProps) {
  * Splits terminal into multiple resizable panes.
  */
 export function Splitter(props: SplitterProps) {
-  const {
-    orientation = 'horizontal',
-    sizes: initialSizes,
-    showDivider = true,
-    dividerChar,
-    resizable = true,
-    focusedPane: externalFocusedPane,
-    children,
-  } = props;
+  const { children } = props;
+
+  // Resolve reactive props
+  const getOrientation = () => resolve(props.orientation) ?? 'horizontal';
+  const getInitialSizes = () => resolve(props.sizes);
+  const getShowDivider = () => resolve(props.showDivider) ?? true;
+  const getDividerChar = () => resolve(props.dividerChar);
+  const getResizable = () => resolve(props.resizable) ?? true;
+  const getExternalFocusedPane = () => resolve(props.focusedPane);
 
   const terminalSize = useTerminalSize();
 
@@ -99,108 +113,87 @@ export function Splitter(props: SplitterProps) {
   const paneCount = panes.length;
 
   // Initialize sizes
+  const initialSizes = getInitialSizes();
   const internalSizes = signal<number[]>(
     initialSizes || Array(paneCount).fill(Math.floor(100 / paneCount)),
   );
 
+  const externalFocusedPane = getExternalFocusedPane();
   const internalFocusedPane = signal(externalFocusedPane ?? 0);
 
-  const focusedPane = computed(() =>
-    externalFocusedPane !== undefined ? externalFocusedPane : internalFocusedPane.value,
-  );
-
-  // Calculate actual pixel sizes based on terminal dimensions
-  const actualSizes = computed(() => {
-    const totalSize = orientation === 'horizontal' ? terminalSize.columns : terminalSize.rows;
-
-    // Account for dividers
-    const dividerCount = showDivider ? paneCount - 1 : 0;
-    const availableSize = totalSize - dividerCount;
-
-    const sizes = internalSizes.value;
-
-    // Convert percentages to actual sizes
-    const actualSizes: number[] = [];
-    let remaining = availableSize;
-
-    for (let i = 0; i < paneCount; i++) {
-      const pane = panes[i] as any;
-      const minSize = pane?.props?.minSize || 1;
-      const maxSize = pane?.props?.maxSize || availableSize;
-
-      // Calculate size
-      const isLast = i === paneCount - 1;
-      let size: number;
-
-      if (isLast) {
-        // Last pane gets remaining space
-        size = remaining;
-      } else {
-        // Calculate from percentage
-        size = Math.floor((sizes[i] / 100) * availableSize);
-      }
-
-      // Apply constraints
-      size = Math.max(minSize, Math.min(maxSize, size));
-
-      actualSizes.push(size);
-      remaining -= size;
-    }
-
-    return actualSizes;
+  const focusedPane = computed(() => {
+    const external = getExternalFocusedPane();
+    return external !== undefined ? external : internalFocusedPane.value;
   });
 
-  // Keyboard resize: [ decreases focused pane, ] increases
+  // Keyboard resize: use Ctrl+[ and Ctrl+] to avoid conflicts with regular input
+  // Only active when resizable is true (no permanent input interception)
   useInput(
-    (input) => {
-      if (!resizable) return;
+    (input, key) => {
+      if (!getResizable()) return false;
 
       const focused = focusedPane.value;
       const sizes = [...internalSizes.value];
 
-      if (input === '[' && focused > 0) {
-        // Decrease focused pane, increase previous
+      // Ctrl+[ to decrease focused pane
+      // Ctrl+[ sends \x1b (escape) in some terminals, use Alt+[ (\x1b[) instead
+      // Actually use Shift+[ ({) and Shift+] (}) for resize
+      if (input === '{' && focused > 0) {
         const delta = 5;
         if (sizes[focused] - delta >= 5) {
           sizes[focused] -= delta;
           sizes[focused - 1] += delta;
           internalSizes.value = sizes;
         }
-      } else if (input === ']' && focused < paneCount - 1) {
-        // Increase focused pane, decrease next
+        return true;
+      }
+      if (input === '}' && focused < paneCount - 1) {
         const delta = 5;
         if (sizes[focused + 1] - delta >= 5) {
           sizes[focused] += delta;
           sizes[focused + 1] -= delta;
           internalSizes.value = sizes;
         }
-      } else if (input === 'Tab') {
-        // Cycle focus
-        internalFocusedPane.value = (focused + 1) % paneCount;
+        return true;
       }
+
+      return false; // Don't consume other keys
     },
-    { isActive: true },
+    { isActive: () => getResizable() },
   );
 
+  // Use flex-based sizing for proper Yoga layout integration
+  // sizes array represents flex ratios (e.g., [25, 75] means 1:3 ratio)
   // Render horizontal split
-  if (orientation === 'horizontal') {
+  if (getOrientation() === 'horizontal') {
     return (
-      <Box flexDirection="row" width="100%">
+      <Box flexDirection="row" width="100%" height="100%">
         {() => {
           const elements: any[] = [];
+          const sizes = internalSizes.value;
+          const showDivider = getShowDivider();
+          const dividerChar = getDividerChar();
+          const resizable = getResizable();
+
           panes.forEach((pane: any, index: number) => {
-            const width = actualSizes.value[index];
+            const flexValue = sizes[index];
             const isFocused = index === focusedPane.value;
+            const paneChildren = pane.props?.children ?? pane.children ?? pane;
 
             elements.push(
               <Box
                 key={`pane-${index}`}
-                width={width}
-                flexDirection="column"
-                borderStyle={isFocused && resizable ? 'single' : undefined}
-                borderColor={isFocused ? 'cyan' : undefined}
+                style={{
+                  flex: flexValue,
+                  flexDirection: 'column',
+                  justifyContent: 'flex-start',
+                  alignItems: 'stretch',
+                  overflow: 'hidden',
+                  borderStyle: isFocused && resizable ? 'single' : undefined,
+                  borderColor: isFocused ? 'cyan' : undefined,
+                }}
               >
-                {pane.props.children}
+                {paneChildren}
               </Box>,
             );
 
@@ -220,20 +213,28 @@ export function Splitter(props: SplitterProps) {
 
   // Render vertical split
   return (
-    <Box flexDirection="column" height="100%">
+    <Box flexDirection="column" width="100%" height="100%">
       {() => {
         const elements: any[] = [];
+        const sizes = internalSizes.value;
+        const showDivider = getShowDivider();
+        const dividerChar = getDividerChar();
+        const resizable = getResizable();
+
         panes.forEach((pane: any, index: number) => {
-          const height = actualSizes.value[index];
+          const flexValue = sizes[index];
           const isFocused = index === focusedPane.value;
 
           elements.push(
             <Box
               key={`pane-${index}`}
-              height={height}
-              flexDirection="column"
-              borderStyle={isFocused && resizable ? 'single' : undefined}
-              borderColor={isFocused ? 'cyan' : undefined}
+              style={{
+                flex: flexValue,
+                flexDirection: 'column',
+                overflow: 'hidden',
+                borderStyle: isFocused && resizable ? 'single' : undefined,
+                borderColor: isFocused ? 'cyan' : undefined,
+              }}
             >
               {pane.props.children}
             </Box>,

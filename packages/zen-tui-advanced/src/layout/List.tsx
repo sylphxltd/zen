@@ -14,14 +14,26 @@
  * - FocusProvider integration (Ink-compatible)
  */
 
-import { Box, Text, computed, signal, useFocus, useInput } from '@zen/tui';
+import {
+  type MaybeReactive,
+  Box,
+  Text,
+  computed,
+  resolve,
+  signal,
+  useFocus,
+  useInput,
+} from '@zen/tui';
 
 export interface ListProps<T = unknown> {
-  /** Array of items to display */
-  items: T[];
+  /** Array of items to display - supports MaybeReactive */
+  items: MaybeReactive<T[]>;
 
   /** Initially selected index (default: 0) */
   initialIndex?: number;
+
+  /** Current selected index (for controlled mode) */
+  selectedIndex?: MaybeReactive<number>;
 
   /** Callback when selection changes (navigation or Enter) */
   onSelect?: (item: T, index: number) => void;
@@ -40,13 +52,19 @@ export interface ListProps<T = unknown> {
   indicator?: string;
 
   /**
-   * Focus ID for FocusProvider integration (required)
-   * List MUST be used within FocusProvider
+   * Focus ID for FocusProvider integration (optional)
+   * When provided, uses useFocus() for focus management
    */
-  focusId: string;
+  focusId?: string;
 
   /** Auto-focus when FocusProvider mounts */
   autoFocus?: boolean;
+
+  /**
+   * External focus control - supports MaybeReactive<boolean>
+   * When provided, overrides useFocus. Prefer focusId for FocusProvider pattern.
+   */
+  isFocused?: MaybeReactive<boolean>;
 }
 
 /**
@@ -68,8 +86,9 @@ export interface ListProps<T = unknown> {
  */
 export function List<T = unknown>(props: ListProps<T>) {
   const {
-    items,
+    items: itemsProp,
     initialIndex = 0,
+    selectedIndex: externalSelectedIndex,
     onSelect,
     renderItem,
     limit,
@@ -77,34 +96,72 @@ export function List<T = unknown>(props: ListProps<T>) {
     indicator = '>',
     focusId,
     autoFocus = false,
+    isFocused: externalIsFocused,
   } = props;
+
+  // Resolve items - supports MaybeReactive<T[]>
+  const items = computed(() => resolve(itemsProp));
 
   // Focus integration with FocusProvider (Ink-compatible)
   // useFocus returns { isFocused: Computed<boolean> }
-  const { isFocused } = useFocus({ id: focusId, autoFocus });
+  // Only call useFocus if focusId is provided (FocusProvider pattern)
+  const focusResult = focusId ? useFocus({ id: focusId, autoFocus }) : null;
 
-  // Internal state
-  const selectedIndex = signal(initialIndex);
+  // Determine effective focus state:
+  // 1. If externalIsFocused is provided, it acts as a GATE (must be true to be focused)
+  // 2. If focusId is also provided, BOTH external AND FocusProvider must agree
+  // 3. This allows parent to control "scope" while FocusProvider controls "which item"
+  const effectiveFocused = computed(() => {
+    // Check external gate first
+    if (externalIsFocused !== undefined) {
+      const externalActive = resolve(externalIsFocused);
+      if (!externalActive) return false; // Gate is closed
+    }
+
+    // If using FocusProvider, check its focus state
+    if (focusResult) {
+      return focusResult.isFocused.value;
+    }
+
+    // Fallback: use external if provided, otherwise true
+    if (externalIsFocused !== undefined) {
+      return resolve(externalIsFocused);
+    }
+    return true; // Default focused when no focus management
+  });
+
+  // Internal state for uncontrolled mode
+  const internalSelectedIndex = signal(initialIndex);
   const scrollOffset = signal(0);
 
+  // Use external selectedIndex if provided (controlled), otherwise internal (uncontrolled)
+  const selectedIndex = computed(() =>
+    externalSelectedIndex !== undefined ? resolve(externalSelectedIndex) : internalSelectedIndex.value,
+  );
+
   // Calculate visible window
-  const visibleLimit = limit ?? items.length;
+  const visibleLimit = computed(() => limit ?? items.value.length);
   const visibleItems = computed(() => {
     const start = scrollOffset.value;
-    const end = Math.min(start + visibleLimit, items.length);
-    return items.slice(start, end);
+    const end = Math.min(start + visibleLimit.value, items.value.length);
+    return items.value.slice(start, end);
   });
 
   // Handle keyboard input - ONLY when focused (Ink pattern)
   // When isFocused becomes false, handler is removed from registry
   useInput(
     (input, key) => {
+      const currentItems = items.value;
       const currentIndex = selectedIndex.value;
+      const currentVisibleLimit = visibleLimit.value;
 
       // Move up
       if (key.upArrow || input === 'k') {
         const newIndex = Math.max(0, currentIndex - 1);
-        selectedIndex.value = newIndex;
+        // Only update internal state if in uncontrolled mode
+        if (externalSelectedIndex === undefined) {
+          internalSelectedIndex.value = newIndex;
+        }
 
         // Scroll up if needed
         if (limit && newIndex < scrollOffset.value) {
@@ -113,24 +170,27 @@ export function List<T = unknown>(props: ListProps<T>) {
 
         // Call onSelect if provided
         if (onSelect && newIndex !== currentIndex) {
-          onSelect(items[newIndex], newIndex);
+          onSelect(currentItems[newIndex], newIndex);
         }
         return true; // consumed
       }
 
       // Move down
       if (key.downArrow || input === 'j') {
-        const newIndex = Math.min(items.length - 1, currentIndex + 1);
-        selectedIndex.value = newIndex;
+        const newIndex = Math.min(currentItems.length - 1, currentIndex + 1);
+        // Only update internal state if in uncontrolled mode
+        if (externalSelectedIndex === undefined) {
+          internalSelectedIndex.value = newIndex;
+        }
 
         // Scroll down if needed
-        if (limit && newIndex >= scrollOffset.value + visibleLimit) {
-          scrollOffset.value = newIndex - visibleLimit + 1;
+        if (limit && newIndex >= scrollOffset.value + currentVisibleLimit) {
+          scrollOffset.value = newIndex - currentVisibleLimit + 1;
         }
 
         // Call onSelect if provided
         if (onSelect && newIndex !== currentIndex) {
-          onSelect(items[newIndex], newIndex);
+          onSelect(currentItems[newIndex], newIndex);
         }
         return true; // consumed
       }
@@ -138,63 +198,71 @@ export function List<T = unknown>(props: ListProps<T>) {
       // Select current item (Enter)
       if (key.return && onSelect) {
         const index = selectedIndex.value;
-        if (index >= 0 && index < items.length) {
-          onSelect(items[index], index);
+        if (index >= 0 && index < currentItems.length) {
+          onSelect(currentItems[index], index);
         }
         return true; // consumed
       }
 
       // Page up
       if (key.pageUp && limit) {
-        const newIndex = Math.max(0, currentIndex - visibleLimit);
-        selectedIndex.value = newIndex;
-        scrollOffset.value = Math.max(0, scrollOffset.value - visibleLimit);
+        const newIndex = Math.max(0, currentIndex - currentVisibleLimit);
+        if (externalSelectedIndex === undefined) {
+          internalSelectedIndex.value = newIndex;
+        }
+        scrollOffset.value = Math.max(0, scrollOffset.value - currentVisibleLimit);
         if (onSelect) {
-          onSelect(items[newIndex], newIndex);
+          onSelect(currentItems[newIndex], newIndex);
         }
         return true; // consumed
       }
 
       // Page down
       if (key.pageDown && limit) {
-        const newIndex = Math.min(items.length - 1, currentIndex + visibleLimit);
-        selectedIndex.value = newIndex;
+        const newIndex = Math.min(currentItems.length - 1, currentIndex + currentVisibleLimit);
+        if (externalSelectedIndex === undefined) {
+          internalSelectedIndex.value = newIndex;
+        }
         scrollOffset.value = Math.min(
-          Math.max(0, items.length - visibleLimit),
-          scrollOffset.value + visibleLimit,
+          Math.max(0, currentItems.length - currentVisibleLimit),
+          scrollOffset.value + currentVisibleLimit,
         );
         if (onSelect) {
-          onSelect(items[newIndex], newIndex);
+          onSelect(currentItems[newIndex], newIndex);
         }
         return true; // consumed
       }
 
       // Home
       if (key.home) {
-        selectedIndex.value = 0;
+        if (externalSelectedIndex === undefined) {
+          internalSelectedIndex.value = 0;
+        }
         scrollOffset.value = 0;
         if (onSelect) {
-          onSelect(items[0], 0);
+          onSelect(currentItems[0], 0);
         }
         return true; // consumed
       }
 
       // End
       if (key.end) {
-        const lastIndex = items.length - 1;
-        selectedIndex.value = lastIndex;
-        scrollOffset.value = Math.max(0, items.length - visibleLimit);
+        const lastIndex = currentItems.length - 1;
+        if (externalSelectedIndex === undefined) {
+          internalSelectedIndex.value = lastIndex;
+        }
+        scrollOffset.value = Math.max(0, currentItems.length - currentVisibleLimit);
         if (onSelect) {
-          onSelect(items[lastIndex], lastIndex);
+          onSelect(currentItems[lastIndex], lastIndex);
         }
         return true; // consumed
       }
 
       return false; // not consumed
     },
-    // Ink pattern: pass isFocused directly to isActive
+    // Use effectiveFocused for handler activation
     // Handler is removed when unfocused, added when focused
-    { isActive: isFocused },
+    { isActive: effectiveFocused },
   );
 
   // Default item renderer
@@ -225,15 +293,17 @@ export function List<T = unknown>(props: ListProps<T>) {
       }
 
       {/* Scroll indicator */}
-      {limit && items.length > limit && (
-        <Box style={{ marginTop: 1 }}>
-          <Text style={{ dim: true }}>
-            {() =>
-              `${scrollOffset.value + 1}-${Math.min(scrollOffset.value + visibleLimit, items.length)} of ${items.length}`
-            }
-          </Text>
-        </Box>
-      )}
+      {() =>
+        limit && items.value.length > limit ? (
+          <Box style={{ marginTop: 1 }}>
+            <Text style={{ dim: true }}>
+              {() =>
+                `${scrollOffset.value + 1}-${Math.min(scrollOffset.value + visibleLimit.value, items.value.length)} of ${items.value.length}`
+              }
+            </Text>
+          </Box>
+        ) : null
+      }
     </Box>
   );
 }

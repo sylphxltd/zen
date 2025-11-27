@@ -24,7 +24,7 @@
  * ```
  */
 
-import { Box, Text, signal, useInput } from '@zen/tui';
+import { type MaybeReactive, Box, Text, resolve, signal, useInput } from '@zen/tui';
 
 export interface MenuItemConfig {
   /** Menu item label */
@@ -44,23 +44,23 @@ export interface MenuItemConfig {
 }
 
 export interface MenuBarProps {
-  /** Menu items */
-  items: MenuItemConfig[];
+  /** Menu items - supports MaybeReactive */
+  items: MaybeReactive<MenuItemConfig[]>;
 
-  /** Active/selected item index */
-  activeIndex?: number;
+  /** Active/selected item index - supports MaybeReactive */
+  activeIndex?: MaybeReactive<number>;
 
   /** Callback when active item changes */
   onActiveChange?: (index: number) => void;
 
-  /** Background color */
-  bgColor?: string;
+  /** Background color - supports MaybeReactive */
+  bgColor?: MaybeReactive<string>;
 
-  /** Text color */
-  textColor?: string;
+  /** Text color - supports MaybeReactive */
+  textColor?: MaybeReactive<string>;
 
-  /** Focus management */
-  isFocused?: boolean;
+  /** Focus management - supports MaybeReactive */
+  isFocused?: MaybeReactive<boolean>;
 }
 
 /**
@@ -69,25 +69,32 @@ export interface MenuBarProps {
  * Horizontal menu bar with keyboard navigation.
  */
 export function MenuBar(props: MenuBarProps) {
-  const {
-    items,
-    activeIndex: externalActiveIndex,
-    onActiveChange,
-    bgColor = 'blue',
-    textColor = 'white',
-    isFocused = true,
-  } = props;
+  const { onActiveChange } = props;
+
+  // Resolve reactive props
+  const getItems = () => resolve(props.items);
+  const getExternalActiveIndex = () => resolve(props.activeIndex);
+  const getBgColor = () => resolve(props.bgColor) ?? 'blue';
+  const getTextColor = () => resolve(props.textColor) ?? 'white';
+  const getIsFocused = () => resolve(props.isFocused) ?? true;
 
   // Internal state
+  const externalActiveIndex = getExternalActiveIndex();
   const internalActiveIndex = signal(externalActiveIndex ?? -1);
 
-  const activeIndex =
-    externalActiveIndex !== undefined ? externalActiveIndex : internalActiveIndex.value;
+  const getActiveIndex = () => {
+    const external = getExternalActiveIndex();
+    return external !== undefined ? external : internalActiveIndex.value;
+  };
 
   // Handle keyboard input
   useInput(
     (input, key) => {
-      if (!isFocused) return;
+      if (!getIsFocused()) return;
+
+      const items = getItems();
+      const activeIndex = getActiveIndex();
+      const externalActiveIndex = getExternalActiveIndex();
 
       // F-key shortcuts (F1-F12)
       const fKeyMatch = Object.keys(key).find((k) => k.startsWith('f') && key[k as keyof typeof key]);
@@ -147,50 +154,56 @@ export function MenuBar(props: MenuBarProps) {
         }
       }
     },
-    { isActive: isFocused },
+    { isActive: () => getIsFocused() },
   );
 
   // Render menu bar
   return (
-    <Box backgroundColor={bgColor} height={1} width="100%">
+    <Box backgroundColor={() => getBgColor()} height={1} width="100%">
       <Box flexDirection="row" gap={1} paddingX={1}>
-        {items.map((item, index) => {
-          const isActive = index === activeIndex;
-          const isDisabled = item.disabled;
+        {() => {
+          const items = getItems();
+          const activeIndex = getActiveIndex();
+          const textColor = getTextColor();
 
-          return (
-            <>
-              <Box key={index} gap={1} flexDirection="row">
-                {/* Keyboard shortcut hint */}
-                {item.key && (
+          return items.map((item, index) => {
+            const isActive = index === activeIndex;
+            const isDisabled = item.disabled;
+
+            return (
+              <>
+                <Box key={index} gap={1} flexDirection="row">
+                  {/* Keyboard shortcut hint */}
+                  {item.key && (
+                    <Text
+                      bold
+                      color={isDisabled ? 'gray' : isActive ? 'yellow' : textColor}
+                      backgroundColor={isActive ? 'cyan' : undefined}
+                    >
+                      {item.key}
+                    </Text>
+                  )}
+
+                  {/* Menu label */}
                   <Text
-                    bold
-                    color={isDisabled ? 'gray' : isActive ? 'yellow' : textColor}
+                    color={isDisabled ? 'gray' : isActive ? 'black' : textColor}
                     backgroundColor={isActive ? 'cyan' : undefined}
+                    bold={isActive}
                   >
-                    {item.key}
+                    {item.label}
+                  </Text>
+                </Box>
+
+                {/* Separator */}
+                {item.separator && index < items.length - 1 && (
+                  <Text key={`sep-${index}`} color="gray">
+                    │
                   </Text>
                 )}
-
-                {/* Menu label */}
-                <Text
-                  color={isDisabled ? 'gray' : isActive ? 'black' : textColor}
-                  backgroundColor={isActive ? 'cyan' : undefined}
-                  bold={isActive}
-                >
-                  {item.label}
-                </Text>
-              </Box>
-
-              {/* Separator */}
-              {item.separator && index < items.length - 1 && (
-                <Text key={`sep-${index}`} color="gray">
-                  │
-                </Text>
-              )}
-            </>
-          );
-        })}
+              </>
+            );
+          });
+        }}
       </Box>
     </Box>
   );

@@ -29,11 +29,21 @@
  * ```
  */
 
-import { Box, Text, batch, computed, signal, useInput } from '@zen/tui';
+import {
+  type MaybeReactive,
+  Box,
+  Text,
+  batch,
+  computed,
+  resolve,
+  signal,
+  useFocus,
+  useInput,
+} from '@zen/tui';
 
 export interface TextAreaProps {
-  /** Current text value */
-  value?: string;
+  /** Current text value - supports MaybeReactive for reactivity */
+  value?: MaybeReactive<string>;
 
   /** Callback when text changes */
   onChange?: (value: string) => void;
@@ -56,8 +66,22 @@ export interface TextAreaProps {
   /** Read-only mode */
   readOnly?: boolean;
 
-  /** Focus management */
-  isFocused?: boolean;
+  /**
+   * Focus ID for FocusProvider integration (Ink-compatible pattern)
+   * When provided, uses useFocus() for focus management
+   */
+  focusId?: string;
+
+  /**
+   * Auto-focus when mounted (only used with focusId)
+   */
+  autoFocus?: boolean;
+
+  /**
+   * External focus control - supports MaybeReactive<boolean>
+   * When provided, overrides useFocus. Prefer focusId for FocusProvider pattern.
+   */
+  isFocused?: MaybeReactive<boolean>;
 
   /** Border style */
   border?: boolean;
@@ -70,31 +94,86 @@ export interface TextAreaProps {
  */
 export function TextArea(props: TextAreaProps) {
   const {
-    value: externalValue = '',
+    value: valueProp = '',
     onChange,
     rows = 10,
-    cols = 60,
+    cols, // undefined = flex to fill parent
     placeholder = '',
     showLineNumbers = false,
     wrap = true,
     readOnly = false,
-    isFocused = true,
+    focusId,
+    autoFocus = false,
+    isFocused: isFocusedProp,
     border = true,
   } = props;
 
+  // ==========================================================================
+  // Focus Management (Ink-compatible pattern)
+  // ==========================================================================
+  // Priority:
+  // 1. If isFocused prop provided → use it (external control)
+  // 2. If focusId provided → use useFocus (FocusProvider pattern)
+  // 3. Otherwise → default to focused (standalone mode)
+
+  // useFocus returns { isFocused: Computed<boolean> }
+  // Only call useFocus if focusId is provided (FocusProvider pattern)
+  const focusResult = focusId ? useFocus({ id: focusId, autoFocus }) : null;
+
+  // Determine effective focus state:
+  // 1. If isFocused prop is provided, it acts as a GATE (must be true to be focused)
+  // 2. If focusId is also provided, BOTH external AND FocusProvider must agree
+  // 3. This allows parent to control "scope" while FocusProvider controls "which item"
+  const effectiveFocused = computed(() => {
+    // Check external gate first
+    if (isFocusedProp !== undefined) {
+      const externalActive = resolve(isFocusedProp);
+      if (!externalActive) return false; // Gate is closed
+    }
+
+    // If using FocusProvider, check its focus state
+    if (focusResult) {
+      return focusResult.isFocused.value;
+    }
+
+    // Fallback: use external if provided, otherwise true
+    if (isFocusedProp !== undefined) {
+      return resolve(isFocusedProp);
+    }
+    return true; // Default: focused when standalone
+  });
+
+  // Resolve value - supports MaybeReactive<string>
+  const externalValue = computed(() => resolve(valueProp));
+
   // Calculate available content width (inside border, minus line numbers)
+  // If cols not specified, use a large value for text wrapping (actual clipping handled by overflow:hidden)
   const lineNumberWidth = showLineNumbers ? 5 : 0; // "   1 " = 5 chars
   const borderWidth = border ? 2 : 0; // left + right border
-  const contentWidth = Math.max(1, cols - borderWidth - lineNumberWidth);
+  // When no cols specified, use 1000 as "no wrap limit" - actual display width determined by Yoga
+  const effectiveCols = cols ?? 1000;
+  const contentWidth = Math.max(1, effectiveCols - borderWidth - lineNumberWidth);
 
-  // Internal state
-  const internalValue = signal(externalValue);
+  // Internal state - sync with external value when it changes
+  const internalValue = signal(externalValue.value);
   const cursorRow = signal(0); // Logical row (actual line in text)
   const cursorCol = signal(0); // Logical column (position in actual line)
   const scrollOffset = signal(0); // Visual line scroll offset
 
-  // Always use internal value for display (supports immediate updates)
-  const currentValue = computed(() => internalValue.value);
+  // Current value: use external if reactive (controlled), otherwise internal
+  // Reactive values: functions or signals (have _kind property)
+  const isControlled =
+    typeof valueProp === 'function' ||
+    (valueProp !== null && typeof valueProp === 'object' && '_kind' in valueProp);
+
+  const currentValue = computed(() => {
+    // If value is reactive, treat as controlled - always use external
+    if (isControlled) {
+      return externalValue.value;
+    }
+    // Otherwise use internal value (supports immediate updates during typing)
+    return internalValue.value;
+  });
 
   // Split text into logical lines (actual newlines)
   const logicalLines = computed(() => {
@@ -216,6 +295,11 @@ export function TextArea(props: TextAreaProps) {
       internalValue.value = newValue;
       cursorCol.value = col + text.length;
     });
+
+    if (onChange) {
+      onChange(newValue);
+    }
+
     constrainCursor();
   };
 
@@ -307,10 +391,9 @@ export function TextArea(props: TextAreaProps) {
   };
 
   // Keyboard input handler
-  // Use high priority (10) when focused to consume events before parent handlers
   useInput(
     (input, key) => {
-      if (!isFocused || readOnly) return false;
+      if (!effectiveFocused.value || readOnly) return false;
 
       const currentLines = logicalLines.value;
 
@@ -389,18 +472,21 @@ export function TextArea(props: TextAreaProps) {
 
       return false; // not consumed, let other handlers process
     },
-    { isActive: isFocused, priority: 10 },
+    { isActive: effectiveFocused },
   );
 
   // Render
+  // If cols is specified, use fixed width; otherwise use flex to fill parent
+  const widthStyle = cols !== undefined ? { width: cols } : { flex: 1 };
+
   return (
     <Box
       style={{
         flexDirection: 'column',
-        width: cols,
+        ...widthStyle,
         height: rows + (border ? 2 : 0),
         borderStyle: border ? 'single' : undefined,
-        borderColor: isFocused ? 'cyan' : 'gray',
+        borderColor: () => (effectiveFocused.value ? 'cyan' : 'gray'),
         overflow: 'hidden',
       }}
     >
@@ -429,7 +515,7 @@ export function TextArea(props: TextAreaProps) {
             : '';
 
           // For cursor line, render with inline cursor highlight
-          if (isCursorLine && isFocused) {
+          if (isCursorLine && effectiveFocused.value) {
             const colInVisual = cursorCol.value - vl.startCol;
             const before = vl.text.slice(0, colInVisual);
             const cursorChar = vl.text[colInVisual] || ' ';
