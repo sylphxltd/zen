@@ -1,19 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 /** @jsxImportSource @zen/tui */
 /**
  * TextArea Component Tests - Architecture Level
  *
  * CRITICAL: Import from @zen/tui to use same module instance as TextArea component
  */
-import { signal, createRoot } from '@zen/runtime';
-import { describe, expect, it, beforeEach, afterEach } from 'bun:test';
+import { createRoot, signal } from '@zen/runtime';
 import { TextArea } from './TextArea.js';
 
-import {
-  dispatchInput,
-  clearInputHandlers,
-  setPlatformOps,
-  tuiPlatformOps,
-} from '@zen/tui';
+import { clearInputHandlers, dispatchInput, setPlatformOps, tuiPlatformOps } from '@zen/tui';
 
 setPlatformOps(tuiPlatformOps);
 
@@ -57,11 +52,11 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Type a character
       dispatchInput('a');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Value should be 'a', NOT 'aType here...' or 'Type here...a'
       expect(values.length).toBeGreaterThan(0);
@@ -84,12 +79,12 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Type multiple characters
       dispatchInput('H');
       dispatchInput('i');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Should be 'Hi', NOT 'HiType here...'
       expect(values[values.length - 1]).toBe('Hi');
@@ -112,10 +107,10 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('X');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values[values.length - 1]).toBe('X');
       expect(values[values.length - 1].length).toBe(1);
@@ -134,12 +129,12 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('a');
       dispatchInput('b');
       dispatchInput('c');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values).toContain('a');
       expect(values).toContain('ab');
@@ -161,14 +156,14 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Move to end and press Enter
       dispatchInput('\x1B[F'); // End
       dispatchInput('\r'); // Enter
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const hasNewline = values.some(v => v.includes('\n'));
+      const hasNewline = values.some((v) => v.includes('\n'));
       expect(hasNewline).toBe(true);
     });
 
@@ -187,13 +182,13 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Move to end
       dispatchInput('\x1B[F'); // End
       // Backspace
       dispatchInput('\x7f');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values).toContain('ab');
     });
@@ -229,13 +224,13 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Type 15 characters (more than cols=10)
       for (const char of 'ABCDEFGHIJKLMNO') {
         dispatchInput(char);
       }
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Value should contain all 15 characters
       expect(values[values.length - 1]).toBe('ABCDEFGHIJKLMNO');
@@ -259,13 +254,13 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Type exactly 10 characters (2 lines of 5)
       for (const char of '1234567890') {
         dispatchInput(char);
       }
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values[values.length - 1]).toBe('1234567890');
     });
@@ -283,10 +278,10 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('x');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values).toEqual([]);
     });
@@ -302,10 +297,10 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('y');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values.length).toBeGreaterThan(0);
     });
@@ -322,20 +317,20 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Not focused
       dispatchInput('a');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(values).toEqual([]);
 
       // Focus
       focused.value = true;
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Now should receive
       dispatchInput('b');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(values.length).toBeGreaterThan(0);
     });
   });
@@ -352,11 +347,11 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[F'); // End
       dispatchInput('X');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values.length).toBeGreaterThan(0);
       expect(values[values.length - 1]).toContain('X');
@@ -377,11 +372,11 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[F'); // End
       dispatchInput('!');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values[values.length - 1]).toBe('Start!');
     });
@@ -400,10 +395,10 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('x');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(values).toEqual([]);
     });
@@ -425,14 +420,11 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Type at cursor position 0 (start of line)
       dispatchInput('X');
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      // Should prepend X to existing text
-      console.log('After typing X:', values);
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(values[values.length - 1]).toBe('XType here...');
     });
 
@@ -451,15 +443,13 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Type A B C at cursor 0
       dispatchInput('A');
       dispatchInput('B');
       dispatchInput('C');
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      console.log('After typing ABC:', values);
+      await new Promise((resolve) => setTimeout(resolve, 10));
       // Each character should be inserted at advancing cursor position
       expect(values).toContain('AHello');
       expect(values).toContain('ABHello');
@@ -483,16 +473,15 @@ describe('TextArea Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Type 20 characters
       for (const char of '12345678901234567890') {
         dispatchInput(char);
       }
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const finalValue = values[values.length - 1];
-      console.log('Final value:', finalValue);
       // Value should have all 20 chars (wrapping is visual only, not in value)
       expect(finalValue).toBe('12345678901234567890');
       expect(finalValue.length).toBe(20);
@@ -510,8 +499,6 @@ describe('TextArea Component', () => {
 
       // Check the result has correct style
       expect(result).toBeDefined();
-      // cols=40 should set width to 40
-      console.log('TextArea result style:', result.style);
     });
   });
 });

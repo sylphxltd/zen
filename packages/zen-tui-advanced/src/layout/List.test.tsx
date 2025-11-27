@@ -1,23 +1,23 @@
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 /** @jsxImportSource @zen/tui */
 /**
  * List Component Tests - Architecture Level
  *
  * CRITICAL: Import from @zen/tui to use same module instance as List component
  */
-import { signal, computed, createRoot } from '@zen/runtime';
-import { describe, expect, it, beforeEach, afterEach } from 'bun:test';
+import { computed, createRoot, signal } from '@zen/runtime';
 import { List } from './List.js';
 
 // CRITICAL: Import from @zen/tui to share the same inputHandlers instance
 import {
-  useInput,
-  dispatchInput,
+  Box,
+  FocusProvider,
   clearInputHandlers,
+  dispatchInput,
   setPlatformOps,
   tuiPlatformOps,
   useFocus,
-  FocusProvider,
-  Box,
+  useInput,
 } from '@zen/tui';
 
 setPlatformOps(tuiPlatformOps);
@@ -62,10 +62,10 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[B'); // Down arrow
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(selections.length).toBeGreaterThan(0);
       expect(selections[selections.length - 1].index).toBe(1);
@@ -84,10 +84,10 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[A'); // Up arrow
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(selections.length).toBeGreaterThan(0);
       expect(selections[selections.length - 1].index).toBe(1);
@@ -105,14 +105,14 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('j'); // Down
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(selections[selections.length - 1].index).toBe(1);
 
       dispatchInput('k'); // Up
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(selections[selections.length - 1].index).toBe(0);
     });
 
@@ -128,10 +128,10 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\r'); // Enter
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(selections.length).toBeGreaterThan(0);
       expect(selections[selections.length - 1].index).toBe(1);
@@ -150,10 +150,10 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[A'); // Up when at 0
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Should not have triggered selection change (index stays 0)
       // Or if it did trigger, index should still be 0
@@ -171,10 +171,10 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[B'); // Down when at last
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Should not have triggered selection change (index stays 2)
     });
@@ -192,10 +192,10 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(selections).toEqual([]);
     });
@@ -211,10 +211,10 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(selections.length).toBeGreaterThan(0);
     });
@@ -231,20 +231,20 @@ describe('List Component', () => {
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Not focused
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(selections).toEqual([]);
 
       // Focus
       isFocused.value = true;
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Now should receive
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(selections.length).toBeGreaterThan(0);
     });
   });
@@ -263,14 +263,14 @@ describe('List Component', () => {
               onSelect: (_, idx) => selections.push(idx),
               isFocused: true, // Gate open
             });
-          }
+          },
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(selections.length).toBeGreaterThan(0);
     });
@@ -289,26 +289,26 @@ describe('List Component', () => {
               onSelect: (_, idx) => selections.push(idx),
               isFocused: () => gate.value,
             });
-          }
+          },
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Gate open - should work
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(selections.length).toBeGreaterThan(0);
 
       const countBefore = selections.length;
 
       // Close gate
       gate.value = false;
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Gate closed - should NOT receive
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(selections.length).toBe(countBefore);
     });
   });
@@ -329,7 +329,7 @@ describe('List Component', () => {
                 otherReceived.push(input);
                 return false;
               },
-              { isActive: otherEffective }
+              { isActive: otherEffective },
             );
 
             // List (no autoFocus, will get focus after Tab)
@@ -341,24 +341,24 @@ describe('List Component', () => {
             });
 
             return Box({ children: [listResult] });
-          }
+          },
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Other has autoFocus - type
       dispatchInput('x');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(otherReceived).toContain('x');
 
       // Tab to List
       dispatchInput('\t');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Now List should receive
       dispatchInput('\x1B[B');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(listSelections.length).toBeGreaterThan(0);
     });
   });

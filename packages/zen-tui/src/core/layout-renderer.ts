@@ -244,8 +244,8 @@ function renderNodeToBuffer(
   const hasOverflowHidden = style.overflow === 'hidden';
   let childClipMinY = clipMinY;
   let childClipMaxY = clipMaxY;
-  let childClipMinX = undefined as number | undefined;
-  let childClipMaxX = undefined as number | undefined;
+  let _childClipMinX = undefined as number | undefined;
+  let _childClipMaxX = undefined as number | undefined;
   if (isScrollBox || hasBorder || hasOverflowHidden) {
     // Clip children to content area
     childClipMinY = clipMinY !== undefined ? Math.max(clipMinY, contentY) : contentY;
@@ -255,8 +255,8 @@ function renderNodeToBuffer(
         : contentY + contentHeight;
     // Also clip X for overflow: hidden
     if (hasOverflowHidden) {
-      childClipMinX = contentX;
-      childClipMaxX = contentX + contentWidth;
+      _childClipMinX = contentX;
+      _childClipMaxX = contentX + contentWidth;
     }
   }
 
@@ -279,10 +279,7 @@ function renderNodeToBuffer(
 
     // Collect styled text from all children including nested Text nodes
     // Each segment has its own style that may override parent style
-    const collectStyledText = (
-      children: (string | TUINode)[],
-      parentStyle: TUIStyle,
-    ): string => {
+    const collectStyledText = (children: (string | TUINode)[], parentStyle: TUIStyle): string => {
       return children
         .map((child) => {
           if (typeof child === 'string') {

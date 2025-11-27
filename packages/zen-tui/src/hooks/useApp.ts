@@ -37,8 +37,6 @@ export function useApp(): AppContext {
   return {
     exit: (error?: Error) => {
       if (error) {
-        // Log error message to stderr (Ink-compatible behavior)
-        console.error(error.message || 'Unknown error');
         process.exit(1);
       } else {
         // Normal exit with code 0

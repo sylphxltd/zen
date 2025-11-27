@@ -54,14 +54,7 @@
  * @module
  */
 
-import {
-  type MaybeReactive,
-  type Owner,
-  effect,
-  getOwner,
-  onCleanup,
-  resolve,
-} from '@zen/runtime';
+import { type MaybeReactive, type Owner, effect, getOwner, onCleanup, resolve } from '@zen/runtime';
 
 /**
  * Input handler function.
@@ -70,7 +63,7 @@ import {
  * Extension: Return `true` to stop propagation (event consumed).
  * Return `false` or `undefined` to allow other handlers to process.
  */
-export type InputHandler = (input: string, key: Key) => boolean | void;
+export type InputHandler = (input: string, key: Key) => boolean | undefined;
 
 /**
  * Key metadata - Ink-compatible with additional keys

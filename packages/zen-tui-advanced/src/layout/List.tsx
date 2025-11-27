@@ -15,8 +15,8 @@
  */
 
 import {
-  type MaybeReactive,
   Box,
+  type MaybeReactive,
   Text,
   computed,
   resolve,
@@ -136,7 +136,9 @@ export function List<T = unknown>(props: ListProps<T>) {
 
   // Use external selectedIndex if provided (controlled), otherwise internal (uncontrolled)
   const selectedIndex = computed(() =>
-    externalSelectedIndex !== undefined ? resolve(externalSelectedIndex) : internalSelectedIndex.value,
+    externalSelectedIndex !== undefined
+      ? resolve(externalSelectedIndex)
+      : internalSelectedIndex.value,
   );
 
   // Calculate visible window

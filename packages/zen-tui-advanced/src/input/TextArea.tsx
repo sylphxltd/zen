@@ -30,8 +30,8 @@
  */
 
 import {
-  type MaybeReactive,
   Box,
+  type MaybeReactive,
   Text,
   batch,
   computed,

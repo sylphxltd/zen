@@ -24,7 +24,7 @@
  * ```
  */
 
-import { type MaybeReactive, Box, Text, resolve, signal, useInput } from '@zen/tui';
+import { Box, type MaybeReactive, Text, resolve, signal, useInput } from '@zen/tui';
 
 export interface MenuItemConfig {
   /** Menu item label */
@@ -97,9 +97,11 @@ export function MenuBar(props: MenuBarProps) {
       const externalActiveIndex = getExternalActiveIndex();
 
       // F-key shortcuts (F1-F12)
-      const fKeyMatch = Object.keys(key).find((k) => k.startsWith('f') && key[k as keyof typeof key]);
+      const fKeyMatch = Object.keys(key).find(
+        (k) => k.startsWith('f') && key[k as keyof typeof key],
+      );
       if (fKeyMatch) {
-        const fNumber = Number.parseInt(fKeyMatch.slice(1), 10);
+        const _fNumber = Number.parseInt(fKeyMatch.slice(1), 10);
         const item = items.find((item) => item.key === fKeyMatch.toUpperCase());
         if (item && !item.disabled && item.onSelect) {
           item.onSelect();

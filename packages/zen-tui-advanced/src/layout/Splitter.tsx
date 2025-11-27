@@ -26,8 +26,8 @@
  */
 
 import {
-  type MaybeReactive,
   Box,
+  type MaybeReactive,
   type Signal,
   Text,
   computed,
@@ -129,7 +129,7 @@ export function Splitter(props: SplitterProps) {
   // Keyboard resize: use Ctrl+[ and Ctrl+] to avoid conflicts with regular input
   // Only active when resizable is true (no permanent input interception)
   useInput(
-    (input, key) => {
+    (input, _key) => {
       if (!getResizable()) return false;
 
       const focused = focusedPane.value;
@@ -243,9 +243,7 @@ export function Splitter(props: SplitterProps) {
           if (showDivider && index < paneCount - 1) {
             elements.push(
               <Box key={`divider-${index}`} height={1}>
-                {() => (
-                  <Text color="gray">{dividerChar || '─'.repeat(terminalSize.columns)}</Text>
-                )}
+                {() => <Text color="gray">{dividerChar || '─'.repeat(terminalSize.columns)}</Text>}
               </Box>,
             );
           }
