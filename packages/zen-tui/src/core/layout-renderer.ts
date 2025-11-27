@@ -178,8 +178,6 @@ function renderNodeToBuffer(
   offsetY = 0,
   clipMinY?: number, // Optional viewport clipping (min Y)
   clipMaxY?: number, // Optional viewport clipping (max Y)
-  clipMinX?: number, // Optional viewport clipping (min X)
-  clipMaxX?: number, // Optional viewport clipping (max X)
   skipAbsolute = false, // Skip absolute positioned nodes (rendered separately for zIndex)
 ): void {
   // Get style (resolve functions)
@@ -246,26 +244,23 @@ function renderNodeToBuffer(
   const hasOverflowHidden = style.overflow === 'hidden';
   let childClipMinY = clipMinY;
   let childClipMaxY = clipMaxY;
-  let childClipMinX = clipMinX;
-  let childClipMaxX = clipMaxX;
+  let _childClipMinX = undefined as number | undefined;
+  let _childClipMaxX = undefined as number | undefined;
   if (isScrollBox || hasBorder || hasOverflowHidden) {
-    // Clip children to content area (Y axis)
+    // Clip children to content area
     childClipMinY = clipMinY !== undefined ? Math.max(clipMinY, contentY) : contentY;
     childClipMaxY =
       clipMaxY !== undefined
         ? Math.min(clipMaxY, contentY + contentHeight)
         : contentY + contentHeight;
-    // Clip children to content area (X axis) for overflow: hidden or bordered boxes
-    if (hasOverflowHidden || hasBorder) {
-      childClipMinX = clipMinX !== undefined ? Math.max(clipMinX, contentX) : contentX;
-      childClipMaxX =
-        clipMaxX !== undefined
-          ? Math.min(clipMaxX, contentX + contentWidth)
-          : contentX + contentWidth;
+    // Also clip X for overflow: hidden
+    if (hasOverflowHidden) {
+      _childClipMinX = contentX;
+      _childClipMaxX = contentX + contentWidth;
     }
   }
 
-  // Check if this node is completely outside the clipping region (Y axis)
+  // Check if this node is completely outside the clipping region
   if (clipMinY !== undefined && clipMaxY !== undefined) {
     const nodeBottom = y + height;
     if (nodeBottom <= clipMinY || y >= clipMaxY) {
@@ -273,27 +268,12 @@ function renderNodeToBuffer(
     }
   }
 
-  // Check if this node is completely outside the clipping region (X axis)
-  if (clipMinX !== undefined && clipMaxX !== undefined) {
-    const nodeRight = x + width;
-    if (nodeRight <= clipMinX || x >= clipMaxX) {
-      return; // Skip rendering entirely
-    }
-  }
-
   // Render text node
   if (node.type === 'text') {
-    // Skip if text would be rendered outside clip bounds (Y axis)
+    // Skip if text would be rendered outside clip bounds
     if (clipMinY !== undefined && clipMaxY !== undefined) {
       if (contentY < clipMinY || contentY >= clipMaxY) {
         return; // Text line is outside visible area
-      }
-    }
-
-    // Skip if text would be rendered completely outside clip bounds (X axis)
-    if (clipMinX !== undefined && clipMaxX !== undefined) {
-      if (contentX >= clipMaxX || contentX + contentWidth <= clipMinX) {
-        return; // Text is completely outside visible area
       }
     }
 
@@ -327,21 +307,7 @@ function renderNodeToBuffer(
     };
 
     const styledText = collectStyledText(node.children, node.style);
-
-    // Apply horizontal clipping to text rendering
-    let effectiveX = contentX;
-    let effectiveWidth = contentWidth;
-    if (clipMinX !== undefined && clipMaxX !== undefined) {
-      // Adjust X position and width based on clip bounds
-      const renderMinX = Math.max(contentX, clipMinX);
-      const renderMaxX = Math.min(contentX + contentWidth, clipMaxX);
-      effectiveX = renderMinX;
-      effectiveWidth = Math.max(0, renderMaxX - renderMinX);
-    }
-
-    if (effectiveWidth > 0) {
-      buffer.writeAt(effectiveX, contentY, styledText, effectiveWidth);
-    }
+    buffer.writeAt(contentX, contentY, styledText, contentWidth);
     return;
   }
 
@@ -360,8 +326,6 @@ function renderNodeToBuffer(
           offsetY,
           clipMinY,
           clipMaxY,
-          clipMinX,
-          clipMaxX,
           skipAbsolute,
         );
       }
@@ -407,8 +371,6 @@ function renderNodeToBuffer(
                   childOffsetY,
                   childClipMinY,
                   childClipMaxY,
-                  childClipMinX,
-                  childClipMaxX,
                   skipAbsolute,
                 );
               }
@@ -423,8 +385,6 @@ function renderNodeToBuffer(
               childOffsetY,
               childClipMinY,
               childClipMaxY,
-              childClipMinX,
-              childClipMaxX,
               skipAbsolute,
             );
           }
@@ -482,11 +442,11 @@ export function renderToBuffer(node: TUINode, buffer: TerminalBuffer, layoutMap:
   findAbsoluteNodes(node);
 
   // Render normal flow first
-  renderNodeToBuffer(node, buffer, layoutMap, 0, 0, undefined, undefined, undefined, undefined, true);
+  renderNodeToBuffer(node, buffer, layoutMap, 0, 0, undefined, undefined, true);
 
   // Sort absolute nodes by zIndex and render them
   absoluteNodes.sort((a, b) => a.zIndex - b.zIndex);
   for (const { node: absNode } of absoluteNodes) {
-    renderNodeToBuffer(absNode, buffer, layoutMap, 0, 0, undefined, undefined, undefined, undefined, false);
+    renderNodeToBuffer(absNode, buffer, layoutMap, 0, 0, undefined, undefined, false);
   }
 }
