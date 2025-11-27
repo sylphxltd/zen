@@ -377,9 +377,10 @@ function renderNodeToBuffer(
         const styledText = applyTextStyle(child, style);
         buffer.writeAt(contentX, contentY, styledText, contentWidth);
       } else if (typeof child === 'object' && child !== null) {
-        // Calculate child offset (ScrollBox needs special handling)
-        const contentOffsetX = isScrollBox ? paddingX : 0;
-        const contentOffsetY = isScrollBox ? paddingY : 0;
+        // Calculate child offset - children are positioned relative to content area
+        // Must add border and padding offset for all boxes (not just ScrollBox)
+        const contentOffsetX = borderOffset + paddingX;
+        const contentOffsetY = borderOffset + paddingY;
         const childOffsetX = offsetX + contentOffsetX;
         const childOffsetY = isScrollBox
           ? offsetY - scrollOffset + contentOffsetY
