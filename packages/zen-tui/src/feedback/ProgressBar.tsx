@@ -4,19 +4,26 @@
  * Visual progress indicator with percentage display.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { Box } from '../primitives/Box.js';
 import { Text } from '../primitives/Text.js';
 
 export interface ProgressBarProps {
-  value: Signal<number> | number; // 0-100
-  width?: number;
-  showPercentage?: boolean;
-  color?: string;
-  completedColor?: string;
-  label?: string | (() => string); // Support reactive labels
-  char?: string; // Character to use for filled portion
+  /** Progress value 0-100 - supports Signal or MaybeReactive */
+  value: Signal<number> | MaybeReactive<number>;
+  /** Progress bar width - supports MaybeReactive */
+  width?: MaybeReactive<number>;
+  /** Show percentage text - supports MaybeReactive */
+  showPercentage?: MaybeReactive<boolean>;
+  /** Progress bar color - supports MaybeReactive */
+  color?: MaybeReactive<string>;
+  /** Color when completed - supports MaybeReactive */
+  completedColor?: MaybeReactive<string>;
+  /** Label text - supports MaybeReactive */
+  label?: MaybeReactive<string>;
+  /** Fill character - supports MaybeReactive */
+  char?: MaybeReactive<string>;
 }
 
 export function ProgressBar(props: ProgressBarProps): TUINode {
@@ -26,58 +33,58 @@ export function ProgressBar(props: ProgressBarProps): TUINode {
       ? props.value
       : signal(typeof props.value === 'number' ? props.value : 0);
 
-  const width = props.width || 40;
-  const showPercentage = props.showPercentage !== false; // default true
-  const color = props.color || 'cyan';
-  const completedColor = props.completedColor || 'green';
-  const char = props.char || '█';
-
-  const value = Math.min(100, Math.max(0, valueSignal.value)); // Clamp 0-100
-  const isComplete = value >= 100;
-
-  // Calculate bar segments
-  const barWidth = showPercentage ? width - 7 : width - 2; // Account for borders and percentage
-  const filledWidth = Math.round((value / 100) * barWidth);
-  const emptyWidth = barWidth - filledWidth;
-
-  const filledBar = char.repeat(filledWidth);
-  const emptyBar = '░'.repeat(emptyWidth);
-
-  const percentageText = showPercentage ? ` ${value.toFixed(0)}%` : '';
-
-  const barContent = `${filledBar}${emptyBar}${percentageText}`;
-
-  // Resolve label (support reactive functions)
-  const labelText = typeof props.label === 'function' ? props.label() : props.label;
-
   return Box({
     style: {
       flexDirection: 'column',
-      width: width,
+      width: () => resolve(props.width) || 40,
     },
-    children: [
-      // Label (if provided)
-      labelText
-        ? Text({
-            children: labelText,
-            color: isComplete ? completedColor : color,
-            bold: true,
-          })
-        : null,
+    children: () => {
+      const width = resolve(props.width) || 40;
+      const showPercentage = resolve(props.showPercentage) !== false; // default true
+      const color = resolve(props.color) || 'cyan';
+      const completedColor = resolve(props.completedColor) || 'green';
+      const char = resolve(props.char) || '█';
+      const labelText = resolve(props.label);
 
-      // Progress bar
-      Box({
-        style: {
-          borderStyle: 'single',
-          borderColor: isComplete ? completedColor : color,
-          width: width,
-        },
-        children: Text({
-          children: barContent,
-          color: isComplete ? completedColor : color,
+      const value = Math.min(100, Math.max(0, valueSignal.value)); // Clamp 0-100
+      const isComplete = value >= 100;
+
+      // Calculate bar segments
+      const barWidth = showPercentage ? width - 7 : width - 2; // Account for borders and percentage
+      const filledWidth = Math.round((value / 100) * barWidth);
+      const emptyWidth = barWidth - filledWidth;
+
+      const filledBar = char.repeat(filledWidth);
+      const emptyBar = '░'.repeat(emptyWidth);
+
+      const percentageText = showPercentage ? ` ${value.toFixed(0)}%` : '';
+
+      const barContent = `${filledBar}${emptyBar}${percentageText}`;
+
+      return [
+        // Label (if provided)
+        labelText
+          ? Text({
+              children: labelText,
+              color: isComplete ? completedColor : color,
+              bold: true,
+            })
+          : null,
+
+        // Progress bar
+        Box({
+          style: {
+            borderStyle: 'single',
+            borderColor: isComplete ? completedColor : color,
+            width: width,
+          },
+          children: Text({
+            children: barContent,
+            color: isComplete ? completedColor : color,
+          }),
         }),
-      }),
-    ].filter(Boolean),
+      ].filter(Boolean);
+    },
   });
 }
 

@@ -11,7 +11,7 @@
  * - Limit visible items (scrolling)
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -24,18 +24,30 @@ export interface MultiSelectOption<T = string> {
 }
 
 export interface MultiSelectProps<T = string> {
-  items: MultiSelectOption<T>[];
-  selected?: Signal<T[]> | T[]; // Currently selected values
+  /** Items to select from - supports MaybeReactive */
+  items: MaybeReactive<MultiSelectOption<T>[]>;
+  /** Currently selected values - supports Signal or MaybeReactive */
+  selected?: Signal<T[]> | MaybeReactive<T[]>;
+  /** Called when selection is submitted */
   onSubmit?: (selected: T[]) => void;
-  limit?: number; // Max visible items (scrolling)
+  /** Max visible items (scrolling) - supports MaybeReactive */
+  limit?: MaybeReactive<number>;
+  /** Focus ID for FocusProvider */
   id?: string;
+  /** Custom styles */
   style?: any;
-  highlightedIndex?: Signal<number>; // Optional external highlight control
+  /** External highlight control */
+  highlightedIndex?: Signal<number>;
 }
 
 export function MultiSelect<T = string>(props: MultiSelectProps<T>): TUINode {
   // Generate unique ID if not provided
   const id = props.id || `multiselect-${Math.random().toString(36).slice(2, 9)}`;
+
+  // Helper to resolve items (supports MaybeReactive)
+  const getItems = () => resolve(props.items);
+  // Helper to resolve limit (supports MaybeReactive)
+  const getLimit = () => resolve(props.limit);
 
   // Selected items management
   const selectedSignal =
@@ -63,18 +75,18 @@ export function MultiSelect<T = string>(props: MultiSelectProps<T>): TUINode {
   useInput((input, _key) => {
     if (!isFocused.value) return;
 
+    const items = getItems();
+    const limit = getLimit();
     handleMultiSelectInput(
       highlightedIndex,
       selectedSignal,
       scrollOffset,
-      props.items,
+      items,
       input,
-      props.limit,
+      limit,
       props.onSubmit,
     );
   });
-
-  const limit = props.limit || props.items.length;
 
   // Use reactive function for rendering
   return Box({
@@ -90,9 +102,11 @@ export function MultiSelect<T = string>(props: MultiSelectProps<T>): TUINode {
       const highlighted = highlightedIndex.value;
       const selected = selectedSignal.value;
       const offset = scrollOffset.value;
+      const items = getItems();
+      const limit = getLimit() || items.length;
 
       // Calculate visible range
-      const visibleItems = props.items.slice(offset, offset + limit);
+      const visibleItems = items.slice(offset, offset + limit);
 
       return visibleItems.map((item, visibleIndex) => {
         const actualIndex = offset + visibleIndex;

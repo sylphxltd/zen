@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { signal } from '../index';
 import { Spinner, createAnimatedSpinner, updateSpinner } from './Spinner';
 
+// Helper to resolve reactive style values
+const resolveStyle = (value: any) => (typeof value === 'function' ? value() : value);
+
 describe('Spinner', () => {
   it('should create spinner node', () => {
     const node = Spinner({});
@@ -47,13 +50,13 @@ describe('Spinner', () => {
   it('should use custom color', () => {
     const node = Spinner({ color: 'green' });
 
-    expect(node.style?.color).toBe('green');
+    expect(resolveStyle(node.style?.color)).toBe('green');
   });
 
   it('should use cyan color by default', () => {
     const node = Spinner({});
 
-    expect(node.style?.color).toBe('cyan');
+    expect(resolveStyle(node.style?.color)).toBe('cyan');
   });
 });
 

@@ -6,7 +6,7 @@
  * Supports keyboard navigation (ESC to close).
  */
 
-import { Show } from '@zen/runtime';
+import { type MaybeReactive, Show, resolve } from '@zen/runtime';
 import { signal } from '@zen/signal';
 import { useInput } from '../hooks/useInput.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
@@ -23,20 +23,20 @@ export interface ModalButton {
 }
 
 export interface ModalProps {
-  /** Whether the modal is visible */
-  open: boolean;
-  /** Modal title */
-  title?: string;
+  /** Whether the modal is visible - supports MaybeReactive */
+  open: MaybeReactive<boolean>;
+  /** Modal title - supports MaybeReactive */
+  title?: MaybeReactive<string>;
   /** Modal content - can be string or JSX */
   children?: any;
   /** Close handler (called when ESC is pressed or overlay is clicked) */
   onClose?: () => void;
-  /** Modal width (default: 50) */
-  width?: number;
-  /** Border style (default: 'round') */
-  borderStyle?: 'single' | 'double' | 'round' | 'bold';
-  /** Border color */
-  borderColor?: string;
+  /** Modal width (default: 50) - supports MaybeReactive */
+  width?: MaybeReactive<number>;
+  /** Border style (default: 'round') - supports MaybeReactive */
+  borderStyle?: MaybeReactive<'single' | 'double' | 'round' | 'bold'>;
+  /** Border color - supports MaybeReactive */
+  borderColor?: MaybeReactive<string>;
 }
 
 /**
@@ -56,22 +56,21 @@ export interface ModalProps {
  * ```
  */
 export function Modal(props: ModalProps) {
-  const {
-    open,
-    title,
-    children,
-    onClose,
-    width = 50,
-    borderStyle = 'round',
-    borderColor = 'cyan',
-  } = props;
+  const { children, onClose } = props;
 
   // Get terminal size for centering
   const { width: termWidth, height: termHeight } = useTerminalSize();
 
+  // Resolve reactive props
+  const getOpen = () => resolve(props.open);
+  const getTitle = () => resolve(props.title);
+  const getWidth = () => resolve(props.width) ?? 50;
+  const getBorderStyle = () => resolve(props.borderStyle) ?? 'round';
+  const getBorderColor = () => resolve(props.borderColor) ?? 'cyan';
+
   // Handle keyboard input
   useInput((_input, key) => {
-    if (!open) return;
+    if (!getOpen()) return;
 
     // ESC to close
     if (key.escape && onClose) {
@@ -81,9 +80,14 @@ export function Modal(props: ModalProps) {
   });
 
   // Don't render if not open
-  if (!open) {
+  if (!getOpen()) {
     return <Box style={{ width: 0, height: 0 }} />;
   }
+
+  const title = getTitle();
+  const width = getWidth();
+  const borderStyle = getBorderStyle();
+  const borderColor = getBorderColor();
 
   return (
     <Box

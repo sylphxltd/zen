@@ -5,13 +5,19 @@
  * Matches @inkjs/ui StatusMessage behavior.
  */
 
+import { type MaybeReactive, resolve } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { Box } from '../primitives/Box.js';
 import { Text } from '../primitives/Text.js';
 
+type StatusType = 'success' | 'error' | 'warning' | 'info';
+
 export interface StatusMessageProps {
-  type: 'success' | 'error' | 'warning' | 'info';
-  children: string;
+  /** Message type - supports MaybeReactive */
+  type: MaybeReactive<StatusType>;
+  /** Message content - supports MaybeReactive */
+  children: MaybeReactive<string>;
+  /** Custom styles */
   style?: any;
 }
 
@@ -35,24 +41,28 @@ const STATUS_CONFIG = {
 };
 
 export function StatusMessage(props: StatusMessageProps): TUINode {
-  const config = STATUS_CONFIG[props.type];
-
   return Box({
     style: {
       flexDirection: 'row',
       ...props.style,
     },
-    children: [
-      Text({
-        children: config.icon,
-        color: config.color,
-        bold: true,
-        style: { marginRight: 1 },
-      }),
-      Text({
-        children: props.children,
-        color: config.color,
-      }),
-    ],
+    children: () => {
+      const type = resolve(props.type);
+      const children = resolve(props.children);
+      const config = STATUS_CONFIG[type];
+
+      return [
+        Text({
+          children: config.icon,
+          color: config.color,
+          bold: true,
+          style: { marginRight: 1 },
+        }),
+        Text({
+          children: children,
+          color: config.color,
+        }),
+      ];
+    },
   });
 }

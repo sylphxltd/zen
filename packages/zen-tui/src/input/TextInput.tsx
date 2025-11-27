@@ -5,7 +5,7 @@
  * and optional autocomplete suggestions.
  */
 
-import { type Signal, onCleanup, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -16,22 +16,31 @@ import { useFocus } from '../utils/focus.js';
 export type SuggestionProvider = (value: string) => string[] | Promise<string[]>;
 
 export interface TextInputProps {
-  value?: Signal<string> | string;
-  placeholder?: string;
+  /** Current value - supports Signal or MaybeReactive */
+  value?: Signal<string> | MaybeReactive<string>;
+  /** Placeholder text - supports MaybeReactive */
+  placeholder?: MaybeReactive<string>;
+  /** Called when value changes */
   onChange?: (value: string) => void;
+  /** Called on Enter/submit */
   onSubmit?: (value: string) => void;
-  width?: number | (() => number);
+  /** Input width - supports MaybeReactive */
+  width?: MaybeReactive<number>;
+  /** Focus ID for FocusProvider */
   id?: string;
+  /** Custom styles */
   style?: any;
-  cursor?: Signal<number>; // Optional external cursor control
-  mask?: string; // Character to use for masking (e.g., '*' for passwords)
+  /** External cursor control */
+  cursor?: Signal<number>;
+  /** Mask character for passwords */
+  mask?: string;
   /** Autocomplete suggestions - array or function returning suggestions */
   suggestions?: string[] | SuggestionProvider;
-  /** Maximum number of suggestions to show (default: 5) */
+  /** Maximum suggestions to show (default: 5) */
   maxSuggestions?: number;
-  /** Callback when a suggestion is selected */
+  /** Called when suggestion is selected */
   onSuggestionSelect?: (suggestion: string) => void;
-  /** Position of suggestions dropdown (default: 'below') */
+  /** Suggestions dropdown position (default: 'below') */
   suggestionsPosition?: 'above' | 'below';
 }
 
@@ -156,17 +165,19 @@ export function TextInput(props: TextInputProps): TUINode {
     }
   });
 
-  const getWidth = () => (typeof props.width === 'function' ? props.width() : props.width || 40);
+  const getWidth = () => resolve(props.width) || 40;
+  const getPlaceholder = () => resolve(props.placeholder);
   const suggestionsPosition = props.suggestionsPosition || 'below';
 
   // Render the input text with cursor
   const renderInputText = () => {
     const currentValue = valueSignal.value;
-    const showPlaceholder = currentValue.length === 0 && props.placeholder;
+    const placeholder = getPlaceholder();
+    const showPlaceholder = currentValue.length === 0 && placeholder;
 
     if (showPlaceholder) {
       return Text({
-        children: props.placeholder,
+        children: placeholder,
         dim: true,
         style: { flexDirection: 'row' },
       });

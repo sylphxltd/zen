@@ -4,7 +4,7 @@
  * Dropdown/select input with keyboard navigation.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -17,20 +17,34 @@ export interface SelectOption<T = string> {
 }
 
 export interface SelectInputProps<T = string> {
-  options: SelectOption<T>[];
-  value?: Signal<T> | T;
+  /** Select options - supports MaybeReactive */
+  options: MaybeReactive<SelectOption<T>[]>;
+  /** Current value - supports Signal or MaybeReactive */
+  value?: Signal<T> | MaybeReactive<T>;
+  /** Called when value changes */
   onChange?: (value: T) => void;
-  placeholder?: string;
-  width?: number;
+  /** Placeholder text - supports MaybeReactive */
+  placeholder?: MaybeReactive<string>;
+  /** Input width - supports MaybeReactive */
+  width?: MaybeReactive<number>;
+  /** Focus ID for FocusProvider */
   id?: string;
+  /** Custom styles */
   style?: any;
-  isOpen?: Signal<boolean>; // Optional external dropdown state control
-  highlightedIndex?: Signal<number>; // Optional external highlight control
+  /** External dropdown state control */
+  isOpen?: Signal<boolean>;
+  /** External highlight control */
+  highlightedIndex?: Signal<number>;
 }
 
 export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
   // Generate unique ID if not provided
   const id = props.id || `select-${Math.random().toString(36).slice(2, 9)}`;
+
+  // Helpers to resolve MaybeReactive props
+  const getOptions = () => resolve(props.options);
+  const getWidth = () => resolve(props.width) || 40;
+  const getPlaceholder = () => resolve(props.placeholder);
 
   // Value management
   const valueSignal =
@@ -49,7 +63,8 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
     id,
     onFocus: () => {
       // Reset highlight to current selection
-      const currentIndex = props.options.findIndex((opt) => opt.value === valueSignal.value);
+      const options = getOptions();
+      const currentIndex = options.findIndex((opt) => opt.value === valueSignal.value);
       highlightedIndex.value = currentIndex >= 0 ? currentIndex : 0;
     },
     onBlur: () => {
@@ -61,21 +76,22 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
   useInput((input, _key) => {
     if (!isFocused.value) return;
 
-    handleSelectInput(isOpen, highlightedIndex, valueSignal, props.options, input, props.onChange);
+    handleSelectInput(isOpen, highlightedIndex, valueSignal, getOptions(), input, props.onChange);
   });
-
-  const width = props.width || 40;
 
   // Use reactive functions for rendering
   return Box({
-    style: { width },
+    style: { width: () => getWidth() },
     children: () => {
       // This function re-runs when signals change
       const opened = isOpen.value;
+      const options = getOptions();
+      const width = getWidth();
+      const placeholder = getPlaceholder();
 
       // Find selected option
-      const selectedOption = props.options.find((opt) => opt.value === valueSignal.value);
-      const displayLabel = selectedOption?.label || props.placeholder || 'Select...';
+      const selectedOption = options.find((opt) => opt.value === valueSignal.value);
+      const displayLabel = selectedOption?.label || placeholder || 'Select...';
 
       // Render current selection
       // WORKAROUND: Concatenate label and arrow into single Text to avoid flexDirection: 'row' overflow bug
@@ -111,7 +127,7 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
           borderStyle: 'single',
           padding: 0,
         },
-        children: props.options.map((option, index) => {
+        children: options.map((option, index) => {
           const isHighlighted = index === highlighted;
           const isSelected = option.value === valueSignal.value;
 

@@ -5,7 +5,7 @@
  * Matches Ink radio button behavior.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -18,16 +18,25 @@ export interface RadioOption<T = string> {
 }
 
 export interface RadioProps<T = string> {
-  options: RadioOption<T>[];
-  value?: Signal<T | undefined> | T | undefined;
+  /** Radio options - supports MaybeReactive */
+  options: MaybeReactive<RadioOption<T>[]>;
+  /** Current value - supports Signal or MaybeReactive */
+  value?: Signal<T | undefined> | MaybeReactive<T | undefined>;
+  /** Called when value changes */
   onChange?: (value: T) => void;
+  /** Focus ID for FocusProvider */
   id?: string;
+  /** Custom styles */
   style?: any;
+  /** External highlight control */
   highlightedIndex?: Signal<number>;
 }
 
 export function Radio<T = string>(props: RadioProps<T>): TUINode {
   const id = props.id || `radio-${Math.random().toString(36).slice(2, 9)}`;
+
+  // Helper to resolve options (supports MaybeReactive)
+  const getOptions = () => resolve(props.options);
 
   // Value management
   const valueSignal =
@@ -45,7 +54,7 @@ export function Radio<T = string>(props: RadioProps<T>): TUINode {
   useInput((input, _key) => {
     if (!isFocused.value) return;
 
-    handleRadioInput(input, highlightedIndex, valueSignal, props.options, props.onChange);
+    handleRadioInput(input, highlightedIndex, valueSignal, getOptions(), props.onChange);
   });
 
   return Box({
@@ -60,8 +69,9 @@ export function Radio<T = string>(props: RadioProps<T>): TUINode {
       const focused = isFocused.value;
       const highlighted = highlightedIndex.value;
       const currentValue = valueSignal.value;
+      const options = getOptions();
 
-      return props.options.map((option, index) => {
+      return options.map((option, index) => {
         const isHighlighted = focused && highlighted === index;
         const isSelected = currentValue === option.value;
         const indicator = isSelected ? '◉' : '○';

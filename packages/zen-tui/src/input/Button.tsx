@@ -4,7 +4,7 @@
  * Interactive button with visual feedback and keyboard support.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -12,11 +12,17 @@ import { Text } from '../primitives/Text.js';
 import { useFocus } from '../utils/focus.js';
 
 export interface ButtonProps {
-  label: string;
+  /** Button label - supports MaybeReactive */
+  label: MaybeReactive<string>;
+  /** Click handler */
   onClick?: () => void;
-  disabled?: boolean | (() => boolean);
+  /** Disabled state - supports MaybeReactive */
+  disabled?: MaybeReactive<boolean>;
+  /** Button variant */
   variant?: 'primary' | 'secondary' | 'danger';
+  /** Fixed width */
   width?: number;
+  /** Focus ID for FocusProvider */
   id?: string;
 }
 
@@ -28,10 +34,11 @@ export function Button(props: ButtonProps): TUINode {
   // Visual pressed state
   const isPressed = signal(false);
 
-  // Helper to get current disabled state
-  const getDisabled = () => {
-    return typeof props.disabled === 'function' ? props.disabled() : props.disabled || false;
-  };
+  // Helper to get current disabled state (uses resolve for MaybeReactive)
+  const getDisabled = () => resolve(props.disabled) || false;
+
+  // Helper to get label (uses resolve for MaybeReactive)
+  const getLabel = () => resolve(props.label);
 
   const { isFocused } = useFocus({
     id,
@@ -126,7 +133,8 @@ export function Button(props: ButtonProps): TUINode {
       >
         {() => {
           const disabled = getDisabled();
-          return disabled ? `[${props.label}]` : props.label;
+          const label = getLabel();
+          return disabled ? `[${label}]` : label;
         }}
       </Text>
     </Box>

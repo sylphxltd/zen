@@ -5,7 +5,7 @@
  * keyboard navigation, and optional selection.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -29,22 +29,22 @@ export interface TreeNode<T = unknown> {
 }
 
 export interface TreeViewProps<T = unknown> {
-  /** Root nodes of the tree */
-  nodes: TreeNode<T>[];
+  /** Root nodes of the tree - supports MaybeReactive */
+  nodes: MaybeReactive<TreeNode<T>[]>;
   /** Callback when a node is selected (Enter key) */
   onSelect?: (node: TreeNode<T>) => void;
   /** Callback when a node is expanded/collapsed */
   onToggle?: (node: TreeNode<T>, expanded: boolean) => void;
   /** Component ID for focus management */
   id?: string;
-  /** Whether to show lines connecting nodes (default: true) */
-  showLines?: boolean;
-  /** Indent size per level (default: 2) */
-  indentSize?: number;
-  /** Custom expand/collapse icons */
-  expandIcon?: string;
-  collapseIcon?: string;
-  leafIcon?: string;
+  /** Whether to show lines connecting nodes (default: true) - supports MaybeReactive */
+  showLines?: MaybeReactive<boolean>;
+  /** Indent size per level (default: 2) - supports MaybeReactive */
+  indentSize?: MaybeReactive<number>;
+  /** Custom expand/collapse icons - supports MaybeReactive */
+  expandIcon?: MaybeReactive<string>;
+  collapseIcon?: MaybeReactive<string>;
+  leafIcon?: MaybeReactive<string>;
 }
 
 /** Internal flat representation of tree for rendering */
@@ -57,15 +57,18 @@ interface FlatNode<T> {
 
 export function TreeView<T = unknown>(props: TreeViewProps<T>): TUINode {
   const id = props.id || `tree-${Math.random().toString(36).slice(2, 9)}`;
-  const showLines = props.showLines !== false;
-  const indentSize = props.indentSize || 2;
+
+  // Resolve reactive options
+  const getShowLines = () => resolve(props.showLines) !== false;
+  const getIndentSize = () => resolve(props.indentSize) || 2;
   // Use consistent-width icons (all width=1) to prevent layout shifts
-  const expandIcon = props.expandIcon || '▸';
-  const collapseIcon = props.collapseIcon || '▾';
-  const leafIcon = props.leafIcon || '·';
+  const getExpandIcon = () => resolve(props.expandIcon) || '▸';
+  const getCollapseIcon = () => resolve(props.collapseIcon) || '▾';
+  const getLeafIcon = () => resolve(props.leafIcon) || '·';
+  const getNodes = () => resolve(props.nodes);
 
   // Track expanded state for all nodes
-  const expandedNodes = signal<Set<string>>(new Set(collectInitialExpanded(props.nodes)));
+  const expandedNodes = signal<Set<string>>(new Set(collectInitialExpanded(getNodes())));
 
   // Currently focused node index (in flat list)
   const focusedIndex = signal(0);
@@ -73,10 +76,11 @@ export function TreeView<T = unknown>(props: TreeViewProps<T>): TUINode {
   // Flatten tree for rendering
   const flattenTree = (): FlatNode<T>[] => {
     const result: FlatNode<T>[] = [];
+    const nodes = getNodes();
 
-    const flatten = (nodes: TreeNode<T>[], level: number, parentIsLast: boolean[]) => {
-      nodes.forEach((node, index) => {
-        const isLast = index === nodes.length - 1;
+    const flatten = (treeNodes: TreeNode<T>[], level: number, parentIsLast: boolean[]) => {
+      treeNodes.forEach((node, index) => {
+        const isLast = index === treeNodes.length - 1;
         result.push({
           node,
           level,
@@ -91,7 +95,7 @@ export function TreeView<T = unknown>(props: TreeViewProps<T>): TUINode {
       });
     };
 
-    flatten(props.nodes, 0, []);
+    flatten(nodes, 0, []);
     return result;
   };
 
@@ -109,7 +113,7 @@ export function TreeView<T = unknown>(props: TreeViewProps<T>): TUINode {
     expandedNodes.value = newExpanded;
 
     // Find node and trigger callback
-    const node = findNode(props.nodes, nodeId);
+    const node = findNode(getNodes(), nodeId);
     if (node) {
       props.onToggle?.(node, !isExpanded);
     }
@@ -188,6 +192,12 @@ export function TreeView<T = unknown>(props: TreeViewProps<T>): TUINode {
     const hasChildren = node.children && node.children.length > 0;
     const isExpanded = expandedNodes.value.has(node.id);
     const isCurrentlyFocused = isFocused.value && focusedIndex.value === index;
+
+    const showLines = getShowLines();
+    const indentSize = getIndentSize();
+    const expandIcon = getExpandIcon();
+    const collapseIcon = getCollapseIcon();
+    const leafIcon = getLeafIcon();
 
     // Build prefix with tree lines
     let prefix = '';

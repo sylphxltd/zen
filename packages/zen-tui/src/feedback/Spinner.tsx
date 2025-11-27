@@ -4,14 +4,19 @@
  * Animated loading spinner with multiple styles.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { Text } from '../primitives/Text.js';
 
+type SpinnerType = 'dots' | 'line' | 'arc' | 'arrow';
+
 export interface SpinnerProps {
-  type?: 'dots' | 'line' | 'arc' | 'arrow';
-  color?: string;
-  label?: string;
+  /** Spinner animation type - supports MaybeReactive */
+  type?: MaybeReactive<SpinnerType>;
+  /** Spinner color - supports MaybeReactive */
+  color?: MaybeReactive<string>;
+  /** Spinner label - supports MaybeReactive */
+  label?: MaybeReactive<string>;
 }
 
 const SPINNER_FRAMES = {
@@ -26,9 +31,6 @@ const SPINNER_FRAMES = {
  * Animation runs automatically using setInterval
  */
 export function Spinner(props: SpinnerProps): TUINode {
-  const type = props.type || 'dots';
-  const color = props.color || 'cyan';
-  const frames = SPINNER_FRAMES[type];
   const intervalMs = 80;
 
   // Self-animating frame index
@@ -36,16 +38,19 @@ export function Spinner(props: SpinnerProps): TUINode {
 
   // Start animation interval
   const _interval = setInterval(() => {
-    frameIndex.value = (frameIndex.value + 1) % frames.length;
+    frameIndex.value = (frameIndex.value + 1) % 100; // Prevent overflow
   }, intervalMs);
 
   // Return Text with reactive children
   return Text({
     children: () => {
+      const type = resolve(props.type) || 'dots';
+      const label = resolve(props.label);
+      const frames = SPINNER_FRAMES[type];
       const currentFrame = frames[frameIndex.value % frames.length];
-      return props.label ? `${currentFrame} ${props.label}` : currentFrame;
+      return label ? `${currentFrame} ${label}` : currentFrame;
     },
-    color,
+    color: () => resolve(props.color) || 'cyan',
   });
 }
 

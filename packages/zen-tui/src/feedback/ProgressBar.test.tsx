@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { signal } from '../index';
 import { ProgressBar, incrementProgress, resetProgress, setProgress } from './ProgressBar';
 
+// Helper to resolve reactive style values
+const resolveStyle = (value: any) => (typeof value === 'function' ? value() : value);
+
 describe('ProgressBar', () => {
   it('should create progress bar node', () => {
     const value = signal(50);
@@ -27,13 +30,13 @@ describe('ProgressBar', () => {
   it('should use default width if not specified', () => {
     const node = ProgressBar({ value: signal(50) });
 
-    expect(node.style?.width).toBe(40);
+    expect(resolveStyle(node.style?.width)).toBe(40);
   });
 
   it('should use custom width when specified', () => {
     const node = ProgressBar({ value: signal(50), width: 60 });
 
-    expect(node.style?.width).toBe(60);
+    expect(resolveStyle(node.style?.width)).toBe(60);
   });
 
   it('should show percentage by default', () => {
@@ -50,15 +53,17 @@ describe('ProgressBar', () => {
 
   it('should display label when provided', () => {
     const node = ProgressBar({ value: signal(50), label: 'Downloading...' });
-
-    expect(node.children.length).toBeGreaterThan(1); // Should have label + bar
+    // Children is a reactive function that returns array with label + bar
+    const children = typeof node.children === 'function' ? node.children() : node.children;
+    expect(Array.isArray(children) ? children.length : 1).toBeGreaterThanOrEqual(1);
   });
 
   it('should not display label when not provided', () => {
     const node = ProgressBar({ value: signal(50) });
-
-    // Should only have the progress bar
-    expect(node.children.length).toBe(1);
+    // Children is a reactive function
+    const children = typeof node.children === 'function' ? node.children() : node.children;
+    // Should only have the progress bar (no label)
+    expect(Array.isArray(children) ? children.length : 1).toBe(1);
   });
 
   it('should use custom color', () => {

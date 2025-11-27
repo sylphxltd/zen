@@ -4,7 +4,7 @@
  * Interactive checkbox with keyboard toggle.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -12,11 +12,17 @@ import { Text } from '../primitives/Text.js';
 import { useFocus } from '../utils/focus.js';
 
 export interface CheckboxProps {
-  checked?: Signal<boolean> | boolean;
-  label?: string;
+  /** Checked state - supports Signal or MaybeReactive */
+  checked?: Signal<boolean> | MaybeReactive<boolean>;
+  /** Label text - supports MaybeReactive */
+  label?: MaybeReactive<string>;
+  /** Called when checked changes */
   onChange?: (checked: boolean) => void;
+  /** Focus ID for FocusProvider */
   id?: string;
+  /** Fixed width */
   width?: number;
+  /** Custom styles */
   style?: any;
 }
 
@@ -40,12 +46,16 @@ export function Checkbox(props: CheckboxProps): TUINode {
     handleCheckbox(checkedSignal, input, props.onChange);
   });
 
+  // Helper to get label (uses resolve for MaybeReactive)
+  const getLabel = () => resolve(props.label);
+
   // Simple text-based checkbox - no box wrapper, just reactive text
   return Text({
     children: () => {
       const checked = checkedSignal.value;
+      const label = getLabel();
       const checkboxChar = checked ? '☑' : '☐';
-      const combinedText = props.label ? `${checkboxChar} ${props.label}` : checkboxChar;
+      const combinedText = label ? `${checkboxChar} ${label}` : checkboxChar;
 
       // When focused, add visual indicator
       return isFocused.value ? `> ${combinedText}` : `  ${combinedText}`;

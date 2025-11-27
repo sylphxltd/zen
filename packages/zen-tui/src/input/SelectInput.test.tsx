@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { signal } from '../index';
 import { SelectInput, type SelectOption, handleSelectInput } from './SelectInput';
 
+// Helper to resolve reactive style values
+const resolveStyle = (value: any) => (typeof value === 'function' ? value() : value);
+
 const testOptions: SelectOption<string>[] = [
   { label: 'Option 1', value: 'opt1' },
   { label: 'Option 2', value: 'opt2' },
@@ -14,7 +17,7 @@ describe('SelectInput', () => {
     const node = SelectInput({ options: testOptions, value });
 
     expect(node.type).toBe('box');
-    expect(node.style?.width).toBe(40);
+    expect(resolveStyle(node.style?.width)).toBe(40);
   });
 
   it('should accept initial value as string', () => {
@@ -33,13 +36,13 @@ describe('SelectInput', () => {
   it('should use default width if not specified', () => {
     const node = SelectInput({ options: testOptions, value: signal('opt1') });
 
-    expect(node.style?.width).toBe(40);
+    expect(resolveStyle(node.style?.width)).toBe(40);
   });
 
   it('should use custom width when specified', () => {
     const node = SelectInput({ options: testOptions, value: signal('opt1'), width: 60 });
 
-    expect(node.style?.width).toBe(60);
+    expect(resolveStyle(node.style?.width)).toBe(60);
   });
 
   it('should generate unique ID if not provided', () => {
