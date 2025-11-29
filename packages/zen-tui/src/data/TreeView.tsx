@@ -5,7 +5,7 @@
  * keyboard navigation, and optional selection.
  */
 
-import { createUniqueId, type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, createUniqueId, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
