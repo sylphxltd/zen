@@ -1132,6 +1132,167 @@ describe('TextArea Component', () => {
     });
   });
 
+  describe('Word Wrapping Algorithm', () => {
+    it('should wrap at word boundaries when text approaches contentWidth', async () => {
+      // Regression test for user report: text exactly filling line should word-wrap
+      // cols=40, border=true → contentWidth=38
+      // Text: "lksjflakjflsjdflksajdfl ksd fskadf ssd" (38 chars)
+      // Should wrap "ssd" to next line due to cursor space reservation
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          cols: 40,
+          border: true,
+          wrap: true,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const testText = 'lksjflakjflsjdflksajdfl ksd fskadf ssd';
+      for (const char of testText) {
+        dispatchInput(char);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Value should be preserved completely
+      expect(values[values.length - 1]).toBe(testText);
+      expect(values[values.length - 1].length).toBe(38);
+    });
+
+    it('should keep cursor with last word when word wraps', async () => {
+      // When typing "I am a boy" with contentWidth=10
+      // "boy" should wrap to next line with cursor
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          cols: 12, // contentWidth = 10 with border
+          border: true,
+          wrap: true,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      for (const char of 'I am a boy') {
+        dispatchInput(char);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('I am a boy');
+    });
+
+    it('should fall back to character wrapping when no word boundary exists', async () => {
+      // Text without spaces should character-wrap
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          cols: 12, // contentWidth = 10 with border
+          border: true,
+          wrap: true,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // 15 chars, no spaces
+      for (const char of 'abcdefghijklmno') {
+        dispatchInput(char);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('abcdefghijklmno');
+      expect(values[values.length - 1].length).toBe(15);
+    });
+
+    it('should handle cursor at end after word wrap correctly', async () => {
+      // After typing "lksjflakjflsjdflksajdfl ksd fskadf ssd sdfsf"
+      // cursor should be on the line with " sdfsf"
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          cols: 40, // contentWidth = 38
+          border: true,
+          wrap: true,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const testText = 'lksjflakjflsjdflksajdfl ksd fskadf ssd sdfsf';
+      for (const char of testText) {
+        dispatchInput(char);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe(testText);
+      expect(values[values.length - 1].length).toBe(44);
+    });
+
+    it('should not show cursor on empty line when word wraps', async () => {
+      // Bug regression: cursor should NOT appear on a separate empty line
+      // when the text wraps at a word boundary
+      const values: string[] = [];
+      const value = signal('');
+
+      createRoot(() => {
+        return TextArea({
+          value: () => value.value,
+          cols: 12, // contentWidth = 10
+          border: true,
+          wrap: true,
+          onChange: (v) => {
+            value.value = v;
+            values.push(v);
+          },
+          isFocused: true,
+        });
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Type "The quick brown" - should wrap "brown" to second line
+      for (const char of 'The quick brown') {
+        dispatchInput(char);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(values[values.length - 1]).toBe('The quick brown');
+    });
+  });
+
   describe('No Cols Specified (Flexible Width)', () => {
     it('should work without cols specified', async () => {
       const values: string[] = [];

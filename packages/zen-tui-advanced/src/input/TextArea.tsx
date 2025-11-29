@@ -204,7 +204,7 @@ export function TextArea(props: TextAreaProps) {
   const sliceByWordBoundary = (
     str: string,
     maxWidth: number,
-    needsCursorSpace: boolean = false,
+    needsCursorSpace = false,
   ): { text: string; charCount: number; width: number } => {
     const effectiveWidth = needsCursorSpace ? maxWidth - 1 : maxWidth;
     const charSliced = sliceByWidth(str, effectiveWidth);
