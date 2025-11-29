@@ -457,6 +457,48 @@ describe('Layout Renderer', () => {
   // Regression Tests
   // ==========================================================================
 
+  describe('Margin Support', () => {
+    it('should apply marginTop correctly', async () => {
+      const root = createBox(
+        { width: 20, height: 5, flexDirection: 'column' },
+        [
+          createText('First'),
+          createBox({ marginTop: 2 }, [createText('Second')]),
+        ],
+      );
+
+      const buffer = new TerminalBuffer(20, 5);
+      const layoutMap = await computeLayout(root, 20, 5);
+      renderToBuffer(root, buffer, layoutMap);
+
+      const lines = getBufferLines(buffer, 5);
+      // First line should have "First"
+      expect(lines[0]).toContain('First');
+      // Second line should be empty (marginTop: 2)
+      expect(lines[1].trim()).toBe('');
+      // Third line (index 2) should have space from marginTop
+      expect(lines[2].trim()).toBe('');
+      // "Second" should appear after the margin
+      expect(lines[3]).toContain('Second');
+    });
+
+    it('should apply marginLeft correctly', async () => {
+      const root = createBox(
+        { width: 20, height: 1, flexDirection: 'row' },
+        [createBox({ marginLeft: 5 }, [createText('Hi')])],
+      );
+
+      const buffer = new TerminalBuffer(20, 1);
+      const layoutMap = await computeLayout(root, 20, 1);
+      renderToBuffer(root, buffer, layoutMap);
+
+      const line = stripAnsi(buffer.getLine(0));
+      const hiPos = line.indexOf('Hi');
+      // Hi should be at position 5 or later due to marginLeft
+      expect(hiPos).toBeGreaterThanOrEqual(5);
+    });
+  });
+
   describe('Regression Tests', () => {
     it('should not render text outside bordered container (visual bug)', async () => {
       // This tests the bug shown in the screenshot where "sa" and "df s"

@@ -167,6 +167,19 @@ function applyStylesToYogaNode(yogaNode: any, style: TUIStyle, Yoga: any) {
     yogaNode.setMargin(Yoga.EDGE_TOP, style.marginY);
     yogaNode.setMargin(Yoga.EDGE_BOTTOM, style.marginY);
   }
+  // Individual margin edges
+  if (typeof style.marginTop === 'number') {
+    yogaNode.setMargin(Yoga.EDGE_TOP, style.marginTop);
+  }
+  if (typeof style.marginBottom === 'number') {
+    yogaNode.setMargin(Yoga.EDGE_BOTTOM, style.marginBottom);
+  }
+  if (typeof style.marginLeft === 'number') {
+    yogaNode.setMargin(Yoga.EDGE_LEFT, style.marginLeft);
+  }
+  if (typeof style.marginRight === 'number') {
+    yogaNode.setMargin(Yoga.EDGE_RIGHT, style.marginRight);
+  }
 
   // Flex - resolve functions
   const flexValue = typeof style.flex === 'function' ? style.flex() : style.flex;
