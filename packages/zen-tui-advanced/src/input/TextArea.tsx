@@ -209,6 +209,11 @@ export function TextArea(props: TextAreaProps) {
       if (!wrap || lineWidth <= contentWidth) {
         // No wrapping needed - single visual line
         result.push({ text: line, logicalRow, startCol: 0, startVisualCol: 0 });
+        // Add trailing visual line if line fills contentWidth (for cursor at end)
+        // This ensures cursor has a place when positioned after the last character
+        if (wrap && lineWidth >= contentWidth && line.length > 0) {
+          result.push({ text: '', logicalRow, startCol: line.length, startVisualCol: lineWidth });
+        }
       } else {
         // Wrap long line into multiple visual lines using visual width
         let startCol = 0;
