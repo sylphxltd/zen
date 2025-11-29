@@ -1,14 +1,11 @@
-import { setPlatformOps } from '@zen/runtime';
-import { createRoot } from '@zen/signal';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
+import { createRoot, setPlatformOps } from '@zen/runtime';
 import { tuiPlatformOps } from '../core/platform-ops.js';
 import { Text } from '../primitives/Text.js';
 import { FocusProvider, useFocusManager } from './focus.js';
 
 // Initialize platform operations before tests
-beforeAll(() => {
-  setPlatformOps(tuiPlatformOps);
-});
+setPlatformOps(tuiPlatformOps);
 
 describe('FocusProvider', () => {
   it('should create a focus provider', () => {
