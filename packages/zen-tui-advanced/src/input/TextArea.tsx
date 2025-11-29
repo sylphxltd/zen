@@ -35,6 +35,7 @@ import {
   Text,
   batch,
   computed,
+  effect,
   getGraphemes,
   resolve,
   signal,
@@ -131,13 +132,17 @@ export function TextArea(props: TextAreaProps) {
   });
 
   // ==========================================================================
-  // Layout Calculations
+  // Layout Calculations (reactive)
   // ==========================================================================
 
   const lineNumberWidth = showLineNumbers ? 5 : 0;
   const borderWidth = border ? 2 : 0;
-  const effectiveCols = cols ?? 1000;
-  const contentWidth = Math.max(1, effectiveCols - borderWidth - lineNumberWidth);
+
+  // contentWidth must be reactive if cols can change
+  const contentWidth = computed(() => {
+    const effectiveCols = cols ?? 1000;
+    return Math.max(1, effectiveCols - borderWidth - lineNumberWidth);
+  });
 
   // ==========================================================================
   // State
@@ -155,6 +160,28 @@ export function TextArea(props: TextAreaProps) {
 
   const currentValue = computed(() => (isControlled ? externalValue.value : internalValue.value));
 
+  // Track previous value to detect external changes
+  let prevExternalValue = externalValue.value;
+
+  // Constrain cursor when external value changes (controlled mode only)
+  effect(() => {
+    const newVal = externalValue.value;
+    // Only react to external changes, not our own updates
+    if (isControlled && newVal !== prevExternalValue) {
+      prevExternalValue = newVal;
+      // Constrain cursor to new text bounds
+      const lines = newVal ? newVal.split('\n') : [''];
+      const maxRow = Math.max(0, lines.length - 1);
+      if (cursorRow.value > maxRow) {
+        cursorRow.value = maxRow;
+      }
+      const maxCol = (lines[cursorRow.value] || '').length;
+      if (cursorCol.value > maxCol) {
+        cursorCol.value = maxCol;
+      }
+    }
+  });
+
   const logicalLines = computed(() => {
     const text = currentValue.value;
     return text ? text.split('\n') : [''];
@@ -166,7 +193,7 @@ export function TextArea(props: TextAreaProps) {
 
   const wrapResult = computed(() =>
     wrapText(currentValue.value, {
-      contentWidth,
+      contentWidth: contentWidth.value,
       wordWrap: wrap,
       reserveCursorSpace: true,
     }),
@@ -535,7 +562,7 @@ export function TextArea(props: TextAreaProps) {
         const isEmpty = currentValue.value === '';
 
         if (isEmpty && placeholder) {
-          return <Text style={{ dim: true }}>{placeholder.slice(0, contentWidth)}</Text>;
+          return <Text style={{ dim: true }}>{placeholder.slice(0, contentWidth.value)}</Text>;
         }
 
         const allLines = visualLines.value;
