@@ -345,9 +345,13 @@ export async function render(createApp: () => unknown): Promise<() => void> {
           process.stdout.write(`\x1b[${newLines.length - 1}A`);
         }
         process.stdout.write('\r');
-
-        actualContentHeight = newOutputHeight;
       }
+    }
+
+    // Always update actualContentHeight for inline mode
+    // This ensures cleanup uses the correct current height, not a stale value
+    if (!inFullscreen) {
+      actualContentHeight = newOutputHeight;
     }
 
     // Phase 5: Update diff buffer
