@@ -7,7 +7,7 @@
  * - Real-time re-rendering
  */
 
-import { signal, renderApp} from '@zen/tui';
+import { signal, render, useInput, FullscreenLayout } from '@zen/tui';
 import { Box, Text } from '@zen/tui';
 
 // Create reactive state
@@ -20,10 +20,43 @@ setInterval(() => {
 }, 1000);
 
 function App() {
+  // Handle keyboard input
+  useInput((input, key): boolean | undefined => {
+    // Arrow up: increment
+    if (key.upArrow) {
+      count.value++;
+      message.value = '↑ Incremented!';
+      return true;
+    }
+    // Arrow down: decrement
+    if (key.downArrow) {
+      count.value--;
+      message.value = '↓ Decremented!';
+      return true;
+    }
+    // Space: reset
+    if (input === ' ') {
+      count.value = 0;
+      message.value = '⟳ Reset to 0!';
+      return true;
+    }
+    // Any other key (except quit keys)
+    if (input && input !== 'q' && input !== 'Q') {
+      message.value = `Key pressed: ${JSON.stringify(input)}`;
+      return true;
+    }
+    return undefined;
+  });
+
   return (
     <Box
       style={{
-        width: 60, height: 18, padding: 2, borderStyle: 'round', borderColor: 'cyan'}}
+        width: 60,
+        height: 18,
+        padding: 2,
+        borderStyle: 'round',
+        borderColor: 'cyan',
+      }}
     >
       <Text style={{ bold: true, color: 'green' }}>🎯 Zen TUI - Reactive Demo</Text>
 
@@ -58,32 +91,15 @@ function App() {
       </Box>
 
       <Box style={{ padding: 1 }}>
-        <Text style={{ dim: true, italic: true }}>Platform: Terminal UI | FPS: 10</Text>
+        <Text style={{ dim: true, italic: true }}>Platform: Terminal UI</Text>
       </Box>
     </Box>
   );
 }
 
-// Render with reactive updates and keyboard controls
-await renderApp(() => <App />, {
-  fps: 10, onKeyPress: (key) => {
-    // Arrow up: increment
-    if (key === '\u001b[A') {
-      count.value++;
-      message.value = '↑ Incremented!';
-    }
-    // Arrow down: decrement
-    else if (key === '\u001b[B') {
-      count.value--;
-      message.value = '↓ Decremented!';
-    }
-    // Space: reset
-    else if (key === ' ') {
-      count.value = 0;
-      message.value = '⟳ Reset to 0!';
-    }
-    // Any other key
-    else if (key !== 'q' && key !== 'Q' && key !== '\u0003') {
-      message.value = `Key pressed: ${JSON.stringify(key)}`;
-    }
-  }});
+// Render with reactive updates
+await render(() => (
+  <FullscreenLayout>
+    <App />
+  </FullscreenLayout>
+));

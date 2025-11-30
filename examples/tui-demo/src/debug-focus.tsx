@@ -1,5 +1,14 @@
 /** @jsxImportSource @zen/tui */
-import { Box, Text, render, FocusProvider, useFocusManager, useInput, signal, useFocus } from '@zen/tui';
+import {
+  Box,
+  FocusProvider,
+  Text,
+  render,
+  signal,
+  useFocus,
+  useFocusManager,
+  useInput,
+} from '@zen/tui';
 
 const focusedId = signal('none');
 
@@ -7,12 +16,14 @@ function DebugInput(props: { id: string; label: string }) {
   const { isFocused } = useFocus({ id: props.id });
 
   return (
-    <Box style={{
-      borderStyle: isFocused.value ? 'double' : 'single',
-      borderColor: isFocused.value ? 'green' : 'gray',
-      padding: 1,
-      width: 30
-    }}>
+    <Box
+      style={{
+        borderStyle: isFocused.value ? 'double' : 'single',
+        borderColor: isFocused.value ? 'green' : 'gray',
+        padding: 1,
+        width: 30,
+      }}
+    >
       <Text color={isFocused.value ? 'green' : 'white'}>
         {props.label} {isFocused.value ? '(FOCUSED)' : ''}
       </Text>
@@ -23,7 +34,7 @@ function DebugInput(props: { id: string; label: string }) {
 function AppContent() {
   const manager = useFocusManager();
 
-  useInput((input, key) => {
+  useInput((_input, key) => {
     if (key.tab) {
       key.shift ? manager.focusPrevious() : manager.focusNext();
       // Update debug display
@@ -36,7 +47,9 @@ function AppContent() {
 
   return (
     <Box style={{ flexDirection: 'column', padding: 1, gap: 1 }}>
-      <Text color="cyan" bold>Focus Debug Test</Text>
+      <Text color="cyan" bold>
+        Focus Debug Test
+      </Text>
       <Text color="gray">Press Tab to cycle focus</Text>
       <Text color="yellow">Current focus: {focusedId}</Text>
       <Box style={{ height: 1 }} />
@@ -47,4 +60,8 @@ function AppContent() {
   );
 }
 
-await render(() => <FocusProvider><AppContent /></FocusProvider>);
+await render(() => (
+  <FocusProvider>
+    <AppContent />
+  </FocusProvider>
+));

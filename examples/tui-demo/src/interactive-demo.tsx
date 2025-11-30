@@ -5,7 +5,7 @@
  */
 
 import {
-  Box, Button, FocusProvider, Fragment, ProgressBar, Spinner, Text, dispatchInput, incrementProgress, signal, updateSpinner, useFocusManager, useInput, renderApp} from '@zen/tui';
+  Box, Button, FocusProvider, Fragment, FullscreenLayout, ProgressBar, Spinner, Text, incrementProgress, signal, useFocusManager, useInput, render } from '@zen/tui';
 
 // State
 const progress = signal(0);
@@ -124,10 +124,13 @@ function AppContent() {
 }
 
 function App() {
-  // Use function in JSX body to make children lazy (runtime-first pattern)
-  // Without @zen/compiler, wrap children in function for lazy evaluation
-  // This matches SolidJS runtime-only behavior
-  return <FocusProvider>{() => <AppContent />}</FocusProvider>;
+  return (
+    <FullscreenLayout>
+      <FocusProvider>
+        <AppContent />
+      </FocusProvider>
+    </FullscreenLayout>
+  );
 }
 
 // Auto-increment progress when loading
@@ -160,20 +163,4 @@ const _buttonHandlers = {
 const _focusContext: unknown = null;
 
 // Render
-const cleanup = renderToTerminalReactive(
-  () => {
-    const app = App();
-    // Extract focus context from FocusProvider
-    // This is a workaround - ideally we'd have useInput hook
-    return app;
-  }, {
-    onKeyPress: (key) => {
-      // Dispatch to useInput handlers first
-      dispatchInput(key);
-
-      // Ctrl+C to exit
-      if (key === '\x03') {
-        cleanup();
-        process.exit(0);
-      }
-    }, fps: 30}, );
+await render(App);

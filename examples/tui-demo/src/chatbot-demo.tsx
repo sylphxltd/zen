@@ -6,9 +6,9 @@
  * Run with: bun run src/chatbot-demo.tsx
  */
 
-import { computed, signal } from '@zen/signal';
+import { signal } from '@zen/signal';
 import {
-  Badge, Box, Divider, FocusProvider, Markdown, Spinner, Text, TextInput, ToastContainer, type TreeNode, TreeView, toast, useInput, useTerminalSize, renderApp, FullscreenLayout} from '@zen/tui';
+  Badge, Box, Divider, FocusProvider, Markdown, Spinner, Text, TextInput, ToastContainer, type TreeNode, TreeView, toast, useInput, render, FullscreenLayout } from '@zen/tui';
 
 // Sample data
 const COMMANDS = ['/help', '/clear', '/files', '/model'];
@@ -19,8 +19,6 @@ const FILE_TREE: TreeNode[] = [
       { id: 'app', label: 'App.tsx', icon: '⚛️' }, { id: 'main', label: 'main.ts', icon: '📄' }, ]}, { id: 'pkg', label: 'package.json', icon: '📋' }, ];
 
 function ChatbotDemo() {
-  const { width, height } = useTerminalSize();
-
   const inputValue = signal('');
   const showFiles = signal(false);
   const isTyping = signal(false);
@@ -119,20 +117,14 @@ This demo showcases **all features**:
     }
   });
 
-  // Layout constants
+  // Layout: Use flexbox, NOT manual width calculations!
+  // Renderer handles resize automatically when using flex
   const sidebarWidth = 26;
-  const containerWidth = width - 4;
-  const chatWidthWithSidebar = containerWidth - sidebarWidth - 3;
-  const chatWidthNoSidebar = containerWidth - 2;
-
-  // Reactive getters for widths
-  const getChatWidth = () => (showFiles.value ? chatWidthWithSidebar : chatWidthNoSidebar);
-  // Input should match chat box width (both have borders, so same outer width)
-  const getInputWidth = () => getChatWidth();
 
   return (
     <FocusProvider>
-      <Box style={{ flexDirection: 'column', padding: 1, width: containerWidth }}>
+      {/* Root: flex: 1 fills available terminal space automatically */}
+      <Box style={{ flexDirection: 'column', padding: 1, flex: 1 }}>
         {/* Header */}
         <Box style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={{ bold: true, color: 'cyan' }}>🤖 Zen AI Chatbot</Text>
@@ -143,14 +135,15 @@ This demo showcases **all features**:
         </Box>
         <Divider />
 
-        {/* Main content row */}
-        <Box style={{ flexDirection: 'row', gap: 1 }}>
+        {/* Main content row - flex: 1 fills vertical space */}
+        {/* Note: Don't use gap here - empty fragments still get gap applied */}
+        <Box style={{ flexDirection: 'row', flex: 1 }}>
           {/* Sidebar - use inline conditional for proper TUI rendering */}
           {() =>
             showFiles.value ? (
               <Box
                 style={{
-                  flexDirection: 'column', width: sidebarWidth, borderStyle: 'single', borderColor: 'gray', padding: 1}}
+                  flexDirection: 'column', width: sidebarWidth, borderStyle: 'single', borderColor: 'gray', padding: 1, marginRight: 1}}
               >
                 <Text style={{ bold: true, color: 'yellow' }}>📁 Files</Text>
                 <Divider />
@@ -159,11 +152,11 @@ This demo showcases **all features**:
             ) : null
           }
 
-          {/* Chat area - width is reactive */}
-          <Box style={{ flexDirection: 'column', width: getChatWidth }}>
+          {/* Chat area - flex: 1 fills remaining space automatically */}
+          <Box style={{ flexDirection: 'column', flex: 1 }}>
             <Box
               style={{
-                flexDirection: 'column', borderStyle: 'round', borderColor: 'cyan', padding: 1, height: height - 10}}
+                flexDirection: 'column', borderStyle: 'round', borderColor: 'cyan', padding: 1, flex: 1}}
             >
               <Text style={{ bold: true, color: 'cyan' }}>🤖 Assistant</Text>
               <Box style={{ paddingLeft: 1 }}>
@@ -191,7 +184,6 @@ This demo showcases **all features**:
                   inputValue.value = v;
                 }}
                 onSubmit={sendMessage}
-                width={getInputWidth}
               />
             </Box>
           </Box>
@@ -208,7 +200,7 @@ This demo showcases **all features**:
   );
 }
 
-await renderApp(() => (
+await render(() => (
   <FullscreenLayout>
     <ChatbotDemo />
   </FullscreenLayout>

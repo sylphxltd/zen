@@ -10,7 +10,23 @@
  */
 
 import {
-  Box, Checkbox, FocusProvider, Newline, SelectInput, type SelectOption, Text, TextInput, handleCheckbox, handleSelectInput, handleTextInput, signal, useFocusManager, renderApp} from '@zen/tui';
+  Box,
+  Checkbox,
+  FocusProvider,
+  FullscreenLayout,
+  Newline,
+  SelectInput,
+  type SelectOption,
+  Text,
+  TextInput,
+  handleCheckbox,
+  handleSelectInput,
+  handleTextInput,
+  signal,
+  useFocusManager,
+  useInput,
+  render,
+} from '@zen/tui';
 
 // Form state
 const name = signal('');
@@ -25,12 +41,54 @@ const emailCursor = signal(0);
 const roleIsOpen = signal(false);
 const roleHighlighted = signal(0);
 
+// Track current focus index
+const focusIndex = signal(0);
+const focusableIds = ['name', 'email', 'role', 'subscribe', 'terms'];
+
 // Select options
 const roleOptions: SelectOption<string>[] = [
-  { label: 'Developer', value: 'developer' }, { label: 'Designer', value: 'designer' }, { label: 'Product Manager', value: 'pm' }, { label: 'Other', value: 'other' }, ];
+  { label: 'Developer', value: 'developer' },
+  { label: 'Designer', value: 'designer' },
+  { label: 'Product Manager', value: 'pm' },
+  { label: 'Other', value: 'other' },
+];
+
+// Keyboard event handler registry
+const inputHandlers = {
+  name: (key: string) => handleTextInput(name, nameCursor, key),
+  email: (key: string) => handleTextInput(email, emailCursor, key),
+  role: (key: string) => handleSelectInput(roleIsOpen, roleHighlighted, role, roleOptions, key),
+  subscribe: (key: string) => handleCheckbox(subscribe, key),
+  terms: (key: string) => handleCheckbox(terms, key),
+};
 
 function Form() {
   const _focusCtx = useFocusManager();
+
+  // Handle keyboard input
+  useInput((input, key): boolean | undefined => {
+    // Tab navigation
+    if (key.tab) {
+      if (key.shift) {
+        focusIndex.value = focusIndex.value <= 0 ? focusableIds.length - 1 : focusIndex.value - 1;
+      } else {
+        focusIndex.value = (focusIndex.value + 1) % focusableIds.length;
+      }
+      return true;
+    }
+
+    // Route key events to focused component handler
+    const focusedId = focusableIds[focusIndex.value];
+    const handler = inputHandlers[focusedId as keyof typeof inputHandlers];
+
+    if (handler) {
+      // Convert back to raw key string for handlers
+      const rawKey = input || (key.return ? '\r' : key.escape ? '\x1b' : '');
+      handler(rawKey);
+      return true;
+    }
+    return undefined;
+  });
 
   return (
     <Box style={{ width: 60, borderStyle: 'round', padding: 1 }}>
@@ -134,52 +192,12 @@ function Form() {
 
 function App() {
   return (
-    <FocusProvider>
-      <Form />
-    </FocusProvider>
+    <FullscreenLayout>
+      <FocusProvider>
+        <Form />
+      </FocusProvider>
+    </FullscreenLayout>
   );
 }
 
-// Track current focus index
-let focusIndex = 0;
-const focusableIds = ['name', 'email', 'role', 'subscribe', 'terms'];
-
-// Keyboard event handler registry
-const inputHandlers = {
-  name: (key: string) => handleTextInput(name, nameCursor, key), email: (key: string) => handleTextInput(email, emailCursor, key), role: (key: string) => handleSelectInput(roleIsOpen, roleHighlighted, role, roleOptions, key), subscribe: (key: string) => handleCheckbox(subscribe, key), terms: (key: string) => handleCheckbox(terms, key)};
-
-// Render with reactive updates
-const cleanup = renderToTerminalReactive(App, {
-  onKeyPress: (key) => {
-    // Tab navigation
-    if (key === '\t') {
-      focusIndex = (focusIndex + 1) % focusableIds.length;
-      return;
-    }
-
-    if (key === '\x1b[Z') {
-      // Shift+Tab
-      focusIndex = focusIndex <= 0 ? focusableIds.length - 1 : focusIndex - 1;
-      return;
-    }
-
-    // Route key events to focused component handler
-    const focusedId = focusableIds[focusIndex];
-    const handler = inputHandlers[focusedId as keyof typeof inputHandlers];
-
-    if (handler) {
-      handler(key);
-    }
-
-    // Ctrl+C to exit
-    if (key === '\x03') {
-      cleanup();
-      process.exit(0);
-    }
-  }, fps: 30});
-
-// Cleanup on Ctrl+C
-process.on('SIGINT', () => {
-  cleanup();
-  process.exit(0);
-});
+await render(App);

@@ -9,7 +9,7 @@
  */
 
 import { signal } from '@zen/signal';
-import { Box, Static, Text, useInput, renderApp} from '@zen/tui';
+import { Box, FullscreenLayout, Static, Text, useInput, render } from '@zen/tui';
 
 interface LogEntry {
   id: number;
@@ -68,4 +68,8 @@ function App() {
   );
 }
 
-renderToTerminalReactive(() => <App />);
+await render(() => (
+  <FullscreenLayout>
+    <App />
+  </FullscreenLayout>
+));

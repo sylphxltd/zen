@@ -10,7 +10,19 @@
  */
 
 import {
-  Box, Button, Checkbox, FocusProvider, FullscreenLayout, SelectInput, Text, TextInput, signal, useFocusManager, useInput, render } from '@zen/tui';
+  Box,
+  Button,
+  Checkbox,
+  FocusProvider,
+  FullscreenLayout,
+  SelectInput,
+  Text,
+  TextInput,
+  render,
+  signal,
+  useFocusManager,
+  useInput,
+} from '@zen/tui';
 
 // State
 const name = signal('');
@@ -20,7 +32,11 @@ const agreed = signal(false);
 const message = signal('Fill in the form and press Submit');
 
 const frameworkOptions = [
-  { value: 'solidjs', label: 'SolidJS' }, { value: 'react', label: 'React' }, { value: 'vue', label: 'Vue' }, { value: 'svelte', label: 'Svelte' }, ];
+  { value: 'solidjs', label: 'SolidJS' },
+  { value: 'react', label: 'React' },
+  { value: 'vue', label: 'Vue' },
+  { value: 'svelte', label: 'Svelte' },
+];
 
 function AppContent() {
   const { focusNext, focusPrevious } = useFocusManager();
@@ -39,7 +55,12 @@ function AppContent() {
   return (
     <Box
       style={{
-        flexDirection: 'column', padding: 2, borderStyle: 'double', borderColor: 'cyan', width: 70}}
+        flexDirection: 'column',
+        padding: 2,
+        borderStyle: 'double',
+        borderColor: 'cyan',
+        width: 70,
+      }}
     >
       {/* Header */}
       <Text color="cyan" bold={true}>

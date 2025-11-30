@@ -1,8 +1,8 @@
 /** @jsxImportSource @zen/tui */
 import { signal } from '@zen/signal';
-import { renderApp} from '@zen/tui';
+import { render, FullscreenLayout } from '@zen/tui';
 import {
-  Box, Button, Checkbox, FocusProvider, SelectInput, type SelectOption, Text, TextInput, useFocusManager, useInput} from '@zen/tui';
+  Box, Button, Checkbox, FocusProvider, SelectInput, type SelectOption, Text, TextInput, useFocusManager, useInput } from '@zen/tui';
 
 // Form state
 const name = signal('');
@@ -233,8 +233,10 @@ const QuestionnaireForm = () => {
 
 // Render with FocusProvider
 // Tab navigation is automatic (handled by FocusProvider)
-await renderApp(() => (
-  <FocusProvider>
-    <QuestionnaireForm />
-  </FocusProvider>
+await render(() => (
+  <FullscreenLayout>
+    <FocusProvider>
+      <QuestionnaireForm />
+    </FocusProvider>
+  </FullscreenLayout>
 ));

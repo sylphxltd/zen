@@ -1,5 +1,5 @@
 /** @jsxImportSource @zen/tui */
-import { Box, Text, render, FocusProvider, useInput, signal, TextInput, Button } from '@zen/tui';
+import { Box, Button, FocusProvider, Text, TextInput, render, signal, useInput } from '@zen/tui';
 
 const name = signal('');
 const msg = signal('Press Tab to focus input, then type');
@@ -11,8 +11,18 @@ function AppContent() {
   });
 
   return (
-    <Box style={{ flexDirection: 'column', padding: 1, width: 50, borderStyle: 'single', borderColor: 'cyan' }}>
-      <Text color="cyan" bold>Simple Form Demo</Text>
+    <Box
+      style={{
+        flexDirection: 'column',
+        padding: 1,
+        width: 50,
+        borderStyle: 'single',
+        borderColor: 'cyan',
+      }}
+    >
+      <Text color="cyan" bold>
+        Simple Form Demo
+      </Text>
       <Text color="gray">Tab: navigate | Esc: exit</Text>
       <Box style={{ height: 1 }} />
       <Text>Name:</Text>
@@ -21,10 +31,19 @@ function AppContent() {
         value={name}
         placeholder="Your name"
         width={40}
-        onSubmit={(val) => { msg.value = `Hello ${val}!`; }}
+        onSubmit={(val) => {
+          msg.value = `Hello ${val}!`;
+        }}
       />
       <Box style={{ height: 1 }} />
-      <Button id="btn" label="Submit" width={12} onClick={() => { msg.value = `Hello ${name.value}!`; }} />
+      <Button
+        id="btn"
+        label="Submit"
+        width={12}
+        onClick={() => {
+          msg.value = `Hello ${name.value}!`;
+        }}
+      />
       <Box style={{ height: 1 }} />
       <Text color="green">{msg}</Text>
     </Box>
