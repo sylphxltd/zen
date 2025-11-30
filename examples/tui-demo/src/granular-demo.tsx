@@ -4,7 +4,7 @@
  * 展示細粒度更新 - 只重繪變化的行，不是整個畫面
  */
 
-import { FullscreenLayout, render, signal } from '@zen/tui';
+import { render, signal } from '@zen/tui';
 import { Box, Text } from '@zen/tui';
 
 // 多個獨立的 counter
@@ -93,8 +93,4 @@ function App() {
 }
 
 // 啟動 reactive 渲染
-await render(() => (
-  <FullscreenLayout>
-    <App />
-  </FullscreenLayout>
-));
+await render(() => <App />);

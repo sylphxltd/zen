@@ -9,7 +9,6 @@ import {
   Button,
   FocusProvider,
   Fragment,
-  FullscreenLayout,
   ProgressBar,
   Spinner,
   Text,
@@ -143,11 +142,9 @@ function AppContent() {
 
 function App() {
   return (
-    <FullscreenLayout>
-      <FocusProvider>
-        <AppContent />
-      </FocusProvider>
-    </FullscreenLayout>
+    <FocusProvider>
+      <AppContent />
+    </FocusProvider>
   );
 }
 

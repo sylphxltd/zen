@@ -1,6 +1,6 @@
 /** @jsxImportSource @zen/tui */
 import { signal } from '@zen/signal';
-import { FullscreenLayout, render } from '@zen/tui';
+import { render } from '@zen/tui';
 import {
   Box,
   Button,
@@ -255,9 +255,7 @@ const QuestionnaireForm = () => {
 // Render with FocusProvider
 // Tab navigation is automatic (handled by FocusProvider)
 await render(() => (
-  <FullscreenLayout>
-    <FocusProvider>
-      <QuestionnaireForm />
-    </FocusProvider>
-  </FullscreenLayout>
+  <FocusProvider>
+    <QuestionnaireForm />
+  </FocusProvider>
 ));

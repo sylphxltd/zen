@@ -13,7 +13,6 @@ import {
   Box,
   Checkbox,
   FocusProvider,
-  FullscreenLayout,
   Newline,
   SelectInput,
   type SelectOption,
@@ -192,11 +191,9 @@ function Form() {
 
 function App() {
   return (
-    <FullscreenLayout>
-      <FocusProvider>
-        <Form />
-      </FocusProvider>
-    </FullscreenLayout>
+    <FocusProvider>
+      <Form />
+    </FocusProvider>
   );
 }
 
