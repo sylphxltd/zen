@@ -165,12 +165,7 @@ export class ScreenManager {
    * @param layoutMap - Layout map for fullscreen mode
    * @param fullRender - Force full render (no diffing)
    */
-  render(
-    content: string,
-    node?: TUINode,
-    layoutMap?: LayoutMap,
-    fullRender = false,
-  ): void {
+  render(content: string, node?: TUINode, layoutMap?: LayoutMap, fullRender = false): void {
     if (!this.started) {
       throw new Error('ScreenManager not started');
     }
@@ -212,12 +207,7 @@ export class ScreenManager {
    * @param content - Fallback string content for inline mode
    * @param fullRender - Force full render
    */
-  renderNode(
-    node: TUINode,
-    layoutMap: LayoutMap,
-    content: string,
-    fullRender = false,
-  ): void {
+  renderNode(node: TUINode, layoutMap: LayoutMap, content: string, fullRender = false): void {
     if (!this.started) {
       throw new Error('ScreenManager not started');
     }
