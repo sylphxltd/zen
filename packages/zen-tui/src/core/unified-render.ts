@@ -272,7 +272,10 @@ export async function render(createApp: () => unknown): Promise<() => void> {
     }
 
     // Phase 2: Render to buffer
-    const fullRender = isFirstRender || needsLayoutRecompute;
+    // For inline mode: ALWAYS do full render (clear buffer) because we use clear+rewrite strategy
+    // The incremental rendering optimization only benefits fullscreen mode with fine-grained updates
+    // For fullscreen mode: Use incremental render when possible for better performance
+    const fullRender = isFirstRender || needsLayoutRecompute || !inFullscreen;
     renderToBuffer(node, currentBuffer, layoutMap, fullRender);
 
     if (isFirstRender) {
