@@ -284,6 +284,9 @@ export async function render(createApp: () => unknown): Promise<() => void> {
     let newLines = output.split('\n');
 
     // For inline mode, trim trailing empty lines
+    // Save previous height for clearing BEFORE updating actualContentHeight
+    const previousContentHeight = actualContentHeight;
+
     if (!inFullscreen) {
       let lastContentLine = newLines.length - 1;
       while (lastContentLine >= 0) {
@@ -294,7 +297,6 @@ export async function render(createApp: () => unknown): Promise<() => void> {
       const contentHeight = Math.max(1, lastContentLine + 1);
       newLines = newLines.slice(0, contentHeight);
       output = newLines.join('\n');
-      actualContentHeight = contentHeight;
     }
 
     const newOutputHeight = newLines.length;
@@ -302,7 +304,7 @@ export async function render(createApp: () => unknown): Promise<() => void> {
     // Phase 4: Output to terminal
     const changes = currentBuffer.diff(previousBuffer);
 
-    if (changes.length > 0 || actualContentHeight !== newOutputHeight) {
+    if (changes.length > 0 || previousContentHeight !== newOutputHeight) {
       if (inFullscreen) {
         // ====================================================================
         // FULLSCREEN MODE: Fine-grained line updates
@@ -315,18 +317,19 @@ export async function render(createApp: () => unknown): Promise<() => void> {
         // ====================================================================
         // INLINE MODE: Clear and rewrite
         // ====================================================================
-        // Clear previous content
-        if (actualContentHeight > 0) {
+        // Clear previous content using PREVIOUS height (not new height)
+        // This ensures we clear all old content when content shrinks
+        if (previousContentHeight > 0) {
           process.stdout.write('\r');
-          for (let i = 0; i < actualContentHeight; i++) {
+          for (let i = 0; i < previousContentHeight; i++) {
             process.stdout.write('\x1b[2K');
-            if (i < actualContentHeight - 1) {
+            if (i < previousContentHeight - 1) {
               process.stdout.write('\x1b[1B\r');
             }
           }
           // Move back to top
-          if (actualContentHeight > 1) {
-            process.stdout.write(`\x1b[${actualContentHeight - 1}A`);
+          if (previousContentHeight > 1) {
+            process.stdout.write(`\x1b[${previousContentHeight - 1}A`);
           }
           process.stdout.write('\r');
         }
