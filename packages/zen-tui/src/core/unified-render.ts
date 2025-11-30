@@ -24,6 +24,7 @@
  */
 
 import { createRoot, effect, signal } from '@zen/signal';
+import stripAnsi from 'strip-ansi';
 import { dispatchInput } from '../hooks/useInput.js';
 import { dispatchMouseEvent as dispatchGlobalMouseEvent } from '../hooks/useMouse.js';
 import { terminalHeightSignal, terminalWidthSignal } from '../hooks/useTerminalSize.js';
@@ -319,9 +320,11 @@ export async function render(createApp: () => unknown): Promise<() => void> {
     // - Inline: Only uses lines with actual content
     const inFullscreen = isFullscreenActive();
     if (!inFullscreen) {
-      // Find the last non-empty line
+      // Find the last non-empty line (use stripAnsi to ignore ANSI codes)
       let lastContentLine = newLines.length - 1;
-      while (lastContentLine >= 0 && newLines[lastContentLine].trim() === '') {
+      while (lastContentLine >= 0) {
+        const stripped = stripAnsi(newLines[lastContentLine]);
+        if (stripped.trim() !== '') break;
         lastContentLine--;
       }
       // Keep at least one line
@@ -562,16 +565,20 @@ export async function render(createApp: () => unknown): Promise<() => void> {
     // Show cursor
     process.stdout.write('\x1b[?25h');
 
-    // Move cursor to bottom (inline mode)
-    // Cursor is at row 1 after rendering, need to move to row lastOutputHeight
-    // then print newline to position prompt below content
-    if (!isFullscreenActive() && lastOutputHeight > 0) {
-      // Move down to last line of content (lastOutputHeight - 1 moves from row 1)
-      for (let i = 0; i < lastOutputHeight - 1; i++) {
+    // Move cursor below content (inline mode)
+    // Cursor is at row 1 after rendering. We need to position it below content
+    // so the shell prompt appears after the app output.
+    //
+    // For apps smaller than terminal height: move down content height + newline
+    // For apps larger than terminal height: just output newlines to scroll past
+    //
+    // Using terminal height as fallback ensures we don't corrupt multi-screen content
+    if (!isFullscreenActive()) {
+      const moveLines = Math.max(lastOutputHeight, terminalHeight);
+      for (let i = 0; i < moveLines; i++) {
         process.stdout.write('\x1b[1B');
       }
-      // Move to end of last line and print newlines to position prompt below
-      process.stdout.write('\n\n');
+      process.stdout.write('\n');
     }
 
     if (process.stdin.isTTY) {
