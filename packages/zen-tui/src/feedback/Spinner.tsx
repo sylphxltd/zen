@@ -4,7 +4,7 @@
  * Animated loading spinner with multiple styles.
  */
 
-import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, onCleanup, resolve, signal } from '@zen/runtime';
 import type { TUINode } from '../core/types.js';
 import { Text } from '../primitives/Text.js';
 
@@ -37,9 +37,12 @@ export function Spinner(props: SpinnerProps): TUINode {
   const frameIndex = signal(0);
 
   // Start animation interval
-  const _interval = setInterval(() => {
+  const interval = setInterval(() => {
     frameIndex.value = (frameIndex.value + 1) % 100; // Prevent overflow
   }, intervalMs);
+
+  // Cleanup interval when component is disposed
+  onCleanup(() => clearInterval(interval));
 
   // Return Text with reactive children
   return Text({
