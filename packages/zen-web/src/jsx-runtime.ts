@@ -16,7 +16,7 @@
 
 import { executeDescriptor, isDescriptor, isSignal } from '@zen/runtime';
 import type { ComponentDescriptor } from '@zen/runtime';
-import { effect } from '@zen/signal';
+import { effect, onCleanup } from '@zen/signal';
 import { enterHydrateParent, getNextHydrateNode, isHydrating } from './hydrate.js';
 
 export { Fragment } from './core/fragment.js';
@@ -120,7 +120,10 @@ function setAttribute(element: Element, key: string, value: unknown): void {
   if (key.charCodeAt(0) === 111 && key.charCodeAt(1) === 110) {
     // 'on' prefix check via char codes (faster than startsWith)
     const eventName = key.slice(2).toLowerCase();
-    element.addEventListener(eventName, value);
+    const handler = value as EventListener;
+    element.addEventListener(eventName, handler);
+    // Register cleanup to remove listener when component is disposed
+    onCleanup(() => element.removeEventListener(eventName, handler));
     return;
   }
 
