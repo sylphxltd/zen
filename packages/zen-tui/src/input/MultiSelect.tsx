@@ -11,7 +11,7 @@
  * - Limit visible items (scrolling)
  */
 
-import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, createUniqueId, resolve, signal } from '@zen/runtime';
 import type { TUINode, TUIStyle } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -44,7 +44,7 @@ export interface MultiSelectProps<T = string> {
 
 export function MultiSelect<T = string>(props: MultiSelectProps<T>): TUINode {
   // Generate unique ID if not provided
-  const id = props.id || `multiselect-${Math.random().toString(36).slice(2, 9)}`;
+  const id = props.id || `multiselect-${createUniqueId()}`;
 
   // Helper to resolve items (supports MaybeReactive)
   const getItems = () => resolve(props.items);

@@ -5,7 +5,7 @@
  * Press Y/N or arrow keys + enter.
  */
 
-import { signal } from '@zen/runtime';
+import { createUniqueId, signal } from '@zen/runtime';
 import type { TUINode, TUIStyle } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -26,7 +26,7 @@ export interface ConfirmationProps {
 }
 
 export function Confirmation(props: ConfirmationProps): TUINode {
-  const id = props.id || `confirmation-${Math.random().toString(36).slice(2, 9)}`;
+  const id = props.id || `confirmation-${createUniqueId()}`;
 
   const yesLabel = props.yesLabel || 'Yes';
   const noLabel = props.noLabel || 'No';

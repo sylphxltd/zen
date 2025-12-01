@@ -5,7 +5,7 @@
  */
 
 import { open } from '@zen/router-core';
-import { signal } from '@zen/runtime';
+import { createUniqueId, signal } from '@zen/runtime';
 import { appendChild } from '../core/jsx-runtime.js';
 import type { TUINode, TUIStyle } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
@@ -45,7 +45,7 @@ export function RouterLink(props: RouterLinkProps): TUINode {
     id,
   } = props;
 
-  const linkId = id || `router-link-${Math.random().toString(36).slice(2, 9)}`;
+  const linkId = id || `router-link-${createUniqueId()}`;
 
   // Visual states
   const isPressed = signal(false);

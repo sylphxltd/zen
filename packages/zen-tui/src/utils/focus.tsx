@@ -62,6 +62,7 @@
 import {
   computed,
   createContext,
+  createUniqueId,
   effect,
   onCleanup,
   onMount,
@@ -448,8 +449,7 @@ export function useFocus(options: UseFocusOptions = {}) {
   const ctx = useContext(FocusContext);
 
   // Generate stable ID if not provided (matches Ink's behavior)
-  // Using short random string for uniqueness without collisions
-  const id = customId ?? `focus-${Math.random().toString(36).slice(2, 7)}`;
+  const id = customId ?? `focus-${createUniqueId()}`;
 
   // ==========================================================================
   // Standalone mode (no FocusProvider)

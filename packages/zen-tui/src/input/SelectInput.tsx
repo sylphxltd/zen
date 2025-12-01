@@ -4,7 +4,7 @@
  * Dropdown/select input with keyboard navigation.
  */
 
-import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, createUniqueId, resolve, signal } from '@zen/runtime';
 import type { TUINode, TUIStyle } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -41,7 +41,7 @@ export interface SelectInputProps<T = string> {
 
 export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
   // Generate unique ID if not provided
-  const id = props.id || `select-${Math.random().toString(36).slice(2, 9)}`;
+  const id = props.id || `select-${createUniqueId()}`;
 
   // Helpers to resolve MaybeReactive props
   const getOptions = () => resolve(props.options);

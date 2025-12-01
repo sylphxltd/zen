@@ -5,7 +5,7 @@
  * Matches Ink radio button behavior.
  */
 
-import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, createUniqueId, resolve, signal } from '@zen/runtime';
 import type { TUINode, TUIStyle } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -35,7 +35,7 @@ export interface RadioProps<T = string> {
 }
 
 export function Radio<T = string>(props: RadioProps<T>): TUINode {
-  const id = props.id || `radio-${Math.random().toString(36).slice(2, 9)}`;
+  const id = props.id || `radio-${createUniqueId()}`;
 
   // Helper to resolve options (supports MaybeReactive)
   const getOptions = () => resolve(props.options);

@@ -4,7 +4,7 @@
  * Interactive checkbox with keyboard toggle.
  */
 
-import { type MaybeReactive, type Signal, resolve, signal } from '@zen/runtime';
+import { type MaybeReactive, type Signal, createUniqueId, resolve, signal } from '@zen/runtime';
 import type { TUINode, TUIStyle } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -30,7 +30,7 @@ export interface CheckboxProps {
 
 export function Checkbox(props: CheckboxProps): TUINode {
   // Generate unique ID if not provided
-  const id = props.id || `checkbox-${Math.random().toString(36).slice(2, 9)}`;
+  const id = props.id || `checkbox-${createUniqueId()}`;
 
   // Checked state management
   const checkedSignal =

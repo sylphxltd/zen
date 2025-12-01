@@ -5,7 +5,7 @@
  * Matches Ink tabs behavior.
  */
 
-import { type Signal, signal } from '@zen/runtime';
+import { type Signal, createUniqueId, signal } from '@zen/runtime';
 import type { TUINode, TUIStyle } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
@@ -50,7 +50,7 @@ export function Tab(props: TabProps): TUINode {
  * Tabs component - tabbed navigation
  */
 export function Tabs(props: TabsProps): TUINode {
-  const id = props.id || `tabs-${Math.random().toString(36).slice(2, 9)}`;
+  const id = props.id || `tabs-${createUniqueId()}`;
 
   // Active tab index
   const activeTabSignal =
