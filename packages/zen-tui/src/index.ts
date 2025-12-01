@@ -27,6 +27,7 @@ export {
   signal,
   computed,
   effect,
+  rawEffect,
   batch,
   untrack,
   peek,
@@ -43,6 +44,7 @@ export {
   Match,
   ErrorBoundary,
   Suspense,
+  Dynamic,
   // Context
   createContext,
   useContext,
@@ -59,8 +61,8 @@ export {
   createUniqueId,
 } from '@zen/runtime';
 
-// Re-export types for reactive props
-export type { MaybeReactive, Reactive } from '@zen/runtime';
+// Re-export types for reactive props and signals
+export type { Signal, Computed, Owner, Context, MaybeReactive, Reactive } from '@zen/runtime';
 
 // ============================================================================
 // Core - Rendering infrastructure
