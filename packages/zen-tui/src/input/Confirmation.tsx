@@ -20,6 +20,8 @@ export interface ConfirmationProps {
   noLabel?: string;
   defaultYes?: boolean; // Default to Yes (default: true)
   id?: string;
+  /** Auto-focus this confirmation on mount */
+  autoFocus?: boolean;
   style?: TUIStyle;
 }
 
@@ -34,7 +36,7 @@ export function Confirmation(props: ConfirmationProps): TUINode {
   const highlighted = signal(defaultYes ? 0 : 1);
 
   // Focus management
-  const { isFocused } = useFocus({ id });
+  const { isFocused } = useFocus({ id, autoFocus: props.autoFocus });
 
   // Handle keyboard input
   useInput((input, _key) => {

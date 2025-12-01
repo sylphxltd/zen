@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import { createRoot, setPlatformOps } from '@zen/runtime';
 import { tuiPlatformOps } from '../core/platform-ops.js';
+import { clearInputHandlers, dispatchInput } from '../hooks/useInput.js';
+import { Box } from '../primitives/Box.js';
 import { Text } from '../primitives/Text.js';
-import { FocusProvider, useFocusManager } from './focus.js';
+import { FocusProvider, useFocus, useFocusManager } from './focus.js';
+
+// Type alias for test results (avoids noExplicitAny in tests)
+type FocusResult = ReturnType<typeof useFocus>;
 
 // Initialize platform operations before tests
 setPlatformOps(tuiPlatformOps);
@@ -117,5 +122,228 @@ describe('Lazy Children Pattern', () => {
     });
 
     expect(componentCreated).toBe(true);
+  });
+});
+
+describe('autoFocus', () => {
+  it('should auto-focus first item with autoFocus: true', async () => {
+    clearInputHandlers();
+
+    let focusResult: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusResult = useFocus({ id: 'input-1', autoFocus: true });
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(focusResult?.isFocused?.value).toBe(true);
+    clearInputHandlers();
+  });
+
+  it('should NOT auto-focus when autoFocus is not set', async () => {
+    clearInputHandlers();
+
+    let focusResult: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusResult = useFocus({ id: 'input-1' }); // No autoFocus
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(focusResult?.isFocused?.value).toBe(false);
+    clearInputHandlers();
+  });
+
+  it('should NOT auto-focus when autoFocus is false', async () => {
+    clearInputHandlers();
+
+    let focusResult: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusResult = useFocus({ id: 'input-1', autoFocus: false });
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(focusResult?.isFocused?.value).toBe(false);
+    clearInputHandlers();
+  });
+
+  it('should only auto-focus first item when multiple have autoFocus', async () => {
+    clearInputHandlers();
+
+    let focusA: FocusResult;
+    let focusB: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusA = useFocus({ id: 'input-a', autoFocus: true });
+          focusB = useFocus({ id: 'input-b', autoFocus: true });
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // First registered item gets focus
+    expect(focusA?.isFocused?.value).toBe(true);
+    expect(focusB?.isFocused?.value).toBe(false);
+    clearInputHandlers();
+  });
+
+  it('should auto-focus second item if first does not have autoFocus', async () => {
+    clearInputHandlers();
+
+    let focusA: FocusResult;
+    let focusB: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusA = useFocus({ id: 'input-a' }); // No autoFocus
+          focusB = useFocus({ id: 'input-b', autoFocus: true }); // Has autoFocus
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(focusA?.isFocused?.value).toBe(false);
+    expect(focusB?.isFocused?.value).toBe(true);
+    clearInputHandlers();
+  });
+
+  it('should require Tab to focus when no autoFocus is set on any item', async () => {
+    clearInputHandlers();
+
+    let focusA: FocusResult;
+    let focusB: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusA = useFocus({ id: 'input-a' });
+          focusB = useFocus({ id: 'input-b' });
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Nothing focused initially
+    expect(focusA?.isFocused?.value).toBe(false);
+    expect(focusB?.isFocused?.value).toBe(false);
+
+    // Press Tab to focus first item
+    dispatchInput('\t');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(focusA?.isFocused?.value).toBe(true);
+    expect(focusB?.isFocused?.value).toBe(false);
+
+    // Press Tab again to focus second item
+    dispatchInput('\t');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(focusA?.isFocused?.value).toBe(false);
+    expect(focusB?.isFocused?.value).toBe(true);
+
+    clearInputHandlers();
+  });
+
+  it('should preserve Tab navigation order regardless of autoFocus', async () => {
+    clearInputHandlers();
+
+    let focusA: FocusResult;
+    let focusB: FocusResult;
+    let focusC: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusA = useFocus({ id: 'input-a' });
+          focusB = useFocus({ id: 'input-b', autoFocus: true }); // Middle item has autoFocus
+          focusC = useFocus({ id: 'input-c' });
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // B has autoFocus, so it starts focused
+    expect(focusA?.isFocused?.value).toBe(false);
+    expect(focusB?.isFocused?.value).toBe(true);
+    expect(focusC?.isFocused?.value).toBe(false);
+
+    // Tab should go to C (next in order)
+    dispatchInput('\t');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(focusA?.isFocused?.value).toBe(false);
+    expect(focusB?.isFocused?.value).toBe(false);
+    expect(focusC?.isFocused?.value).toBe(true);
+
+    // Tab should wrap to A
+    dispatchInput('\t');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(focusA?.isFocused?.value).toBe(true);
+    expect(focusB?.isFocused?.value).toBe(false);
+    expect(focusC?.isFocused?.value).toBe(false);
+
+    clearInputHandlers();
+  });
+
+  it('should support Shift+Tab to go backwards from autoFocus', async () => {
+    clearInputHandlers();
+
+    let focusA: FocusResult;
+    let focusB: FocusResult;
+
+    createRoot(() => {
+      return FocusProvider({
+        get children() {
+          focusA = useFocus({ id: 'input-a' });
+          focusB = useFocus({ id: 'input-b', autoFocus: true });
+          return Box({ children: 'test' });
+        },
+      });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // B starts focused
+    expect(focusB?.isFocused?.value).toBe(true);
+
+    // Shift+Tab should go to A
+    dispatchInput('\x1b[Z'); // Shift+Tab escape sequence
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(focusA?.isFocused?.value).toBe(true);
+    expect(focusB?.isFocused?.value).toBe(false);
+
+    clearInputHandlers();
   });
 });

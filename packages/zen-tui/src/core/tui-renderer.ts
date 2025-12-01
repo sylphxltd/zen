@@ -17,6 +17,7 @@
  * @see docs/adr/003-final-renderer-architecture.md
  */
 
+import { executeDescriptor, isDescriptor } from '@zen/runtime';
 import { createRoot, signal } from '@zen/signal';
 import { dispatchInput } from '../hooks/useInput.js';
 import { dispatchMouseEvent as dispatchGlobalMouseEvent } from '../hooks/useMouse.js';
@@ -40,7 +41,6 @@ import {
 } from './renderer/index.js';
 import type { TUINode, TUIStyle } from './types.js';
 import { type LayoutMap, computeLayout } from './yoga-layout.js';
-import { executeDescriptor, isDescriptor } from '@zen/runtime';
 
 // ============================================================================
 // Static Component Helpers
@@ -48,8 +48,9 @@ import { executeDescriptor, isDescriptor } from '@zen/runtime';
 
 /**
  * Find all Static nodes in the tree.
+ * @internal Exported for testing
  */
-function findStaticNodes(node: TUINode): TUINode[] {
+export function findStaticNodes(node: TUINode): TUINode[] {
   const result: TUINode[] = [];
 
   if (node.tagName === 'static') {
@@ -116,9 +117,34 @@ function applyStaticTextStyle(text: string, style: TUIStyle = {}): string {
 }
 
 /**
- * Render a TUINode to a string for static output.
+ * Get border characters for a style
  */
-function renderNodeToString(node: TUINode | string, parentStyle: TUIStyle = {}): string {
+function getBorderChars(borderStyle: string): {
+  h: string;
+  v: string;
+  tl: string;
+  tr: string;
+  bl: string;
+  br: string;
+} {
+  const borders: Record<
+    string,
+    { h: string; v: string; tl: string; tr: string; bl: string; br: string }
+  > = {
+    single: { h: '─', v: '│', tl: '┌', tr: '┐', bl: '└', br: '┘' },
+    double: { h: '═', v: '║', tl: '╔', tr: '╗', bl: '╚', br: '╝' },
+    round: { h: '─', v: '│', tl: '╭', tr: '╮', bl: '╰', br: '╯' },
+    bold: { h: '━', v: '┃', tl: '┏', tr: '┓', bl: '┗', br: '┛' },
+    classic: { h: '-', v: '|', tl: '+', tr: '+', bl: '+', br: '+' },
+  };
+  return borders[borderStyle] || borders.single;
+}
+
+/**
+ * Render a TUINode to a string for static output.
+ * @internal Exported for testing
+ */
+export function renderNodeToString(node: TUINode | string, parentStyle: TUIStyle = {}): string {
   if (typeof node === 'string') {
     return applyStaticTextStyle(node, parentStyle);
   }
@@ -144,14 +170,49 @@ function renderNodeToString(node: TUINode | string, parentStyle: TUIStyle = {}):
 
   // Box or other container - render children
   if (node.children) {
-    return node.children
+    // Check flex direction
+    const flexDirection =
+      typeof style.flexDirection === 'function' ? style.flexDirection() : style.flexDirection;
+    const isColumn = flexDirection === 'column';
+    const separator = isColumn ? '\n' : '';
+
+    let content = node.children
       .map((child) => {
         if (typeof child === 'string') {
           return applyStaticTextStyle(child, mergedStyle);
         }
         return renderNodeToString(child as TUINode, mergedStyle);
       })
-      .join('');
+      .join(separator);
+
+    // Handle border
+    const borderStyle =
+      typeof style.borderStyle === 'function' ? style.borderStyle() : style.borderStyle;
+
+    if (borderStyle) {
+      const borderColor =
+        typeof style.borderColor === 'function' ? style.borderColor() : style.borderColor;
+      const chars = getBorderChars(borderStyle as string);
+      const colorCode = borderColor ? getColorCode(borderColor as string) : '';
+      const resetCode = borderColor ? '\x1b[39m' : '';
+
+      // Split content into lines
+      const lines = content.split('\n');
+      const maxLen = Math.max(...lines.map((l) => l.replace(/\x1b\[[0-9;]*m/g, '').length), 0);
+
+      // Build bordered output
+      const topBorder = `${colorCode}${chars.tl}${chars.h.repeat(maxLen + 2)}${chars.tr}${resetCode}`;
+      const bottomBorder = `${colorCode}${chars.bl}${chars.h.repeat(maxLen + 2)}${chars.br}${resetCode}`;
+      const borderedLines = lines.map((line) => {
+        const visibleLen = line.replace(/\x1b\[[0-9;]*m/g, '').length;
+        const padding = ' '.repeat(maxLen - visibleLen);
+        return `${colorCode}${chars.v}${resetCode} ${line}${padding} ${colorCode}${chars.v}${resetCode}`;
+      });
+
+      content = [topBorder, ...borderedLines, bottomBorder].join('\n');
+    }
+
+    return content;
   }
 
   return '';
@@ -160,8 +221,9 @@ function renderNodeToString(node: TUINode | string, parentStyle: TUIStyle = {}):
 /**
  * Process static nodes and print new items to stdout.
  * Returns the number of lines printed.
+ * @internal Exported for testing
  */
-function processStaticNodes(rootNode: TUINode, isInlineMode: boolean): number {
+export function processStaticNodes(rootNode: TUINode, isInlineMode: boolean): number {
   if (!isInlineMode) {
     // Static output only works in inline mode (scrollback)
     return 0;
@@ -197,10 +259,11 @@ function processStaticNodes(rootNode: TUINode, isInlineMode: boolean): number {
         if (isDescriptor(rendered)) {
           rendered = executeDescriptor(rendered);
         }
-        const line = renderNodeToString(rendered as TUINode);
+        const content = renderNodeToString(rendered as TUINode);
         // Print to stdout directly (goes to scrollback)
-        process.stdout.write(`${line}\n`);
-        linesPrinted++;
+        process.stdout.write(`${content}\n`);
+        // Count actual lines (content may have newlines from borders/column layout)
+        linesPrinted += content.split('\n').length;
       }
 
       // Update the rendered count
@@ -240,6 +303,9 @@ export interface TUIRendererOptions {
 // ============================================================================
 
 const INLINE_MAX_HEIGHT = 1000;
+
+/** Maximum FPS for render loop (33ms = ~30 FPS) */
+const MIN_FRAME_TIME_MS = 33;
 
 // ============================================================================
 // Mouse Registration
@@ -320,10 +386,21 @@ export class TUIRenderer {
   private updatePending = false;
   private lastMode: 'inline' | 'fullscreen' = 'inline';
 
+  // FPS throttling
+  private lastRenderTime = 0;
+  private throttledUpdatePending = false;
+
   // Event handlers (stored for cleanup)
   private keyHandler: ((data: Buffer | string) => void) | null = null;
   private resizeHandler: (() => void) | null = null;
   private keepaliveInterval: ReturnType<typeof setInterval> | null = null;
+
+  // Console interception (stored for cleanup)
+  private originalConsoleLog: typeof console.log | null = null;
+  private originalConsoleError: typeof console.error | null = null;
+  private originalConsoleWarn: typeof console.warn | null = null;
+  private originalStdoutWrite: typeof process.stdout.write | null = null;
+  private originalStderrWrite: typeof process.stderr.write | null = null;
 
   constructor(options: TUIRendererOptions = {}) {
     this.terminalWidth = options.width ?? process.stdout.columns ?? 80;
@@ -385,6 +462,9 @@ export class TUIRenderer {
     // Setup event handlers
     this.setupEventHandlers();
 
+    // Setup console interception (prints console.log above dynamic UI)
+    this.setupConsoleInterception();
+
     // Initial render
     await this.flushUpdates();
   }
@@ -405,6 +485,9 @@ export class TUIRenderer {
 
     // Remove event handlers
     this.cleanupEventHandlers();
+
+    // Restore console methods
+    this.restoreConsole();
 
     // Restore terminal
     this.cleanupTerminal();
@@ -448,9 +531,36 @@ export class TUIRenderer {
       this.updatePending = true;
       queueMicrotask(() => {
         this.updatePending = false;
-        if (this.isRunning) this.flushUpdates();
+        if (this.isRunning) this.throttledFlush();
       });
     }
+  }
+
+  /**
+   * FPS-throttled flush.
+   * Ensures we don't render faster than 30 FPS.
+   */
+  private throttledFlush(): void {
+    const now = performance.now();
+    const timeSinceLastRender = now - this.lastRenderTime;
+
+    if (timeSinceLastRender >= MIN_FRAME_TIME_MS) {
+      // Enough time has passed, render immediately
+      this.lastRenderTime = now;
+      this.flushUpdates();
+    } else if (!this.throttledUpdatePending) {
+      // Schedule render for next frame
+      this.throttledUpdatePending = true;
+      const delay = MIN_FRAME_TIME_MS - timeSinceLastRender;
+      setTimeout(() => {
+        this.throttledUpdatePending = false;
+        if (this.isRunning) {
+          this.lastRenderTime = performance.now();
+          this.flushUpdates();
+        }
+      }, delay);
+    }
+    // If throttledUpdatePending is true, a render is already scheduled
   }
 
   private invalidateLayout(): void {
@@ -502,6 +612,15 @@ export class TUIRenderer {
     // Process Static nodes - print new items to scrollback (inline mode only)
     // This must happen BEFORE the main render so static content appears above dynamic UI
     const isInlineMode = !isFullscreenActive();
+
+    // Check if there are new static items to print
+    const staticItemCount = this.countNewStaticItems();
+    if (staticItemCount > 0 && isInlineMode) {
+      // Clear current UI first, then print static content
+      // This ensures clean scrollback without visual artifacts
+      this.bufferRenderer.clearCurrentContent();
+    }
+
     const staticLinesPrinted = processStaticNodes(this.rootNode, isInlineMode);
 
     // If static content was printed, reset cursor tracking so we don't clear the static content
@@ -523,6 +642,150 @@ export class TUIRenderer {
 
     // Clear dirty flags
     clearDirtyFlags();
+  }
+
+  // ==========================================================================
+  // Private - Static Content Helpers
+  // ==========================================================================
+
+  /**
+   * Count new static items that need to be printed.
+   */
+  private countNewStaticItems(): number {
+    if (!this.rootNode) return 0;
+
+    const staticNodes = findStaticNodes(this.rootNode);
+    let count = 0;
+
+    for (const staticNode of staticNodes) {
+      const itemsGetter = staticNode.props?.__itemsGetter as (() => unknown[]) | undefined;
+      const lastCount = (staticNode.props?.__lastRenderedCount as number) || 0;
+
+      if (!itemsGetter) continue;
+
+      const items = itemsGetter();
+      const newCount = items?.length || 0;
+
+      if (newCount > lastCount) {
+        count += newCount - lastCount;
+      }
+    }
+
+    return count;
+  }
+
+  // ==========================================================================
+  // Private - Console Interception
+  // ==========================================================================
+
+  /**
+   * Intercept console.log/error/warn to print above dynamic UI.
+   * This ensures all non-managed output goes to scrollback.
+   */
+  private setupConsoleInterception(): void {
+    // Only intercept in inline mode
+    if (isFullscreenActive()) return;
+
+    // Store originals
+    this.originalConsoleLog = console.log;
+    this.originalConsoleError = console.error;
+    this.originalConsoleWarn = console.warn;
+    this.originalStdoutWrite = process.stdout.write.bind(process.stdout);
+    this.originalStderrWrite = process.stderr.write.bind(process.stderr);
+
+    // Helper to write above dynamic UI
+    const writeAboveUI = (message: string) => {
+      if (!this.isRunning || !this.bufferRenderer) {
+        // Not running, use original
+        this.originalStdoutWrite?.(message);
+        return;
+      }
+
+      // Clear current UI, write message, re-render
+      this.bufferRenderer.clearCurrentContent();
+      this.originalStdoutWrite?.(`${message}\n`);
+      this.bufferRenderer.resetCursorForStaticContent(1);
+      this.scheduleUpdate();
+    };
+
+    // Intercept console.log
+    console.log = (...args: unknown[]) => {
+      const message = args
+        .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+        .join(' ');
+      writeAboveUI(message);
+    };
+
+    // Intercept console.error
+    console.error = (...args: unknown[]) => {
+      const message = args
+        .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+        .join(' ');
+      writeAboveUI(`\x1b[31m${message}\x1b[39m`); // Red color
+    };
+
+    // Intercept console.warn
+    console.warn = (...args: unknown[]) => {
+      const message = args
+        .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+        .join(' ');
+      writeAboveUI(`\x1b[33m${message}\x1b[39m`); // Yellow color
+    };
+    process.stdout.write = ((
+      chunk: string | Uint8Array,
+      encodingOrCallback?: BufferEncoding | ((err?: Error) => void),
+      callback?: (err?: Error) => void,
+    ): boolean => {
+      const str = typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
+
+      // Check if this is from our renderer (contains escape sequences we use)
+      // Skip interception for sync markers and cursor movements
+      if (
+        str.includes('\x1b[?2026') || // Sync markers
+        str.includes('\x1b[?25') || // Cursor show/hide
+        (str.includes('\x1b[') &&
+          (str.includes('H') || str.includes('K') || str.includes('A') || str.includes('B'))) // Cursor movement/clear
+      ) {
+        return this.originalStdoutWrite?.(chunk, encodingOrCallback as BufferEncoding, callback);
+      }
+
+      // External stdout write - print above UI
+      if (this.isRunning && this.bufferRenderer && str.trim()) {
+        this.bufferRenderer.clearCurrentContent();
+        this.originalStdoutWrite?.(chunk, encodingOrCallback as BufferEncoding, callback);
+        this.bufferRenderer.resetCursorForStaticContent(str.split('\n').length);
+        this.scheduleUpdate();
+        return true;
+      }
+
+      return this.originalStdoutWrite?.(chunk, encodingOrCallback as BufferEncoding, callback);
+    }) as typeof process.stdout.write;
+  }
+
+  /**
+   * Restore original console methods.
+   */
+  private restoreConsole(): void {
+    if (this.originalConsoleLog) {
+      console.log = this.originalConsoleLog;
+      this.originalConsoleLog = null;
+    }
+    if (this.originalConsoleError) {
+      console.error = this.originalConsoleError;
+      this.originalConsoleError = null;
+    }
+    if (this.originalConsoleWarn) {
+      console.warn = this.originalConsoleWarn;
+      this.originalConsoleWarn = null;
+    }
+    if (this.originalStdoutWrite) {
+      process.stdout.write = this.originalStdoutWrite;
+      this.originalStdoutWrite = null;
+    }
+    if (this.originalStderrWrite) {
+      process.stderr.write = this.originalStderrWrite;
+      this.originalStderrWrite = null;
+    }
   }
 
   // ==========================================================================

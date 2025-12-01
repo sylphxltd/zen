@@ -28,6 +28,7 @@ const likeMusic = signal(false);
 
 // Submission state
 const submitted = signal(false);
+const countdown = signal(5);
 
 // Age range options
 const ageRangeOptions: SelectOption[] = [
@@ -51,11 +52,16 @@ const occupationOptions: SelectOption[] = [
 // Handle submit
 function handleSubmit() {
   submitted.value = true;
+  countdown.value = 5;
 
-  // Exit after showing summary
-  setTimeout(() => {
-    process.exit(0);
-  }, 5000);
+  // Countdown timer
+  const interval = setInterval(() => {
+    countdown.value--;
+    if (countdown.value <= 0) {
+      clearInterval(interval);
+      process.exit(0);
+    }
+  }, 1000);
 }
 
 // Interests list component
@@ -119,7 +125,7 @@ const QuestionnaireForm = () => {
               </Box>
 
               <Text dim style={{ marginTop: 2 }}>
-                Exiting in 5 seconds...
+                Exiting in {() => countdown.value} seconds...
               </Text>
             </Box>
           );
@@ -142,6 +148,7 @@ const QuestionnaireForm = () => {
                 value={name}
                 placeholder="Enter your name"
                 width={50}
+                autoFocus
                 onChange={(value) => {
                   name.value = value;
                 }}

@@ -111,6 +111,9 @@ export class Renderer {
   /** External render function */
   private renderNodeFn: RenderNodeFn | null = null;
 
+  /** Last output hash for skip-identical optimization */
+  private lastOutputHash = '';
+
   constructor(config: RendererConfig) {
     this.width = config.width;
     this.mode = config.mode;
@@ -270,17 +273,33 @@ export class Renderer {
     if (strategy === RenderStrategy.Full) {
       // Diff entire buffer
       const changes = this.diffFullBuffer();
+
+      // Early exit if no changes
+      if (changes.length === 0) {
+        return;
+      }
+
       for (const change of changes) {
         this.output.updateLine(change.y + 1, change.content);
       }
     } else {
       // Diff only dirty regions
       const regions = this.dirtyTracker.getDirtyRegions();
+      let hasChanges = false;
+
       for (const region of regions) {
         const changes = this.diffRegion(region);
-        for (const change of changes) {
-          this.output.updateLine(change.y + 1, change.content);
+        if (changes.length > 0) {
+          hasChanges = true;
+          for (const change of changes) {
+            this.output.updateLine(change.y + 1, change.content);
+          }
         }
+      }
+
+      // Early exit if no actual changes
+      if (!hasChanges) {
+        return;
       }
     }
   }
@@ -296,32 +315,74 @@ export class Renderer {
     const effectiveStrategy = newHeight !== prevHeight ? RenderStrategy.Full : strategy;
 
     if (effectiveStrategy === RenderStrategy.Full) {
-      // Clear previous content
-      this.clearInlineContent(prevHeight);
-
-      // Write new content
-      const content = this.renderBufferContent(newHeight);
-      this.output.write(content);
-
-      // Move cursor back to line 0
-      if (newHeight > 1) {
-        this.output.moveUp(newHeight - 1);
+      if (!this.outputInlineFull(newHeight, prevHeight)) {
+        return; // Skip render - content identical
       }
-      this.output.carriageReturn();
-      this.cursorLine = 0;
     } else {
-      // Incremental: update only changed lines
-      const changes = this.diffFullBuffer();
-      for (const change of changes) {
-        if (change.y < newHeight) {
-          this.moveToLine(change.y);
-          this.output.replaceLine(change.content);
-        }
+      if (!this.outputInlineIncremental(newHeight, prevHeight)) {
+        return; // Skip render - no changes
       }
-      this.moveToLine(0);
     }
 
     this.contentHeight = newHeight;
+  }
+
+  /**
+   * Full refresh for inline mode.
+   * @returns true if rendered, false if skipped (identical content)
+   */
+  private outputInlineFull(newHeight: number, prevHeight: number): boolean {
+    const content = this.renderBufferContent(newHeight);
+    const contentHash = this.simpleHash(content);
+
+    if (contentHash === this.lastOutputHash && prevHeight === newHeight) {
+      return false; // Content identical, skip render
+    }
+    this.lastOutputHash = contentHash;
+
+    this.clearInlineContent(prevHeight);
+    this.output.write(content);
+
+    if (newHeight > 1) {
+      this.output.moveUp(newHeight - 1);
+    }
+    this.output.carriageReturn();
+    this.cursorLine = 0;
+    return true;
+  }
+
+  /**
+   * Incremental update for inline mode.
+   * @returns true if rendered, false if skipped (no changes)
+   */
+  private outputInlineIncremental(newHeight: number, prevHeight: number): boolean {
+    const changes = this.diffBuffer(Math.max(newHeight, prevHeight));
+
+    if (changes.length === 0) {
+      return false; // No changes
+    }
+
+    for (const change of changes) {
+      if (change.y < newHeight) {
+        this.moveToLine(change.y);
+        this.output.replaceLine(change.content);
+      }
+    }
+    this.moveToLine(0);
+    return true;
+  }
+
+  /**
+   * Simple hash for content comparison (fast, not cryptographic).
+   */
+  private simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(36);
   }
 
   /**
@@ -388,12 +449,14 @@ export class Renderer {
   }
 
   /**
-   * Diff entire buffer.
+   * Diff buffer up to specified height.
+   * For inline mode, only diff up to contentHeight (not entire 1000-line buffer).
    */
-  private diffFullBuffer(): LineChange[] {
+  private diffBuffer(maxHeight: number): LineChange[] {
     const changes: LineChange[] = [];
+    const limit = Math.min(maxHeight, this.height);
 
-    for (let y = 0; y < this.height; y++) {
+    for (let y = 0; y < limit; y++) {
       const currentLine = this.currentBuffer.getLine(y);
       const previousLine = this.previousBuffer.getLine(y);
 
@@ -403,6 +466,13 @@ export class Renderer {
     }
 
     return changes;
+  }
+
+  /**
+   * Diff entire buffer (for fullscreen mode).
+   */
+  private diffFullBuffer(): LineChange[] {
+    return this.diffBuffer(this.height);
   }
 
   /**
@@ -457,12 +527,25 @@ export class Renderer {
   }
 
   /**
+   * Clear current inline content from screen.
+   * Used before printing static content to prevent visual artifacts.
+   */
+  clearCurrentContent(): void {
+    if (this.mode !== 'inline' || this.contentHeight === 0) return;
+
+    this.output.beginSync();
+    this.clearInlineContent(this.contentHeight);
+    this.output.endSync();
+    this.output.flush();
+  }
+
+  /**
    * Reset cursor position tracking after static content is printed.
    * Call this after printing static content to stdout - it tells the renderer
    * that the cursor is now at a "new" starting position and previous content
    * should not be cleared.
    */
-  resetCursorForStaticContent(linesPrinted: number): void {
+  resetCursorForStaticContent(_linesPrinted: number): void {
     // Reset content height to 0 - the previous content is now in scrollback
     // and should not be cleared on next render
     this.contentHeight = 0;

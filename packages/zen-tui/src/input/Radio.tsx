@@ -26,6 +26,8 @@ export interface RadioProps<T = string> {
   onChange?: (value: T) => void;
   /** Focus ID for FocusProvider */
   id?: string;
+  /** Auto-focus this radio group on mount */
+  autoFocus?: boolean;
   /** Custom styles */
   style?: TUIStyle;
   /** External highlight control */
@@ -48,7 +50,7 @@ export function Radio<T = string>(props: RadioProps<T>): TUINode {
   const highlightedIndex = props.highlightedIndex || signal(0);
 
   // Focus management
-  const { isFocused } = useFocus({ id });
+  const { isFocused } = useFocus({ id, autoFocus: props.autoFocus });
 
   // Handle keyboard input
   useInput((input, _key) => {

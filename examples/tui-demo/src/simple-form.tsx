@@ -31,6 +31,7 @@ function AppContent() {
         value={name}
         placeholder="Your name"
         width={40}
+        autoFocus
         onSubmit={(val) => {
           msg.value = `Hello ${val}!`;
         }}

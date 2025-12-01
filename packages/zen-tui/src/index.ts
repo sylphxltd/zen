@@ -65,9 +65,15 @@ export type { MaybeReactive, Reactive } from '@zen/runtime';
 // ============================================================================
 // Core - Rendering infrastructure
 // ============================================================================
-export { render, registerMouseInterest } from './core/unified-render.js';
+export {
+  render,
+  registerMouseInterest,
+  TUIRenderer,
+  createTUIRenderer,
+  type TUIRendererOptions,
+} from './core/tui-renderer.js';
 /** @deprecated Use `render` instead */
-export { render as renderApp } from './core/unified-render.js';
+export { render as renderApp } from './core/tui-renderer.js';
 export { Fragment } from './core/jsx-runtime.js';
 export type { TUINode, TUIStyle, RenderOutput, MouseClickEvent } from './core/types.js';
 

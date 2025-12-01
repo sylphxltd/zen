@@ -46,9 +46,25 @@ import type { TUINode, TUIStyle } from './types.js';
 import type { LayoutMap } from './yoga-layout.js';
 
 /**
+ * Resolve a potentially reactive value to a string.
+ * Handles: string, function, Signal (object with .value), or undefined.
+ */
+function resolveColor(color: unknown): string | undefined {
+  if (color === undefined || color === null) return undefined;
+  if (typeof color === 'string') return color;
+  if (typeof color === 'function') return resolveColor(color());
+  if (typeof color === 'object' && 'value' in color)
+    return resolveColor((color as { value: unknown }).value);
+  return undefined;
+}
+
+/**
  * Get ANSI color code - using raw ANSI instead of chalk for reliability
  */
 function getColorCode(color: string): string {
+  const resolved = resolveColor(color);
+  if (!resolved) return '\x1b[37m'; // default white
+
   const colorMap: Record<string, string> = {
     black: '\x1b[30m',
     red: '\x1b[31m',
@@ -61,10 +77,13 @@ function getColorCode(color: string): string {
     gray: '\x1b[90m',
     grey: '\x1b[90m',
   };
-  return colorMap[color.toLowerCase()] || '\x1b[37m';
+  return colorMap[resolved.toLowerCase()] || '\x1b[37m';
 }
 
 function getBgColorCode(color: string): string {
+  const resolved = resolveColor(color);
+  if (!resolved) return '\x1b[47m'; // default white
+
   const colorMap: Record<string, string> = {
     black: '\x1b[40m',
     red: '\x1b[41m',
@@ -77,7 +96,7 @@ function getBgColorCode(color: string): string {
     gray: '\x1b[100m',
     grey: '\x1b[100m',
   };
-  return colorMap[color.toLowerCase()] || '\x1b[47m';
+  return colorMap[resolved.toLowerCase()] || '\x1b[47m';
 }
 
 function getColorFn(color: string) {

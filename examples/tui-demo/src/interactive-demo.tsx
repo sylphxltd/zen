@@ -1,3 +1,4 @@
+/** @jsxImportSource @zen/tui */
 /**
  * Interactive Demo - Phase 3 Components
  *
@@ -8,15 +9,12 @@ import {
   Box,
   Button,
   FocusProvider,
-  Fragment,
   ProgressBar,
   Spinner,
   Text,
   incrementProgress,
   render,
   signal,
-  useFocusManager,
-  useInput,
 } from '@zen/tui';
 
 // State
@@ -31,14 +29,8 @@ const _spinnerFrame3 = signal(0);
 const _spinnerFrame4 = signal(0);
 
 function AppContent() {
-  const focusContext = useFocusManager();
-
-  // Handle Tab navigation
-  useInput((_input, key) => {
-    if (key.tab) {
-      focusContext.focusNext();
-    }
-  });
+  // Tab/Shift+Tab navigation is handled automatically by FocusProvider
+  // No need for manual useInput handler
 
   return (
     <Box
@@ -110,15 +102,10 @@ function AppContent() {
       <Text color="white" bold={true}>
         Loading Spinner:
       </Text>
-      <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
         {() =>
           isLoading.value ? (
-            <>
-              <Spinner type="dots" label="Processing" color="cyan" />
-              <Spinner type="line" color="yellow" />
-              <Spinner type="arc" color="green" />
-              <Spinner type="arrow" color="magenta" />
-            </>
+            <Spinner type="dots" label="Processing..." color="cyan" />
           ) : (
             <Text color="gray">Not loading...</Text>
           )
@@ -181,4 +168,4 @@ const _buttonHandlers = {
 const _focusContext: unknown = null;
 
 // Render
-await render(App);
+await render(() => <App />);

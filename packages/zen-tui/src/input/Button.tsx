@@ -31,6 +31,8 @@ export interface ButtonProps {
   width?: number;
   /** Focus ID for FocusProvider */
   id?: string;
+  /** Auto-focus this button on mount */
+  autoFocus?: boolean;
 }
 
 export function Button(props: ButtonProps): TUINode {
@@ -60,6 +62,7 @@ export function Button(props: ButtonProps): TUINode {
 
   const { isFocused } = useFocus({
     id,
+    autoFocus: props.autoFocus,
     isActive: true, // We'll check disabled in the input handler
     onFocus: () => {
       isPressed.value = false;
@@ -133,10 +136,15 @@ export function Button(props: ButtonProps): TUINode {
   return (
     <Box
       style={{
-        borderStyle: () => (isFocused.value ? 'round' : 'single'),
+        borderStyle: 'single',
         borderColor: () => {
           const disabled = getDisabled();
-          return disabled ? 'gray' : isFocused.value ? colorScheme.border : undefined;
+          if (disabled) return 'gray';
+          // Focused: bright border color matching variant
+          if (isFocused.value) {
+            return variant === 'primary' ? 'cyan' : variant === 'danger' ? 'red' : 'white';
+          }
+          return 'gray'; // Unfocused: dim border
         },
         backgroundColor: colorScheme.bg,
         paddingX: 2,
@@ -156,7 +164,11 @@ export function Button(props: ButtonProps): TUINode {
         {() => {
           const disabled = getDisabled();
           const label = getLabel();
-          return disabled ? `[${label}]` : label;
+          // Add focus indicator
+          if (isFocused.value && !disabled) {
+            return `▶ ${label}`;
+          }
+          return disabled ? `[${label}]` : `  ${label}`;
         }}
       </Text>
     </Box>

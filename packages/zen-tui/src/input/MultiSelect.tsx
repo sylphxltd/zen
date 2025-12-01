@@ -34,6 +34,8 @@ export interface MultiSelectProps<T = string> {
   limit?: MaybeReactive<number>;
   /** Focus ID for FocusProvider */
   id?: string;
+  /** Auto-focus this multi-select on mount */
+  autoFocus?: boolean;
   /** Custom styles */
   style?: TUIStyle;
   /** External highlight control */
@@ -64,6 +66,7 @@ export function MultiSelect<T = string>(props: MultiSelectProps<T>): TUINode {
   // Focus management
   const { isFocused } = useFocus({
     id,
+    autoFocus: props.autoFocus,
     onFocus: () => {
       // Reset highlight and scroll on focus
       highlightedIndex.value = 0;

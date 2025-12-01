@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "bun run src/index.tsx",
     "start": "bun run src/index.tsx",
-    "static-demo": "bun run src/static-demo.tsx"
+    "static-demo": "bun run src/static-demo.tsx",
+    "interactive": "bun run src/interactive-demo.tsx",
+    "static-full": "bun run src/static-full-demo.tsx"
   },
   "dependencies": {
     "@zen/tui": "workspace:*"

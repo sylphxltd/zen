@@ -20,6 +20,8 @@ export interface CheckboxProps {
   onChange?: (checked: boolean) => void;
   /** Focus ID for FocusProvider */
   id?: string;
+  /** Auto-focus this checkbox on mount */
+  autoFocus?: boolean;
   /** Fixed width */
   width?: number;
   /** Custom styles */
@@ -37,7 +39,7 @@ export function Checkbox(props: CheckboxProps): TUINode {
       : signal(typeof props.checked === 'boolean' ? props.checked : false);
 
   // Focus management
-  const { isFocused } = useFocus({ id });
+  const { isFocused } = useFocus({ id, autoFocus: props.autoFocus });
 
   // Handle keyboard input
   useInput((input, _key) => {

@@ -29,8 +29,8 @@ import {
   useContext,
 } from '@zen/runtime';
 import { appendChild } from '../core/jsx-runtime.js';
+import { registerMouseInterest } from '../core/tui-renderer.js';
 import type { TUINode } from '../core/types.js';
-import { registerMouseInterest } from '../core/unified-render.js';
 import type { MouseEvent } from '../utils/mouse-parser.js';
 
 // ============================================================================

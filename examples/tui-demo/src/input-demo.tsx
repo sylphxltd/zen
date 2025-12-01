@@ -1,3 +1,4 @@
+/** @jsxImportSource @zen/tui */
 /**
  * Demo: Interactive Input Components
  *

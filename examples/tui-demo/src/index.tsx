@@ -1,3 +1,4 @@
+/** @jsxImportSource @zen/tui */
 /**
  * TUI Demo - Reactive Terminal UI
  *

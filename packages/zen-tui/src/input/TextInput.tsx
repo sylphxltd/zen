@@ -28,6 +28,8 @@ export interface TextInputProps {
   width?: MaybeReactive<number>;
   /** Focus ID for FocusProvider */
   id?: string;
+  /** Auto-focus this input on mount */
+  autoFocus?: boolean;
   /** Custom styles */
   style?: TUIStyle;
   /** External cursor control */
@@ -101,6 +103,7 @@ export function TextInput(props: TextInputProps): TUINode {
   // Focus management
   const { isFocused } = useFocus({
     id,
+    autoFocus: props.autoFocus,
     onFocus: () => {
       // Reset cursor to end on focus
       cursorPos.value = valueSignal.value.length;

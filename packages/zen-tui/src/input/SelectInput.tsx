@@ -29,6 +29,8 @@ export interface SelectInputProps<T = string> {
   width?: MaybeReactive<number>;
   /** Focus ID for FocusProvider */
   id?: string;
+  /** Auto-focus this select on mount */
+  autoFocus?: boolean;
   /** Custom styles */
   style?: TUIStyle;
   /** External dropdown state control */
@@ -61,6 +63,7 @@ export function SelectInput<T = string>(props: SelectInputProps<T>): TUINode {
   // Focus management
   const { isFocused } = useFocus({
     id,
+    autoFocus: props.autoFocus,
     onFocus: () => {
       // Reset highlight to current selection
       const options = getOptions();

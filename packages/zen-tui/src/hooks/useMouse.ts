@@ -9,7 +9,7 @@
  */
 
 import { createUniqueId, onCleanup } from '@zen/runtime';
-import { registerMouseInterest } from '../core/unified-render.js';
+import { registerMouseInterest } from '../core/tui-renderer.js';
 import type { MouseEvent } from '../utils/mouse-parser.js';
 
 // Global mouse event listeners
