@@ -21,15 +21,20 @@ const updateFullScreen = () => {
 if (typeof window !== 'undefined') {
   updateFullScreen();
   window.addEventListener('popstate', updateFullScreen);
-  // Also intercept link clicks for SPA navigation
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const anchor = target.closest('a');
-    if (anchor?.href?.startsWith(window.location.origin)) {
-      // Defer check until after navigation completes
-      setTimeout(updateFullScreen, 0);
-    }
-  });
+
+  // Intercept History API for SPA navigation
+  const originalPushState = history.pushState.bind(history);
+  const originalReplaceState = history.replaceState.bind(history);
+
+  history.pushState = (...args) => {
+    originalPushState(...args);
+    updateFullScreen();
+  };
+
+  history.replaceState = (...args) => {
+    originalReplaceState(...args);
+    updateFullScreen();
+  };
 }
 
 export function App() {
@@ -41,48 +46,12 @@ export function App() {
       <main>
         <Router
           routes={[
-            {
-              path: '/',
-              component: () => {
-                isFullScreen.value = false;
-                return <NewHome />;
-              },
-            },
-            {
-              path: '/docs',
-              component: () => {
-                isFullScreen.value = false;
-                return <NewDocs />;
-              },
-            },
-            {
-              path: '/examples',
-              component: () => {
-                isFullScreen.value = false;
-                return <Examples />;
-              },
-            },
-            {
-              path: '/migration',
-              component: () => {
-                isFullScreen.value = false;
-                return <Migration />;
-              },
-            },
-            {
-              path: '/playground',
-              component: () => {
-                isFullScreen.value = true;
-                return <Playground />;
-              },
-            },
-            {
-              path: '/test-descriptor',
-              component: () => {
-                isFullScreen.value = false;
-                return <TestDescriptor />;
-              },
-            },
+            { path: '/', component: NewHome },
+            { path: '/docs', component: NewDocs },
+            { path: '/examples', component: Examples },
+            { path: '/migration', component: Migration },
+            { path: '/playground', component: Playground },
+            { path: '/test-descriptor', component: TestDescriptor },
           ]}
           fallback={() => (
             <div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-6">
