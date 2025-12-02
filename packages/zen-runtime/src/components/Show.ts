@@ -12,6 +12,7 @@
 
 import { effect, untrack } from '@zen/signal';
 import { disposeNode, onCleanup } from '@zen/signal';
+import { executeDescriptor, isDescriptor } from '../descriptor.js';
 import { getPlatformOps } from '../platform-ops.js';
 import { type Reactive, resolve } from '../reactive-utils.js';
 import { children } from '../utils/children.js';
@@ -69,9 +70,13 @@ export function Show<T>(props: ShowProps<T>): unknown {
       if (conditionBool) {
         // Truthy - render children
         currentNode = untrack(() => {
-          const child = c();
+          let child = c();
           if (typeof child === 'function') {
-            return child(condition as T);
+            child = child(condition as T);
+          }
+          // Handle component descriptors (ADR-011)
+          if (isDescriptor(child)) {
+            child = executeDescriptor(child);
           }
           return child;
         });
@@ -80,10 +85,17 @@ export function Show<T>(props: ShowProps<T>): unknown {
         const fb = f();
         if (fb) {
           currentNode = untrack(() => {
+            let result: unknown;
             if (typeof fb === 'function') {
-              return (fb as () => unknown)();
+              result = (fb as () => unknown)();
+            } else {
+              result = fb;
             }
-            return fb;
+            // Handle component descriptors (ADR-011)
+            if (isDescriptor(result)) {
+              result = executeDescriptor(result);
+            }
+            return result;
           });
         }
       }

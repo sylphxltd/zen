@@ -11,6 +11,7 @@
 
 import { effect } from '@zen/signal';
 import { disposeNode, onCleanup } from '@zen/signal';
+import { executeDescriptor, isDescriptor } from '../descriptor.js';
 import { getPlatformOps } from '../platform-ops.js';
 import { type MaybeReactive, resolve } from '../reactive-utils.js';
 
@@ -106,10 +107,14 @@ export function For<T, U = unknown>(props: ForProps<T, U>): unknown {
         entry.item = item;
       } else {
         // Create new node
-        const node = children(item, () => {
+        let node = children(item, () => {
           const cachedEntry = newCache.get(itemKey);
           return cachedEntry ? cachedEntry.index : -1;
         });
+        // Handle component descriptors (ADR-011)
+        if (isDescriptor(node)) {
+          node = executeDescriptor(node) as U;
+        }
         entry = { node, index: i, item };
       }
 
