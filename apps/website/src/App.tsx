@@ -1,5 +1,4 @@
 import { $router, Router } from '@zen/router';
-import { Show, computed } from '@zen/web';
 import { Footer } from './components/Footer.tsx';
 import { Header } from './components/Header.tsx';
 import { Examples } from './pages/Examples.tsx';
@@ -9,15 +8,15 @@ import { NewHome } from './pages/NewHome.tsx';
 import { Playground } from './pages/Playground.tsx';
 import { TestDescriptor } from './pages/TestDescriptor.tsx';
 
-// Derive full-screen state from router's reactive path signal
-const isFullScreen = computed(() => $router.value.path === '/playground');
+// Use selectKey for key-level reactivity
+const path = $router.selectKey('path');
 
 export function App() {
   return (
     <div class="app">
-      <Show when={() => !isFullScreen.value}>
+      <div style={() => ({ display: path.value === '/playground' ? 'none' : 'block' })}>
         <Header />
-      </Show>
+      </div>
       <main>
         <Router
           routes={[
@@ -39,9 +38,9 @@ export function App() {
           )}
         />
       </main>
-      <Show when={() => !isFullScreen.value}>
+      <div style={() => ({ display: path.value === '/playground' ? 'none' : 'block' })}>
         <Footer />
-      </Show>
+      </div>
     </div>
   );
 }
