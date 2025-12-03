@@ -19,10 +19,10 @@ import MagicString from 'magic-string';
 import { createUnplugin } from 'unplugin';
 import { type Framework, detectFramework } from './auto-detect';
 import { getRuntimeConfig } from './runtime-config';
+import { transformRapid } from './transforms/rapid';
 import { transformReact } from './transforms/react';
 import { transformSvelte } from './transforms/svelte';
 import { transformVue } from './transforms/vue';
-import { transformRapid } from './transforms/rapid';
 
 export interface Options {
   /**

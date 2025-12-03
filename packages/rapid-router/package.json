@@ -3,20 +3,18 @@
   "version": "0.0.0",
   "description": "Rapid framework router with Router and Link components",
   "type": "module",
-  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup --format esm,cjs --dts --target node --minify",
-    "dev": "bunup --format esm,cjs --dts --target node --watch",
+    "build": "bunup --format esm --dts --target node --minify",
+    "dev": "bunup --format esm --dts --target node --watch",
     "clean": "bun rimraf dist .turbo"
   },
   "keywords": ["rapid", "router", "routing", "framework", "component"],

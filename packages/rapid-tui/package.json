@@ -27,8 +27,8 @@
     "build": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --external @rapid/router-core --external @rapid/runtime --external @rapid/signal --external @rapid/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
     "build:watch": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --watch --external @rapid/router-core --external @rapid/runtime --external @rapid/signal --external @rapid/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
     "dev": "bun run --watch src/index.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit"
   },
   "keywords": ["rapid", "tui", "terminal", "cli", "ink"],
@@ -51,8 +51,7 @@
   },
   "devDependencies": {
     "bunup": "^0.16.10",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "typescript": "^5.8.3"
   },
   "publishConfig": {
     "access": "public"

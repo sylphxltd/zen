@@ -3,20 +3,18 @@
   "version": "0.0.0",
   "description": "Platform-agnostic runtime for Rapid framework - components and utilities that work everywhere",
   "type": "module",
-  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup --format esm,cjs --target node --minify",
-    "dev": "bunup --format esm,cjs --target node --watch",
+    "build": "bunup --format esm --target node --minify",
+    "dev": "bunup --format esm --target node --watch",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },

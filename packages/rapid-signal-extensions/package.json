@@ -9,31 +9,27 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js",
-      "require": "./dist/src/index.cjs"
+      "import": "./dist/src/index.js"
     },
     "./patterns": {
       "types": "./dist/patterns/index.d.ts",
-      "import": "./dist/patterns/index.js",
-      "require": "./dist/patterns/index.cjs"
+      "import": "./dist/patterns/index.js"
     },
     "./persistent": {
       "types": "./dist/persistent/index.d.ts",
-      "import": "./dist/persistent/index.js",
-      "require": "./dist/persistent/index.cjs"
+      "import": "./dist/persistent/index.js"
     },
     "./craft": {
       "types": "./dist/craft/index.d.ts",
-      "import": "./dist/craft/index.js",
-      "require": "./dist/craft/index.cjs"
+      "import": "./dist/craft/index.js"
     }
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm,cjs --dts --target node --minify",
-    "dev": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm,cjs --dts --target node --watch",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm --dts --target node --minify",
+    "dev": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm --dts --target node --watch",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "keywords": [
     "rapid",
@@ -67,11 +63,10 @@
     "@sylphx/craft": "^1.0.0"
   },
   "devDependencies": {
-    "@rapid/signal-core": "workspace:*",
     "@rapid/signal": "workspace:*",
+    "@rapid/signal-core": "workspace:*",
     "bunup": "^0.16.10",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "typescript": "^5.8.3"
   },
   "publishConfig": {
     "access": "public"

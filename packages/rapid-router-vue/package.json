@@ -9,13 +9,12 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup --format esm,cjs --dts --target node --minify",
+    "build": "bunup --format esm --dts --target node --minify",
     "clean": "bun rimraf dist .turbo"
   },
   "keywords": ["rapid", "router", "routing", "vue", "composable", "navigation"],

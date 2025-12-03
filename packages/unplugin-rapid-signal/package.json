@@ -16,28 +16,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     },
     "./vite": {
       "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.js",
-      "require": "./dist/vite.cjs"
+      "import": "./dist/vite.js"
     },
     "./webpack": {
       "types": "./dist/webpack.d.ts",
-      "import": "./dist/webpack.js",
-      "require": "./dist/webpack.cjs"
+      "import": "./dist/webpack.js"
     },
     "./rollup": {
       "types": "./dist/rollup.d.ts",
-      "import": "./dist/rollup.js",
-      "require": "./dist/rollup.cjs"
+      "import": "./dist/rollup.js"
     },
     "./esbuild": {
       "types": "./dist/esbuild.d.ts",
-      "import": "./dist/esbuild.js",
-      "require": "./dist/esbuild.cjs"
+      "import": "./dist/esbuild.js"
     },
     "./jsx-runtime/react": {
       "types": "./jsx-runtime/react/index.tsx",
@@ -66,8 +61,8 @@
     "svelte"
   ],
   "scripts": {
-    "build": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm,cjs --dts --target node --minify && bun scripts/fix-cjs.mjs",
-    "dev": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm,cjs --dts --target node --watch",
+    "build": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm --dts --target node --minify && bun scripts/fix-cjs.mjs",
+    "dev": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm --dts --target node --watch",
     "clean": "bun rimraf dist .turbo"
   },
   "dependencies": {

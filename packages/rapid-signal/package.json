@@ -3,19 +3,17 @@
   "version": "0.0.0",
   "description": "Rapid framework signals with lifecycle integration",
   "type": "module",
-  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
+    "build": "bunup src/index.ts --format esm --dts --target node --minify",
     "clean": "bun rimraf dist .turbo"
   },
   "keywords": ["rapid", "signal", "reactive", "lifecycle", "framework"],

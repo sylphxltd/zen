@@ -3,23 +3,21 @@
   "version": "0.0.0",
   "description": "Pure reactive core - ultra-fast signals with auto-tracking (framework-agnostic)",
   "type": "module",
-  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
   "files": ["dist"],
   "scripts": {
-    "build": "bunup src/index.ts --format esm,cjs --dts --target node --minify",
+    "build": "bunup src/index.ts --format esm --dts --target node --minify",
     "size": "bun size-limit",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "lint": "echo 'Lint script not implemented yet'"
   },
   "size-limit": [

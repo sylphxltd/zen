@@ -8,7 +8,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@rapid/signal': path.resolve(__dirname, '../rapid-signal/src/index.ts'),
-      '@rapid/signal-extensions/patterns': path.resolve(__dirname, '../rapid-signal-extensions/patterns/index.ts'),
+      '@rapid/signal-extensions/patterns': path.resolve(
+        __dirname,
+        '../rapid-signal-extensions/patterns/index.ts',
+      ),
     },
   },
 });

@@ -1,4 +1,5 @@
 {
+  "extends": "@sylphx/tsconfig",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",

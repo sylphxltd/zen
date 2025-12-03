@@ -2,12 +2,20 @@
   "name": "@rapid/babel-plugin-jsx",
   "version": "0.1.0",
   "description": "Babel plugin for Rapid JSX transform with lazy children evaluation",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
-    "build": "bunup src/index.ts --format cjs --dts --target node",
-    "dev": "bunup src/index.ts --format cjs --watch",
-    "test": "vitest"
+    "build": "bunup src/index.ts --format esm --dts --target node",
+    "dev": "bunup src/index.ts --format esm --watch",
+    "test": "bun test"
   },
   "keywords": ["rapid", "jsx", "babel", "transform", "reactive"],
   "author": "SylphxAI",
@@ -20,7 +28,6 @@
     "@babel/types": "^7.28.5",
     "@types/babel__core": "^7.20.5",
     "bunup": "^0.16.10",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "typescript": "^5.8.3"
   }
 }
