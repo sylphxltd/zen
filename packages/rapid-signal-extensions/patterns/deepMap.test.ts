@@ -49,23 +49,22 @@ describe('deepMap', () => {
     listenPaths(config, ['ui.layout.sidebar'], (value) => sidebarCalls.push(value));
     listenPaths(config, ['ui.layout.width'], (value) => widthCalls.push(value));
 
-    // Subscriptions trigger initial calls
-    expect(themeCalls).toEqual(['original']);
-    expect(sidebarCalls).toEqual(['left']);
-    expect(widthCalls).toEqual([100]);
+    // Subscribe doesn't call listeners immediately
+    expect(themeCalls).toEqual([]);
+    expect(sidebarCalls).toEqual([]);
+    expect(widthCalls).toEqual([]);
 
     config.setPath('ui.theme', 'updated');
-    // Known limitation: Lazy computed - no notification without access
     expect(config.selectPath('ui.theme').value).toBe('updated');
-    expect(themeCalls).toEqual(['original']);
-    expect(sidebarCalls).toEqual(['left']);
-    expect(widthCalls).toEqual([100]);
+    expect(themeCalls).toEqual(['updated']);
+    expect(sidebarCalls).toEqual([]);
+    expect(widthCalls).toEqual([]);
 
     config.setPath('ui.layout.width', 500);
     expect(config.selectPath('ui.layout.width').value).toBe(500);
-    expect(themeCalls).toEqual(['original']);
-    expect(sidebarCalls).toEqual(['left']);
-    expect(widthCalls).toEqual([100]);
+    expect(themeCalls).toEqual(['updated']);
+    expect(sidebarCalls).toEqual([]);
+    expect(widthCalls).toEqual([500]);
   });
 
   it('should support array bracket notation', () => {
@@ -110,16 +109,16 @@ describe('deepMap', () => {
     };
     const unsub = listenPaths(config, ['ui.theme'], listener);
 
-    // Initial call happens on subscription
-    expect(calls.length).toBe(1);
-    expect(calls[0]?.value).toBe('original');
-    expect(calls[0]?.path).toBe('ui.theme');
+    // Subscribe doesn't call immediately
+    expect(calls.length).toBe(0);
 
     config.setPath('ui.theme', 'updated');
 
-    // Known limitation: Lazy computed - no notification without access
+    // Listener called with new value after change
     expect(config.selectPath('ui.theme').value).toBe('updated');
-    expect(calls.length).toBe(1); // Still only initial call
+    expect(calls.length).toBe(1);
+    expect(calls[0]?.value).toBe('updated');
+    expect(calls[0]?.path).toBe('ui.theme');
 
     unsub();
   });
@@ -131,6 +130,9 @@ describe('deepMap', () => {
 
     let changes = 0;
     listenPaths(config, ['ui.theme', 'ui.color'], () => changes++);
+
+    // No initial calls
+    expect(changes).toBe(0);
 
     config.setPath('ui.theme', 'light');
     config.setPath('ui.color', 'red');
@@ -144,13 +146,16 @@ describe('deepMap', () => {
     let changes = 0;
     const unsubscribe = listenPaths(config, ['ui.theme'], () => changes++);
 
+    // No initial call
+    expect(changes).toBe(0);
+
     config.setPath('ui.theme', 'light');
     expect(changes).toBe(1);
 
     unsubscribe();
 
     config.setPath('ui.theme', 'dark');
-    expect(changes).toBe(1); // Should not increment
+    expect(changes).toBe(1); // Should not increment after unsubscribe
   });
 
   it('should support setPath helper', () => {

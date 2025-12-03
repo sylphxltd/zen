@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { parseKey } from '../hooks/useInput.js';
 import { signal } from '../index.js';
 import { Box } from '../primitives/Box.js';
 import { Button, handleButton } from './Button.js';
@@ -74,7 +75,7 @@ describe('handleButton', () => {
     const isPressed = signal(false);
     const onClick = vi.fn();
 
-    const result = handleButton(isPressed, false, '\r', onClick);
+    const result = handleButton(isPressed, false, parseKey('\r').key, onClick);
 
     expect(result.handled).toBe(true);
     expect(onClick).toHaveBeenCalled();
@@ -84,7 +85,7 @@ describe('handleButton', () => {
     const isPressed = signal(false);
     const onClick = vi.fn();
 
-    const result = handleButton(isPressed, false, ' ', onClick);
+    const result = handleButton(isPressed, false, parseKey(' ').key, onClick);
 
     expect(result.handled).toBe(true);
     expect(onClick).toHaveBeenCalled();
@@ -94,7 +95,7 @@ describe('handleButton', () => {
     const isPressed = signal(false);
     const onClick = vi.fn();
 
-    const result = handleButton(isPressed, false, '\n', onClick);
+    const result = handleButton(isPressed, false, parseKey('\n').key, onClick);
 
     expect(result.handled).toBe(true);
     expect(onClick).toHaveBeenCalled();
@@ -104,7 +105,7 @@ describe('handleButton', () => {
     const isPressed = signal(false);
     const onClick = vi.fn();
 
-    handleButton(isPressed, false, '\r', onClick);
+    handleButton(isPressed, false, parseKey('\r').key, onClick);
 
     expect(isPressed.value).toBe(true);
   });
@@ -113,7 +114,7 @@ describe('handleButton', () => {
     const isPressed = signal(false);
     const onClick = vi.fn();
 
-    const result = handleButton(isPressed, true, '\r', onClick);
+    const result = handleButton(isPressed, true, parseKey('\r').key, onClick);
 
     expect(result.handled).toBe(false);
     expect(onClick).not.toHaveBeenCalled();
@@ -122,7 +123,7 @@ describe('handleButton', () => {
   it('should not change pressed state when disabled', () => {
     const isPressed = signal(false);
 
-    handleButton(isPressed, true, '\r');
+    handleButton(isPressed, true, parseKey('\r').key);
 
     expect(isPressed.value).toBe(false);
   });
@@ -131,7 +132,7 @@ describe('handleButton', () => {
     const isPressed = signal(false);
     const onClick = vi.fn();
 
-    const result = handleButton(isPressed, false, 'x', onClick);
+    const result = handleButton(isPressed, false, parseKey('x').key, onClick);
 
     expect(result.handled).toBe(false);
     expect(onClick).not.toHaveBeenCalled();
@@ -140,14 +141,14 @@ describe('handleButton', () => {
   it('should work without onClick callback', () => {
     const isPressed = signal(false);
 
-    expect(() => handleButton(isPressed, false, '\r')).not.toThrow();
+    expect(() => handleButton(isPressed, false, parseKey('\r').key)).not.toThrow();
   });
 
   it('should provide cleanup function when handled', () => {
     const isPressed = signal(false);
     const onClick = vi.fn();
 
-    const result = handleButton(isPressed, false, '\r', onClick);
+    const result = handleButton(isPressed, false, parseKey('\r').key, onClick);
 
     expect(result.handled).toBe(true);
     expect(typeof result.cleanup).toBe('function');

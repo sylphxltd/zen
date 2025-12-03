@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { parseKey } from '../hooks/useInput.js';
 import { signal } from '../index';
 import { MultiSelect, type MultiSelectOption, handleMultiSelectInput } from './MultiSelect';
+
+// Helper to create parsed key and input
+const pk = (input: string) => ({ key: parseKey(input).key, input });
 
 const items: MultiSelectOption[] = [
   { label: 'Item 1', value: 'item1' },

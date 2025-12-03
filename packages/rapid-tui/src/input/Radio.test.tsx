@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { parseKey } from '../hooks/useInput.js';
 import { signal } from '../index';
 import { Radio, type RadioOption, handleRadioInput } from './Radio';
+
+// Helper to create parsed key and input
+const pk = (input: string) => ({ key: parseKey(input).key, input });
 
 const options: RadioOption[] = [
   { label: 'Option 1', value: 'opt1' },
@@ -70,7 +74,7 @@ describe('handleRadioInput', () => {
     const value = signal<string | undefined>(undefined);
     const onChange = vi.fn();
 
-    const handled = handleRadioInput('\x1b[A', highlightedIndex, value, options, onChange);
+    const handled = handleRadioInput(pk('\x1b[A').key, pk('\x1b[A').input, highlightedIndex, value, options, onChange);
 
     expect(handled).toBe(true);
     expect(highlightedIndex.value).toBe(1);
@@ -80,7 +84,7 @@ describe('handleRadioInput', () => {
     const highlightedIndex = signal(2);
     const value = signal<string | undefined>(undefined);
 
-    handleRadioInput('k', highlightedIndex, value, options);
+    handleRadioInput(pk('k').key, pk('k').input, highlightedIndex, value, options);
 
     expect(highlightedIndex.value).toBe(1);
   });
@@ -89,7 +93,7 @@ describe('handleRadioInput', () => {
     const highlightedIndex = signal(0);
     const value = signal<string | undefined>(undefined);
 
-    handleRadioInput('\x1b[A', highlightedIndex, value, options);
+    handleRadioInput(pk('\x1b[A').key, pk('\x1b[A').input, highlightedIndex, value, options);
 
     expect(highlightedIndex.value).toBe(0);
   });
@@ -99,7 +103,7 @@ describe('handleRadioInput', () => {
     const value = signal<string | undefined>(undefined);
     const onChange = vi.fn();
 
-    const handled = handleRadioInput('\x1b[B', highlightedIndex, value, options, onChange);
+    const handled = handleRadioInput(pk('\x1b[B').key, pk('\x1b[B').input, highlightedIndex, value, options, onChange);
 
     expect(handled).toBe(true);
     expect(highlightedIndex.value).toBe(1);
@@ -109,7 +113,7 @@ describe('handleRadioInput', () => {
     const highlightedIndex = signal(0);
     const value = signal<string | undefined>(undefined);
 
-    handleRadioInput('j', highlightedIndex, value, options);
+    handleRadioInput(pk('j').key, pk('j').input, highlightedIndex, value, options);
 
     expect(highlightedIndex.value).toBe(1);
   });
@@ -118,7 +122,7 @@ describe('handleRadioInput', () => {
     const highlightedIndex = signal(2);
     const value = signal<string | undefined>(undefined);
 
-    handleRadioInput('\x1b[B', highlightedIndex, value, options);
+    handleRadioInput(pk('\x1b[B').key, pk('\x1b[B').input, highlightedIndex, value, options);
 
     expect(highlightedIndex.value).toBe(2);
   });
@@ -128,7 +132,7 @@ describe('handleRadioInput', () => {
     const value = signal<string | undefined>(undefined);
     const onChange = vi.fn();
 
-    const handled = handleRadioInput('\r', highlightedIndex, value, options, onChange);
+    const handled = handleRadioInput(pk('\r').key, pk('\r').input, highlightedIndex, value, options, onChange);
 
     expect(handled).toBe(true);
     expect(value.value).toBe('opt2');
@@ -140,7 +144,7 @@ describe('handleRadioInput', () => {
     const value = signal<string | undefined>(undefined);
     const onChange = vi.fn();
 
-    const handled = handleRadioInput(' ', highlightedIndex, value, options, onChange);
+    const handled = handleRadioInput(pk(' ').key, pk(' ').input, highlightedIndex, value, options, onChange);
 
     expect(handled).toBe(true);
     expect(value.value).toBe('opt1');
@@ -152,7 +156,7 @@ describe('handleRadioInput', () => {
     const value = signal<string | undefined>('opt1');
     const onChange = vi.fn();
 
-    handleRadioInput('\r', highlightedIndex, value, options, onChange);
+    handleRadioInput(pk('\r').key, pk('\r').input, highlightedIndex, value, options, onChange);
 
     expect(value.value).toBe('opt3');
     expect(onChange).toHaveBeenCalledWith('opt3');
@@ -162,7 +166,7 @@ describe('handleRadioInput', () => {
     const highlightedIndex = signal(0);
     const value = signal<string | undefined>(undefined);
 
-    expect(() => handleRadioInput('\r', highlightedIndex, value, options)).not.toThrow();
+    expect(() => handleRadioInput(pk('\r').key, pk('\r').input, highlightedIndex, value, options)).not.toThrow();
     expect(value.value).toBe('opt1');
   });
 
@@ -171,7 +175,7 @@ describe('handleRadioInput', () => {
     const value = signal<string | undefined>(undefined);
     const onChange = vi.fn();
 
-    const handled = handleRadioInput('x', highlightedIndex, value, options, onChange);
+    const handled = handleRadioInput(pk('x').key, pk('x').input, highlightedIndex, value, options, onChange);
 
     expect(handled).toBe(false);
     expect(highlightedIndex.value).toBe(1);
@@ -189,7 +193,7 @@ describe('handleRadioInput', () => {
     const value = signal<number | undefined>(undefined);
     const onChange = vi.fn();
 
-    handleRadioInput('\r', highlightedIndex, value, numericOptions, onChange);
+    handleRadioInput(pk('\r').key, pk('\r').input, highlightedIndex, value, numericOptions, onChange);
 
     expect(value.value).toBe(2);
     expect(onChange).toHaveBeenCalledWith(2);

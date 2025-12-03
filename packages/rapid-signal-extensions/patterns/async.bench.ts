@@ -1,5 +1,5 @@
-import { signal } from '@rapid/signal';
 import { bench, describe } from 'bun:test';
+import { signal } from '@rapid/signal';
 import { computedAsync } from './async';
 
 describe('computedAsync primitives', () => {

@@ -28,23 +28,23 @@ describe('map', () => {
     listenKeys(form, ['name'], (value) => nameCalls.push(value));
     listenKeys(form, ['email'], (value) => emailCalls.push(value));
 
-    // Subscriptions trigger initial calls
-    expect(nameCalls).toEqual(['Alice']);
-    expect(emailCalls).toEqual(['alice@example.com']);
+    // Subscribe doesn't call listeners immediately
+    expect(nameCalls).toEqual([]);
+    expect(emailCalls).toEqual([]);
 
     form.setKey('name', 'John');
-    // Known limitation: Computed values are lazy and don't notify until accessed
-    // Access the computed value to trigger update check
+    // Listener should be called after value changes
     expect(form.selectKey('name').value).toBe('John');
-    expect(nameCalls).toEqual(['Alice']); // No notification without effect/manual access
+    expect(nameCalls).toEqual(['John']);
 
     form.setKey('email', 'john@example.com');
     expect(form.selectKey('email').value).toBe('john@example.com');
-    expect(emailCalls).toEqual(['alice@example.com']);
+    expect(emailCalls).toEqual(['john@example.com']);
 
     form.setKey('age', 25);
-    expect(nameCalls).toEqual(['Alice']);
-    expect(emailCalls).toEqual(['alice@example.com']);
+    // Age changes shouldn't affect name/email listeners
+    expect(nameCalls).toEqual(['John']);
+    expect(emailCalls).toEqual(['john@example.com']);
   });
 
   it('should support multiple keys in listener', () => {
@@ -53,11 +53,14 @@ describe('map', () => {
     let changes = 0;
     listenKeys(form, ['name', 'email'], () => changes++);
 
+    // No initial calls
+    expect(changes).toBe(0);
+
     form.setKey('name', 'Alice');
     form.setKey('email', 'alice@example.com');
     form.setKey('age', 30);
 
-    expect(changes).toBe(2); // Only name and email
+    expect(changes).toBe(2); // Only name and email trigger listeners
   });
 
   it('should pass value, key, and full object to listener', () => {
@@ -69,17 +72,16 @@ describe('map', () => {
     };
     const unsub = listenKeys(form, ['name'], listener);
 
-    // Initial call happens on subscription
-    expect(calls.length).toBe(1);
-    expect(calls[0]?.value).toBe('Original');
-    expect(calls[0]?.key).toBe('name');
+    // Subscribe doesn't call immediately
+    expect(calls.length).toBe(0);
 
     form.setKey('name', 'Updated');
 
-    // Known limitation: Lazy computed - no notification without access
-    // Manually access to verify new value exists
+    // Listener called with new value after change
     expect(form.selectKey('name').value).toBe('Updated');
-    expect(calls.length).toBe(1); // Still only initial call
+    expect(calls.length).toBe(1);
+    expect(calls[0]?.value).toBe('Updated');
+    expect(calls[0]?.key).toBe('name');
 
     unsub();
   });
@@ -90,13 +92,16 @@ describe('map', () => {
     let changes = 0;
     const unsubscribe = listenKeys(form, ['name'], () => changes++);
 
+    // No initial call
+    expect(changes).toBe(0);
+
     form.setKey('name', 'Alice');
     expect(changes).toBe(1);
 
     unsubscribe();
 
     form.setKey('name', 'Bob');
-    expect(changes).toBe(1); // Should not increment
+    expect(changes).toBe(1); // Should not increment after unsubscribe
   });
 
   it('should support setKey helper', () => {

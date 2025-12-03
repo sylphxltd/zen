@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { parseKey } from '../hooks/useInput.js';
 import { signal } from '../index';
 import { SelectInput, type SelectOption, handleSelectInput } from './SelectInput';
+
+// Helper to parse key from string
+const pk = (input: string) => parseKey(input).key;
 
 // Helper to resolve reactive style values
 const resolveStyle = (value: any) => (typeof value === 'function' ? value() : value);
@@ -80,7 +84,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1');
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, '\r');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk('\r'));
 
     expect(handled).toBe(true);
     expect(isOpen.value).toBe(true);
@@ -91,7 +95,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1');
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, ' ');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk(' '));
 
     expect(handled).toBe(true);
     expect(isOpen.value).toBe(true);
@@ -102,7 +106,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(1);
     const value = signal('opt1');
 
-    handleSelectInput(isOpen, highlighted, value, testOptions, '\r');
+    handleSelectInput(isOpen, highlighted, value, testOptions, pk('\r'));
 
     expect(value.value).toBe('opt2'); // Option at index 1
     expect(isOpen.value).toBe(false);
@@ -114,7 +118,7 @@ describe('handleSelectInput', () => {
     const value = signal('opt1');
     let changedValue = '';
 
-    handleSelectInput(isOpen, highlighted, value, testOptions, '\r', (val) => {
+    handleSelectInput(isOpen, highlighted, value, testOptions, pk('\r'), (val) => {
       changedValue = val;
     });
 
@@ -126,7 +130,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1');
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b'));
 
     expect(handled).toBe(true);
     expect(isOpen.value).toBe(false);
@@ -137,7 +141,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(2);
     const value = signal('opt1');
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[A');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[A'));
 
     expect(handled).toBe(true);
     expect(highlighted.value).toBe(1);
@@ -148,7 +152,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1');
 
-    handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[A');
+    handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[A'));
 
     expect(highlighted.value).toBe(0);
   });
@@ -158,7 +162,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1');
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[B');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[B'));
 
     expect(handled).toBe(true);
     expect(highlighted.value).toBe(1);
@@ -169,7 +173,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(2);
     const value = signal('opt1');
 
-    handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[B');
+    handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[B'));
 
     expect(highlighted.value).toBe(2);
   });
@@ -179,7 +183,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt2'); // Index 1
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[A');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[A'));
 
     expect(handled).toBe(true);
     expect(value.value).toBe('opt1');
@@ -190,7 +194,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1'); // Index 0
 
-    handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[A');
+    handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[A'));
 
     expect(value.value).toBe('opt1');
   });
@@ -200,7 +204,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1'); // Index 0
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[B');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[B'));
 
     expect(handled).toBe(true);
     expect(value.value).toBe('opt2');
@@ -211,7 +215,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt3'); // Index 2
 
-    handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[B');
+    handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[B'));
 
     expect(value.value).toBe('opt3');
   });
@@ -222,7 +226,7 @@ describe('handleSelectInput', () => {
     const value = signal('opt1');
     let changedValue = '';
 
-    handleSelectInput(isOpen, highlighted, value, testOptions, '\x1b[B', (val) => {
+    handleSelectInput(isOpen, highlighted, value, testOptions, pk('\x1b[B'), (val) => {
       changedValue = val;
     });
 
@@ -234,7 +238,7 @@ describe('handleSelectInput', () => {
     const highlighted = signal(0);
     const value = signal('opt1');
 
-    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, 'x');
+    const handled = handleSelectInput(isOpen, highlighted, value, testOptions, pk('x'));
 
     expect(handled).toBe(false);
     expect(isOpen.value).toBe(false);

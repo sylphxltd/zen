@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { parseKey } from '../hooks/useInput.js';
 import { signal } from '../index';
 import { TextInput, handleTextInput } from './TextInput';
+
+// Helper to create parsed key and input
+const pk = (input: string) => parseKey(input);
 
 describe('TextInput', () => {
   it('should create text input node', () => {
@@ -74,7 +78,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(5);
 
-    const handled = handleTextInput(value, cursor, 'x');
+    const handled = handleTextInput(value, cursor, pk('x').key, pk('x').input);
 
     expect(handled).toBe(true);
     expect(value.value).toBe('hellox');
@@ -85,7 +89,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(2);
 
-    handleTextInput(value, cursor, 'x');
+    handleTextInput(value, cursor, pk('x').key, pk('x').input);
 
     expect(value.value).toBe('hexllo');
     expect(cursor.value).toBe(3);
@@ -95,7 +99,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(5);
 
-    const handled = handleTextInput(value, cursor, '\x7F');
+    const handled = handleTextInput(value, cursor, pk('\x7F').key, pk('\x7F').input);
 
     expect(handled).toBe(true);
     expect(value.value).toBe('hell');
@@ -106,7 +110,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(3);
 
-    handleTextInput(value, cursor, '\x7F');
+    handleTextInput(value, cursor, pk('\x7F').key, pk('\x7F').input);
 
     expect(value.value).toBe('helo');
     expect(cursor.value).toBe(2);
@@ -116,7 +120,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(0);
 
-    handleTextInput(value, cursor, '\x7F');
+    handleTextInput(value, cursor, pk('\x7F').key, pk('\x7F').input);
 
     expect(value.value).toBe('hello');
     expect(cursor.value).toBe(0);
@@ -126,7 +130,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(2);
 
-    const handled = handleTextInput(value, cursor, '\x1b[3~');
+    const handled = handleTextInput(value, cursor, pk('\x1b[3~').key, pk('\x1b[3~').input);
 
     expect(handled).toBe(true);
     expect(value.value).toBe('helo');
@@ -137,7 +141,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(5);
 
-    handleTextInput(value, cursor, '\x1b[3~');
+    handleTextInput(value, cursor, pk('\x1b[3~').key, pk('\x1b[3~').input);
 
     expect(value.value).toBe('hello');
   });
@@ -146,7 +150,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(3);
 
-    const handled = handleTextInput(value, cursor, '\x1b[D');
+    const handled = handleTextInput(value, cursor, pk('\x1b[D').key, pk('\x1b[D').input);
 
     expect(handled).toBe(true);
     expect(cursor.value).toBe(2);
@@ -156,7 +160,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(0);
 
-    handleTextInput(value, cursor, '\x1b[D');
+    handleTextInput(value, cursor, pk('\x1b[D').key, pk('\x1b[D').input);
 
     expect(cursor.value).toBe(0);
   });
@@ -165,7 +169,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(2);
 
-    const handled = handleTextInput(value, cursor, '\x1b[C');
+    const handled = handleTextInput(value, cursor, pk('\x1b[C').key, pk('\x1b[C').input);
 
     expect(handled).toBe(true);
     expect(cursor.value).toBe(3);
@@ -175,7 +179,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(5);
 
-    handleTextInput(value, cursor, '\x1b[C');
+    handleTextInput(value, cursor, pk('\x1b[C').key, pk('\x1b[C').input);
 
     expect(cursor.value).toBe(5);
   });
@@ -184,7 +188,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(3);
 
-    const handled = handleTextInput(value, cursor, '\x1b[H');
+    const handled = handleTextInput(value, cursor, pk('\x1b[H').key, pk('\x1b[H').input);
 
     expect(handled).toBe(true);
     expect(cursor.value).toBe(0);
@@ -194,7 +198,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(3);
 
-    const handled = handleTextInput(value, cursor, '\x01');
+    const handled = handleTextInput(value, cursor, pk('\x01').key, pk('\x01').input);
 
     expect(handled).toBe(true);
     expect(cursor.value).toBe(0);
@@ -204,7 +208,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(2);
 
-    const handled = handleTextInput(value, cursor, '\x1b[F');
+    const handled = handleTextInput(value, cursor, pk('\x1b[F').key, pk('\x1b[F').input);
 
     expect(handled).toBe(true);
     expect(cursor.value).toBe(5);
@@ -214,7 +218,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(2);
 
-    const handled = handleTextInput(value, cursor, '\x05');
+    const handled = handleTextInput(value, cursor, pk('\x05').key, pk('\x05').input);
 
     expect(handled).toBe(true);
     expect(cursor.value).toBe(5);
@@ -224,7 +228,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(5);
 
-    const handled = handleTextInput(value, cursor, '\x1b');
+    const handled = handleTextInput(value, cursor, pk('\x1b').key, pk('\x1b').input);
 
     expect(handled).toBe(false);
     expect(value.value).toBe('hello');
@@ -234,7 +238,7 @@ describe('handleTextInput', () => {
     const value = signal('hello');
     const cursor = signal(5);
 
-    handleTextInput(value, cursor, ' ');
+    handleTextInput(value, cursor, pk(' ').key, pk(' ').input);
 
     expect(value.value).toBe('hello ');
     expect(cursor.value).toBe(6);
@@ -244,9 +248,9 @@ describe('handleTextInput', () => {
     const value = signal('');
     const cursor = signal(0);
 
-    handleTextInput(value, cursor, '1');
-    handleTextInput(value, cursor, '2');
-    handleTextInput(value, cursor, '3');
+    handleTextInput(value, cursor, pk('1').key, pk('1').input);
+    handleTextInput(value, cursor, pk('2').key, pk('2').input);
+    handleTextInput(value, cursor, pk('3').key, pk('3').input);
 
     expect(value.value).toBe('123');
   });
@@ -255,9 +259,9 @@ describe('handleTextInput', () => {
     const value = signal('');
     const cursor = signal(0);
 
-    handleTextInput(value, cursor, '@');
-    handleTextInput(value, cursor, '#');
-    handleTextInput(value, cursor, '$');
+    handleTextInput(value, cursor, pk('@').key, pk('@').input);
+    handleTextInput(value, cursor, pk('#').key, pk('#').input);
+    handleTextInput(value, cursor, pk('$').key, pk('$').input);
 
     expect(value.value).toBe('@#$');
   });

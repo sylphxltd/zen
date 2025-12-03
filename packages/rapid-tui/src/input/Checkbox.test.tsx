@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { parseKey } from '../hooks/useInput.js';
 import { signal } from '../index';
 import { Checkbox, handleCheckbox } from './Checkbox';
+
+// Helper to parse key from string
+const pk = (input: string) => parseKey(input).key;
 
 describe('Checkbox', () => {
   it('should create checkbox node', () => {
@@ -65,7 +69,7 @@ describe('handleCheckbox', () => {
   it('should toggle checkbox with Space key', () => {
     const checked = signal(false);
 
-    const handled = handleCheckbox(checked, ' ');
+    const handled = handleCheckbox(checked, pk(' '));
 
     expect(handled).toBe(true);
     expect(checked.value).toBe(true);
@@ -74,7 +78,7 @@ describe('handleCheckbox', () => {
   it('should toggle checkbox with Enter key', () => {
     const checked = signal(false);
 
-    const handled = handleCheckbox(checked, '\r');
+    const handled = handleCheckbox(checked, pk('\r'));
 
     expect(handled).toBe(true);
     expect(checked.value).toBe(true);
@@ -83,7 +87,7 @@ describe('handleCheckbox', () => {
   it('should toggle checkbox with newline', () => {
     const checked = signal(false);
 
-    const handled = handleCheckbox(checked, '\n');
+    const handled = handleCheckbox(checked, pk('\n'));
 
     expect(handled).toBe(true);
     expect(checked.value).toBe(true);
@@ -92,7 +96,7 @@ describe('handleCheckbox', () => {
   it('should toggle from checked to unchecked', () => {
     const checked = signal(true);
 
-    handleCheckbox(checked, ' ');
+    handleCheckbox(checked, pk(' '));
 
     expect(checked.value).toBe(false);
   });
@@ -101,7 +105,7 @@ describe('handleCheckbox', () => {
     const checked = signal(false);
     let changedValue = false;
 
-    handleCheckbox(checked, ' ', (value) => {
+    handleCheckbox(checked, pk(' '), (value) => {
       changedValue = value;
     });
 
@@ -112,7 +116,7 @@ describe('handleCheckbox', () => {
     const checked = signal(true);
     let changedValue = true;
 
-    handleCheckbox(checked, ' ', (value) => {
+    handleCheckbox(checked, pk(' '), (value) => {
       changedValue = value;
     });
 
@@ -122,7 +126,7 @@ describe('handleCheckbox', () => {
   it('should ignore unknown keys', () => {
     const checked = signal(false);
 
-    const handled = handleCheckbox(checked, 'x');
+    const handled = handleCheckbox(checked, pk('x'));
 
     expect(handled).toBe(false);
     expect(checked.value).toBe(false);
@@ -131,7 +135,7 @@ describe('handleCheckbox', () => {
   it('should ignore arrow keys', () => {
     const checked = signal(false);
 
-    const handled = handleCheckbox(checked, '\x1b[A');
+    const handled = handleCheckbox(checked, pk('\x1b[A'));
 
     expect(handled).toBe(false);
     expect(checked.value).toBe(false);
@@ -140,13 +144,13 @@ describe('handleCheckbox', () => {
   it('should toggle multiple times correctly', () => {
     const checked = signal(false);
 
-    handleCheckbox(checked, ' ');
+    handleCheckbox(checked, pk(' '));
     expect(checked.value).toBe(true);
 
-    handleCheckbox(checked, ' ');
+    handleCheckbox(checked, pk(' '));
     expect(checked.value).toBe(false);
 
-    handleCheckbox(checked, ' ');
+    handleCheckbox(checked, pk(' '));
     expect(checked.value).toBe(true);
   });
 });
