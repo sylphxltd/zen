@@ -388,30 +388,34 @@ function Counter() {
           </div>
 
           {/* Step Tabs */}
-          <div class="flex justify-center gap-2 mb-8">
+          <div class="flex justify-center gap-4 mb-8">
             {steps.map((step, i) => (
               <button
                 key={step.title}
                 type="button"
-                class={() =>
-                  activeStep.value === i
-                    ? 'flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-medium rounded-xl transition-all'
-                    : 'flex items-center gap-2 px-5 py-2.5 bg-bg-light text-text-muted font-medium rounded-xl border border-border hover:border-primary/50 transition-all'
-                }
+                class="transition-all"
                 onClick={() => {
                   activeStep.value = i;
                 }}
               >
-                <span
-                  class={() =>
-                    activeStep.value === i
-                      ? 'w-6 h-6 flex items-center justify-center bg-white/20 rounded-lg text-sm'
-                      : 'w-6 h-6 flex items-center justify-center bg-primary/10 text-primary rounded-lg text-sm font-bold'
+                <Show
+                  when={() => activeStep.value === i}
+                  fallback={
+                    <div class="flex flex-col items-center gap-2 px-6 py-3 bg-bg-light text-text-muted font-medium rounded-2xl border border-border hover:border-primary/30">
+                      <span class="w-8 h-8 flex items-center justify-center bg-bg text-text-muted rounded-full text-sm font-bold border border-border">
+                        {i + 1}
+                      </span>
+                      {step.title}
+                    </div>
                   }
                 >
-                  {i + 1}
-                </span>
-                {step.title}
+                  <div class="flex flex-col items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-2xl shadow-lg shadow-primary/30 scale-105">
+                    <span class="w-8 h-8 flex items-center justify-center bg-white text-primary rounded-full text-sm font-bold">
+                      {i + 1}
+                    </span>
+                    {step.title}
+                  </div>
+                </Show>
               </button>
             ))}
           </div>
