@@ -386,7 +386,6 @@
       "devDependencies": {
         "bunup": "^0.16.10",
         "typescript": "^5.8.3",
-        "vitest": "^3.2.4",
       },
       "peerDependencies": {
         "@rapid/runtime": "workspace:*",
