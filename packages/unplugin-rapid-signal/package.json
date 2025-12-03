@@ -1,99 +1,104 @@
 {
-  "name": "unplugin-rapid-signal",
-  "version": "0.1.0",
-  "description": "Universal plugin for using Rapid Signals across all frameworks with unified syntax",
-  "author": "Sylphx <hi@sylphx.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/unplugin-rapid-signal"
-  },
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./vite": {
-      "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.js"
-    },
-    "./webpack": {
-      "types": "./dist/webpack.d.ts",
-      "import": "./dist/webpack.js"
-    },
-    "./rollup": {
-      "types": "./dist/rollup.d.ts",
-      "import": "./dist/rollup.js"
-    },
-    "./esbuild": {
-      "types": "./dist/esbuild.d.ts",
-      "import": "./dist/esbuild.js"
-    },
-    "./jsx-runtime/react": {
-      "types": "./jsx-runtime/react/index.tsx",
-      "import": "./jsx-runtime/react/index.tsx"
-    },
-    "./jsx-runtime/vue": {
-      "types": "./jsx-runtime/vue/index.ts",
-      "import": "./jsx-runtime/vue/index.ts"
-    },
-    "./svelte-preprocessor": {
-      "types": "./svelte-preprocessor/index.ts",
-      "import": "./svelte-preprocessor/index.ts"
-    }
-  },
-  "files": ["dist", "jsx-runtime", "svelte-preprocessor", "README.md"],
-  "keywords": [
-    "rapid",
-    "signal",
-    "reactive",
-    "unplugin",
-    "vite",
-    "webpack",
-    "rollup",
-    "react",
-    "vue",
-    "svelte"
-  ],
-  "scripts": {
-    "build": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm --dts --target node --minify && bun scripts/fix-cjs.mjs",
-    "dev": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm --dts --target node --watch",
-    "clean": "bun rimraf dist .turbo"
-  },
-  "dependencies": {
-    "unplugin": "^1.16.0",
-    "@rollup/pluginutils": "^5.1.4",
-    "magic-string": "^0.30.18"
-  },
-  "peerDependencies": {
-    "@rapid/signal-core": "workspace:*"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "vue": {
-      "optional": true
-    },
-    "svelte": {
-      "optional": true
-    }
-  },
-  "devDependencies": {
-    "bunup": "^0.16.10",
-    "@types/node": "^22.14.1",
-    "typescript": "^5.4.5",
-    "vite": "^5.4.0",
-    "webpack": "^5.95.0",
-    "rollup": "^4.29.0",
-    "esbuild": "^0.24.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "unplugin-rapid-signal",
+	"version": "0.1.0",
+	"description": "Universal plugin for using Rapid Signals across all frameworks with unified syntax",
+	"author": "Sylphx <hi@sylphx.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/unplugin-rapid-signal"
+	},
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./vite": {
+			"types": "./dist/vite.d.ts",
+			"import": "./dist/vite.js"
+		},
+		"./webpack": {
+			"types": "./dist/webpack.d.ts",
+			"import": "./dist/webpack.js"
+		},
+		"./rollup": {
+			"types": "./dist/rollup.d.ts",
+			"import": "./dist/rollup.js"
+		},
+		"./esbuild": {
+			"types": "./dist/esbuild.d.ts",
+			"import": "./dist/esbuild.js"
+		},
+		"./jsx-runtime/react": {
+			"types": "./jsx-runtime/react/index.tsx",
+			"import": "./jsx-runtime/react/index.tsx"
+		},
+		"./jsx-runtime/vue": {
+			"types": "./jsx-runtime/vue/index.ts",
+			"import": "./jsx-runtime/vue/index.ts"
+		},
+		"./svelte-preprocessor": {
+			"types": "./svelte-preprocessor/index.ts",
+			"import": "./svelte-preprocessor/index.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"jsx-runtime",
+		"svelte-preprocessor",
+		"README.md"
+	],
+	"keywords": [
+		"rapid",
+		"signal",
+		"reactive",
+		"unplugin",
+		"vite",
+		"webpack",
+		"rollup",
+		"react",
+		"vue",
+		"svelte"
+	],
+	"scripts": {
+		"build": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm --dts --target node --minify && bun scripts/fix-cjs.mjs",
+		"dev": "bunup --entry 'src/{index,vite,webpack,rollup,esbuild}.ts' --format esm --dts --target node --watch",
+		"clean": "bun rimraf dist .turbo"
+	},
+	"dependencies": {
+		"unplugin": "^1.16.0",
+		"@rollup/pluginutils": "^5.1.4",
+		"magic-string": "^0.30.18"
+	},
+	"peerDependencies": {
+		"@rapid/signal-core": "workspace:*"
+	},
+	"peerDependenciesMeta": {
+		"react": {
+			"optional": true
+		},
+		"vue": {
+			"optional": true
+		},
+		"svelte": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"bunup": "^0.16.10",
+		"@types/node": "^22.14.1",
+		"typescript": "^5.4.5",
+		"vite": "^5.4.0",
+		"webpack": "^5.95.0",
+		"rollup": "^4.29.0",
+		"esbuild": "^0.24.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

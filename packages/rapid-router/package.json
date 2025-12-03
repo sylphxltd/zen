@@ -1,45 +1,53 @@
 {
-  "name": "@rapid/router",
-  "version": "0.0.0",
-  "description": "Rapid framework router with Router and Link components",
-  "type": "module",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup --format esm --dts --target node --minify",
-    "dev": "bunup --format esm --dts --target node --watch",
-    "clean": "bun rimraf dist .turbo"
-  },
-  "keywords": ["rapid", "router", "routing", "framework", "component"],
-  "author": "Sylphx <hi@sylphx.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-router"
-  },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router#readme",
-  "bugs": {
-    "url": "https://github.com/SylphxAI/rapid/issues"
-  },
-  "dependencies": {
-    "@rapid/router-core": "workspace:*",
-    "@rapid/runtime": "workspace:*",
-    "@rapid/signal": "workspace:*",
-    "@rapid/web": "workspace:*"
-  },
-  "devDependencies": {
-    "bunup": "^0.16.10",
-    "typescript": "^5.8.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/router",
+	"version": "0.0.0",
+	"description": "Rapid framework router with Router and Link components",
+	"type": "module",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup --format esm --dts --target node --minify",
+		"dev": "bunup --format esm --dts --target node --watch",
+		"clean": "bun rimraf dist .turbo"
+	},
+	"keywords": [
+		"rapid",
+		"router",
+		"routing",
+		"framework",
+		"component"
+	],
+	"author": "Sylphx <hi@sylphx.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-router"
+	},
+	"homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router#readme",
+	"bugs": {
+		"url": "https://github.com/SylphxAI/rapid/issues"
+	},
+	"dependencies": {
+		"@rapid/router-core": "workspace:*",
+		"@rapid/runtime": "workspace:*",
+		"@rapid/signal": "workspace:*",
+		"@rapid/web": "workspace:*"
+	},
+	"devDependencies": {
+		"bunup": "^0.16.10",
+		"typescript": "^5.8.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

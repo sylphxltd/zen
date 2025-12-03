@@ -1,33 +1,41 @@
 {
-  "name": "@rapid/babel-plugin-jsx",
-  "version": "0.1.0",
-  "description": "Babel plugin for Rapid JSX transform with lazy children evaluation",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup src/index.ts --format esm --dts --target node",
-    "dev": "bunup src/index.ts --format esm --watch",
-    "test": "bun test"
-  },
-  "keywords": ["rapid", "jsx", "babel", "transform", "reactive"],
-  "author": "SylphxAI",
-  "license": "MIT",
-  "peerDependencies": {
-    "@babel/core": "^7.0.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@babel/types": "^7.28.5",
-    "@types/babel__core": "^7.20.5",
-    "bunup": "^0.16.10",
-    "typescript": "^5.8.3"
-  }
+	"name": "@rapid/babel-plugin-jsx",
+	"version": "0.1.0",
+	"description": "Babel plugin for Rapid JSX transform with lazy children evaluation",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup src/index.ts --format esm --dts --target node",
+		"dev": "bunup src/index.ts --format esm --watch",
+		"test": "bun test"
+	},
+	"keywords": [
+		"rapid",
+		"jsx",
+		"babel",
+		"transform",
+		"reactive"
+	],
+	"author": "SylphxAI",
+	"license": "MIT",
+	"peerDependencies": {
+		"@babel/core": "^7.0.0"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.28.5",
+		"@babel/types": "^7.28.5",
+		"@types/babel__core": "^7.20.5",
+		"bunup": "^0.16.10",
+		"typescript": "^5.8.3"
+	}
 }

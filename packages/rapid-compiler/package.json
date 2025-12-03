@@ -1,68 +1,79 @@
 {
-  "name": "@rapid/compiler",
-  "version": "0.0.0",
-  "description": "Optional JSX transformer for Rapid - auto-lazy children and signal unwrapping",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./vite": {
-      "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.js"
-    },
-    "./webpack": {
-      "types": "./dist/webpack.d.ts",
-      "import": "./dist/webpack.js"
-    },
-    "./metro": {
-      "types": "./dist/metro.d.ts",
-      "import": "./dist/metro.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsup",
-    "dev": "bun run --watch src/index.ts",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["rapid", "compiler", "jsx", "transform", "vite", "webpack", "metro", "plugin"],
-  "author": "Rapid Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-compiler"
-  },
-  "dependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/plugin-syntax-jsx": "^7.25.9",
-    "@babel/plugin-syntax-typescript": "^7.25.9",
-    "@babel/plugin-transform-react-jsx": "^7.25.9",
-    "@babel/traverse": "^7.26.5",
-    "@babel/types": "^7.26.5"
-  },
-  "peerDependencies": {
-    "vite": ">=5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "vite": {
-      "optional": true
-    }
-  },
-  "devDependencies": {
-    "@types/babel__core": "^7.20.5",
-    "@types/babel__traverse": "^7.20.6",
-    "tsup": "^8.3.5",
-    "typescript": "^5.8.3",
-    "vite": "^7.2.2"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/compiler",
+	"version": "0.0.0",
+	"description": "Optional JSX transformer for Rapid - auto-lazy children and signal unwrapping",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./vite": {
+			"types": "./dist/vite.d.ts",
+			"import": "./dist/vite.js"
+		},
+		"./webpack": {
+			"types": "./dist/webpack.d.ts",
+			"import": "./dist/webpack.js"
+		},
+		"./metro": {
+			"types": "./dist/metro.d.ts",
+			"import": "./dist/metro.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "bun run --watch src/index.ts",
+		"test": "bun test",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"rapid",
+		"compiler",
+		"jsx",
+		"transform",
+		"vite",
+		"webpack",
+		"metro",
+		"plugin"
+	],
+	"author": "Rapid Team",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-compiler"
+	},
+	"dependencies": {
+		"@babel/core": "^7.26.0",
+		"@babel/plugin-syntax-jsx": "^7.25.9",
+		"@babel/plugin-syntax-typescript": "^7.25.9",
+		"@babel/plugin-transform-react-jsx": "^7.25.9",
+		"@babel/traverse": "^7.26.5",
+		"@babel/types": "^7.26.5"
+	},
+	"peerDependencies": {
+		"vite": ">=5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"vite": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@types/babel__core": "^7.20.5",
+		"@types/babel__traverse": "^7.20.6",
+		"tsup": "^8.3.5",
+		"typescript": "^5.8.3",
+		"vite": "^7.2.2"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

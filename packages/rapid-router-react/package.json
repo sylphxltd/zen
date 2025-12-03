@@ -1,49 +1,58 @@
 {
-  "name": "@rapid/router-react",
-  "version": "0.0.0",
-  "description": "React hooks for Rapid Router with auto-intercepting navigation",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup --format esm --dts --target node --minify",
-    "clean": "bun rimraf dist .turbo"
-  },
-  "keywords": ["rapid", "router", "routing", "react", "hooks", "navigation"],
-  "author": "Sylphx <hi@sylphx.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-router-react"
-  },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router-react#readme",
-  "bugs": {
-    "url": "https://github.com/SylphxAI/rapid/issues"
-  },
-  "peerDependencies": {
-    "@rapid/router-core": "^0.0.0",
-    "@rapid/signal-core": "^0.0.0",
-    "react": ">=16.8.0"
-  },
-  "devDependencies": {
-    "@rapid/signal": "workspace:*",
-    "@rapid/router-core": "workspace:*",
-    "@rapid/signal-core": "workspace:*",
-    "@types/react": "^19.0.1",
-    "bunup": "^0.16.10",
-    "react": "^19.2.0",
-    "typescript": "^5.8.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/router-react",
+	"version": "0.0.0",
+	"description": "React hooks for Rapid Router with auto-intercepting navigation",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup --format esm --dts --target node --minify",
+		"clean": "bun rimraf dist .turbo"
+	},
+	"keywords": [
+		"rapid",
+		"router",
+		"routing",
+		"react",
+		"hooks",
+		"navigation"
+	],
+	"author": "Sylphx <hi@sylphx.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-router-react"
+	},
+	"homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router-react#readme",
+	"bugs": {
+		"url": "https://github.com/SylphxAI/rapid/issues"
+	},
+	"peerDependencies": {
+		"@rapid/router-core": "^0.0.0",
+		"@rapid/signal-core": "^0.0.0",
+		"react": ">=16.8.0"
+	},
+	"devDependencies": {
+		"@rapid/signal": "workspace:*",
+		"@rapid/router-core": "workspace:*",
+		"@rapid/signal-core": "workspace:*",
+		"@types/react": "^19.0.1",
+		"bunup": "^0.16.10",
+		"react": "^19.2.0",
+		"typescript": "^5.8.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

@@ -1,40 +1,49 @@
 {
-  "name": "@rapid/runtime",
-  "version": "0.0.0",
-  "description": "Platform-agnostic runtime for Rapid framework - components and utilities that work everywhere",
-  "type": "module",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup --format esm --target node --minify",
-    "dev": "bunup --format esm --target node --watch",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["rapid", "runtime", "reactive", "components", "platform-agnostic", "cross-platform"],
-  "author": "Rapid Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-runtime"
-  },
-  "dependencies": {
-    "@rapid/signal": "workspace:*",
-    "@rapid/signal-extensions": "workspace:*"
-  },
-  "devDependencies": {
-    "bunup": "^0.16.10",
-    "typescript": "^5.8.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/runtime",
+	"version": "0.0.0",
+	"description": "Platform-agnostic runtime for Rapid framework - components and utilities that work everywhere",
+	"type": "module",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup --format esm --target node --minify",
+		"dev": "bunup --format esm --target node --watch",
+		"test": "bun test",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"rapid",
+		"runtime",
+		"reactive",
+		"components",
+		"platform-agnostic",
+		"cross-platform"
+	],
+	"author": "Rapid Team",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-runtime"
+	},
+	"dependencies": {
+		"@rapid/signal": "workspace:*",
+		"@rapid/signal-extensions": "workspace:*"
+	},
+	"devDependencies": {
+		"bunup": "^0.16.10",
+		"typescript": "^5.8.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

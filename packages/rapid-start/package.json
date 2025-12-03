@@ -1,53 +1,62 @@
 {
-  "name": "@rapid/start",
-  "version": "0.0.0",
-  "description": "Full-stack meta-framework for Rapid - file-based routing, server functions, SSR",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./router": {
-      "types": "./dist/router.d.ts",
-      "import": "./dist/router.js"
-    },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.js"
-    },
-    "./api": {
-      "types": "./dist/api.d.ts",
-      "import": "./dist/api.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsup",
-    "dev": "bun run --watch src/index.ts",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["rapid", "fullstack", "meta-framework", "ssr", "routing", "server-functions"],
-  "author": "Rapid Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-start"
-  },
-  "dependencies": {
-    "@rapid/runtime": "workspace:*",
-    "@rapid/web": "workspace:*",
-    "@rapid/router": "workspace:*"
-  },
-  "devDependencies": {
-    "tsup": "^8.3.5",
-    "typescript": "^5.8.3",
-    "vite": "^7.2.2"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/start",
+	"version": "0.0.0",
+	"description": "Full-stack meta-framework for Rapid - file-based routing, server functions, SSR",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./router": {
+			"types": "./dist/router.d.ts",
+			"import": "./dist/router.js"
+		},
+		"./server": {
+			"types": "./dist/server.d.ts",
+			"import": "./dist/server.js"
+		},
+		"./api": {
+			"types": "./dist/api.d.ts",
+			"import": "./dist/api.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "bun run --watch src/index.ts",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"rapid",
+		"fullstack",
+		"meta-framework",
+		"ssr",
+		"routing",
+		"server-functions"
+	],
+	"author": "Rapid Team",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-start"
+	},
+	"dependencies": {
+		"@rapid/runtime": "workspace:*",
+		"@rapid/web": "workspace:*",
+		"@rapid/router": "workspace:*"
+	},
+	"devDependencies": {
+		"tsup": "^8.3.5",
+		"typescript": "^5.8.3",
+		"vite": "^7.2.2"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

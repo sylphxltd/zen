@@ -1,74 +1,76 @@
 {
-  "name": "@rapid/signal-extensions",
-  "version": "0.0.0",
-  "description": "All-in-one extensions for Rapid Signal: patterns, persistence, and immutable updates",
-  "type": "module",
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
-    },
-    "./patterns": {
-      "types": "./dist/patterns/index.d.ts",
-      "import": "./dist/patterns/index.js"
-    },
-    "./persistent": {
-      "types": "./dist/persistent/index.d.ts",
-      "import": "./dist/persistent/index.js"
-    },
-    "./craft": {
-      "types": "./dist/craft/index.d.ts",
-      "import": "./dist/craft/index.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm --dts --target node --minify",
-    "dev": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm --dts --target node --watch",
-    "test": "bun test",
-    "test:watch": "bun test --watch"
-  },
-  "keywords": [
-    "rapid",
-    "signal",
-    "extensions",
-    "patterns",
-    "store",
-    "async",
-    "map",
-    "persistent",
-    "localStorage",
-    "immutable",
-    "craft",
-    "patches"
-  ],
-  "author": "Sylphx <hi@sylphx.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-signal-extensions"
-  },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-signal-extensions#readme",
-  "bugs": {
-    "url": "https://github.com/SylphxAI/rapid/issues"
-  },
-  "peerDependencies": {
-    "@rapid/signal-core": "^0.0.0"
-  },
-  "dependencies": {
-    "@sylphx/craft": "^1.0.0"
-  },
-  "devDependencies": {
-    "@rapid/signal": "workspace:*",
-    "@rapid/signal-core": "workspace:*",
-    "bunup": "^0.16.10",
-    "typescript": "^5.8.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/signal-extensions",
+	"version": "0.0.0",
+	"description": "All-in-one extensions for Rapid Signal: patterns, persistence, and immutable updates",
+	"type": "module",
+	"main": "./dist/src/index.js",
+	"module": "./dist/src/index.js",
+	"types": "./dist/src/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/src/index.d.ts",
+			"import": "./dist/src/index.js"
+		},
+		"./patterns": {
+			"types": "./dist/patterns/index.d.ts",
+			"import": "./dist/patterns/index.js"
+		},
+		"./persistent": {
+			"types": "./dist/persistent/index.d.ts",
+			"import": "./dist/persistent/index.js"
+		},
+		"./craft": {
+			"types": "./dist/craft/index.d.ts",
+			"import": "./dist/craft/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm --dts --target node --minify",
+		"dev": "bunup --entry 'src/index.ts' 'patterns/index.ts' 'persistent/index.ts' 'craft/index.ts' --format esm --dts --target node --watch",
+		"test": "bun test",
+		"test:watch": "bun test --watch"
+	},
+	"keywords": [
+		"rapid",
+		"signal",
+		"extensions",
+		"patterns",
+		"store",
+		"async",
+		"map",
+		"persistent",
+		"localStorage",
+		"immutable",
+		"craft",
+		"patches"
+	],
+	"author": "Sylphx <hi@sylphx.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-signal-extensions"
+	},
+	"homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-signal-extensions#readme",
+	"bugs": {
+		"url": "https://github.com/SylphxAI/rapid/issues"
+	},
+	"peerDependencies": {
+		"@rapid/signal-core": "^0.0.0"
+	},
+	"dependencies": {
+		"@sylphx/craft": "^1.0.0"
+	},
+	"devDependencies": {
+		"@rapid/signal": "workspace:*",
+		"@rapid/signal-core": "workspace:*",
+		"bunup": "^0.16.10",
+		"typescript": "^5.8.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

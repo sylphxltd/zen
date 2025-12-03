@@ -1,65 +1,74 @@
 {
-  "name": "@rapid/web",
-  "version": "0.0.0",
-  "description": "Web renderer for Rapid framework - DOM operations, JSX runtime, SSR",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./jsx-runtime": {
-      "react-server": {
-        "types": "./dist/jsx-runtime-server.d.ts",
-        "import": "./dist/jsx-runtime-server.js"
-      },
-      "types": "./dist/jsx-runtime.d.ts",
-      "import": "./dist/jsx-runtime.js"
-    },
-    "./jsx-dev-runtime": {
-      "react-server": {
-        "types": "./dist/jsx-runtime-server.d.ts",
-        "import": "./dist/jsx-runtime-server.js"
-      },
-      "types": "./dist/jsx-runtime.d.ts",
-      "import": "./dist/jsx-runtime.js"
-    },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.js"
-    },
-    "./hydrate": {
-      "types": "./dist/hydrate.d.ts",
-      "import": "./dist/hydrate.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsup",
-    "dev": "bun run --watch src/index.ts",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["rapid", "web", "dom", "jsx", "ssr", "hydration"],
-  "author": "Rapid Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-web"
-  },
-  "dependencies": {
-    "@rapid/runtime": "workspace:*",
-    "@rapid/signal": "workspace:*"
-  },
-  "devDependencies": {
-    "tsup": "^8.3.5",
-    "typescript": "^5.8.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/web",
+	"version": "0.0.0",
+	"description": "Web renderer for Rapid framework - DOM operations, JSX runtime, SSR",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./jsx-runtime": {
+			"react-server": {
+				"types": "./dist/jsx-runtime-server.d.ts",
+				"import": "./dist/jsx-runtime-server.js"
+			},
+			"types": "./dist/jsx-runtime.d.ts",
+			"import": "./dist/jsx-runtime.js"
+		},
+		"./jsx-dev-runtime": {
+			"react-server": {
+				"types": "./dist/jsx-runtime-server.d.ts",
+				"import": "./dist/jsx-runtime-server.js"
+			},
+			"types": "./dist/jsx-runtime.d.ts",
+			"import": "./dist/jsx-runtime.js"
+		},
+		"./server": {
+			"types": "./dist/server.d.ts",
+			"import": "./dist/server.js"
+		},
+		"./hydrate": {
+			"types": "./dist/hydrate.d.ts",
+			"import": "./dist/hydrate.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "bun run --watch src/index.ts",
+		"test": "bun test",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"rapid",
+		"web",
+		"dom",
+		"jsx",
+		"ssr",
+		"hydration"
+	],
+	"author": "Rapid Team",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-web"
+	},
+	"dependencies": {
+		"@rapid/runtime": "workspace:*",
+		"@rapid/signal": "workspace:*"
+	},
+	"devDependencies": {
+		"tsup": "^8.3.5",
+		"typescript": "^5.8.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

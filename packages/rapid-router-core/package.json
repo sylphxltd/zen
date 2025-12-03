@@ -1,44 +1,54 @@
 {
-  "name": "@rapid/router-core",
-  "version": "0.0.0",
-  "description": "Pure routing logic built on Rapid Signal reactive primitives (framework-agnostic)",
-  "type": "module",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup --format esm --dts --target node --minify",
-    "dev": "bunup --format esm --dts --target node --watch",
-    "test": "bun test",
-    "test:watch": "bun test --watch"
-  },
-  "keywords": ["rapid", "router", "routing", "signal", "reactive", "minimal", "tiny"],
-  "author": "Sylphx <hi@sylphx.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-router-core"
-  },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router-core#readme",
-  "bugs": {
-    "url": "https://github.com/SylphxAI/rapid/issues"
-  },
-  "dependencies": {
-    "@rapid/signal-core": "workspace:*",
-    "@rapid/signal-extensions": "workspace:*"
-  },
-  "devDependencies": {
-    "bunup": "^0.16.10",
-    "vite-tsconfig-paths": "^5.1.4"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/router-core",
+	"version": "0.0.0",
+	"description": "Pure routing logic built on Rapid Signal reactive primitives (framework-agnostic)",
+	"type": "module",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup --format esm --dts --target node --minify",
+		"dev": "bunup --format esm --dts --target node --watch",
+		"test": "bun test",
+		"test:watch": "bun test --watch"
+	},
+	"keywords": [
+		"rapid",
+		"router",
+		"routing",
+		"signal",
+		"reactive",
+		"minimal",
+		"tiny"
+	],
+	"author": "Sylphx <hi@sylphx.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-router-core"
+	},
+	"homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router-core#readme",
+	"bugs": {
+		"url": "https://github.com/SylphxAI/rapid/issues"
+	},
+	"dependencies": {
+		"@rapid/signal-core": "workspace:*",
+		"@rapid/signal-extensions": "workspace:*"
+	},
+	"devDependencies": {
+		"bunup": "^0.16.10",
+		"vite-tsconfig-paths": "^5.1.4"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

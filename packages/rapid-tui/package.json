@@ -1,59 +1,67 @@
 {
-  "name": "@rapid/tui",
-  "version": "0.0.0",
-  "description": "Terminal UI renderer for Rapid framework - build beautiful CLI apps",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "development": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./jsx-runtime": {
-      "development": "./src/jsx-runtime.ts",
-      "types": "./dist/jsx-runtime.d.ts",
-      "import": "./dist/jsx-runtime.js"
-    },
-    "./jsx-dev-runtime": {
-      "development": "./src/jsx-runtime.ts",
-      "types": "./dist/jsx-runtime.d.ts",
-      "import": "./dist/jsx-runtime.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --external @rapid/router-core --external @rapid/runtime --external @rapid/signal --external @rapid/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
-    "build:watch": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --watch --external @rapid/router-core --external @rapid/runtime --external @rapid/signal --external @rapid/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
-    "dev": "bun run --watch src/index.ts",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["rapid", "tui", "terminal", "cli", "ink"],
-  "author": "Rapid Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-tui"
-  },
-  "dependencies": {
-    "@rapid/router-core": "workspace:*",
-    "@rapid/runtime": "workspace:*",
-    "@rapid/signal": "workspace:*",
-    "chalk": "^5.3.0",
-    "cli-boxes": "^3.0.0",
-    "string-width": "^7.2.0",
-    "strip-ansi": "^7.1.0",
-    "yoga-wasm-web": "^0.3.3"
-  },
-  "devDependencies": {
-    "bunup": "^0.16.10",
-    "typescript": "^5.8.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/tui",
+	"version": "0.0.0",
+	"description": "Terminal UI renderer for Rapid framework - build beautiful CLI apps",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"development": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./jsx-runtime": {
+			"development": "./src/jsx-runtime.ts",
+			"types": "./dist/jsx-runtime.d.ts",
+			"import": "./dist/jsx-runtime.js"
+		},
+		"./jsx-dev-runtime": {
+			"development": "./src/jsx-runtime.ts",
+			"types": "./dist/jsx-runtime.d.ts",
+			"import": "./dist/jsx-runtime.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --external @rapid/router-core --external @rapid/runtime --external @rapid/signal --external @rapid/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
+		"build:watch": "bunup src/index.ts src/jsx-runtime.ts --format esm --dts --target node --splitting=false --watch --external @rapid/router-core --external @rapid/runtime --external @rapid/signal --external @rapid/tui/jsx-runtime --external chalk --external cli-boxes --external string-width --external strip-ansi --external yoga-wasm-web --external slice-ansi",
+		"dev": "bun run --watch src/index.ts",
+		"test": "bun test",
+		"test:watch": "bun test --watch",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"rapid",
+		"tui",
+		"terminal",
+		"cli",
+		"ink"
+	],
+	"author": "Rapid Team",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-tui"
+	},
+	"dependencies": {
+		"@rapid/router-core": "workspace:*",
+		"@rapid/runtime": "workspace:*",
+		"@rapid/signal": "workspace:*",
+		"chalk": "^5.3.0",
+		"cli-boxes": "^3.0.0",
+		"string-width": "^7.2.0",
+		"strip-ansi": "^7.1.0",
+		"yoga-wasm-web": "^0.3.3"
+	},
+	"devDependencies": {
+		"bunup": "^0.16.10",
+		"typescript": "^5.8.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

@@ -1,68 +1,77 @@
 {
-  "name": "@rapid/signal-react",
-  "version": "0.0.0",
-  "description": "React integration for Rapid Signals with auto-unwrap and lifecycle management",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./vite": {
-      "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.js"
-    },
-    "./webpack": {
-      "types": "./dist/webpack.d.ts",
-      "import": "./dist/webpack.js"
-    },
-    "./rollup": {
-      "types": "./dist/rollup.d.ts",
-      "import": "./dist/rollup.js"
-    },
-    "./esbuild": {
-      "types": "./dist/esbuild.d.ts",
-      "import": "./dist/esbuild.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "bunup --entry 'src/index.ts' 'src/vite.ts' 'src/webpack.ts' 'src/rollup.ts' 'src/esbuild.ts' --format esm --dts --target node --minify",
-    "clean": "bun rimraf dist .turbo"
-  },
-  "keywords": ["rapid", "signal", "reactive", "react", "hooks", "state-management"],
-  "author": "Sylphx <hi@sylphx.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/rapid-signal-react"
-  },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-signal-react#readme",
-  "bugs": {
-    "url": "https://github.com/SylphxAI/rapid/issues"
-  },
-  "dependencies": {
-    "@rapid/signal-core": "workspace:*",
-    "unplugin-rapid-signal": "workspace:*"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    }
-  },
-  "devDependencies": {
-    "@types/react": "^19.0.1",
-    "bunup": "^0.16.10",
-    "typescript": "^5.8.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@rapid/signal-react",
+	"version": "0.0.0",
+	"description": "React integration for Rapid Signals with auto-unwrap and lifecycle management",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./vite": {
+			"types": "./dist/vite.d.ts",
+			"import": "./dist/vite.js"
+		},
+		"./webpack": {
+			"types": "./dist/webpack.d.ts",
+			"import": "./dist/webpack.js"
+		},
+		"./rollup": {
+			"types": "./dist/rollup.d.ts",
+			"import": "./dist/rollup.js"
+		},
+		"./esbuild": {
+			"types": "./dist/esbuild.d.ts",
+			"import": "./dist/esbuild.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bunup --entry 'src/index.ts' 'src/vite.ts' 'src/webpack.ts' 'src/rollup.ts' 'src/esbuild.ts' --format esm --dts --target node --minify",
+		"clean": "bun rimraf dist .turbo"
+	},
+	"keywords": [
+		"rapid",
+		"signal",
+		"reactive",
+		"react",
+		"hooks",
+		"state-management"
+	],
+	"author": "Sylphx <hi@sylphx.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SylphxAI/rapid.git",
+		"directory": "packages/rapid-signal-react"
+	},
+	"homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-signal-react#readme",
+	"bugs": {
+		"url": "https://github.com/SylphxAI/rapid/issues"
+	},
+	"dependencies": {
+		"@rapid/signal-core": "workspace:*",
+		"unplugin-rapid-signal": "workspace:*"
+	},
+	"peerDependencies": {
+		"react": ">=16.8.0"
+	},
+	"peerDependenciesMeta": {
+		"react": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@types/react": "^19.0.1",
+		"bunup": "^0.16.10",
+		"typescript": "^5.8.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }
