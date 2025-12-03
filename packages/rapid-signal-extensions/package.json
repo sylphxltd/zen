@@ -1,7 +1,7 @@
 {
   "name": "@rapid/signal-extensions",
   "version": "0.0.0",
-  "description": "All-in-one extensions for Zen Signal: patterns, persistence, and immutable updates",
+  "description": "All-in-one extensions for Rapid Signal: patterns, persistence, and immutable updates",
   "type": "module",
   "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",
@@ -36,7 +36,7 @@
     "test:watch": "vitest"
   },
   "keywords": [
-    "zen",
+    "rapid",
     "signal",
     "extensions",
     "patterns",
@@ -54,9 +54,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-signal-extensions"
+    "directory": "packages/rapid-signal-extensions"
   },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/zen-signal-extensions#readme",
+  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-signal-extensions#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/rapid/issues"
   },

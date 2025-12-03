@@ -1,7 +1,7 @@
 {
   "name": "@rapid/router-core",
   "version": "0.0.0",
-  "description": "Pure routing logic built on Zen Signal reactive primitives (framework-agnostic)",
+  "description": "Pure routing logic built on Rapid Signal reactive primitives (framework-agnostic)",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -20,15 +20,15 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "keywords": ["zen", "router", "routing", "signal", "reactive", "minimal", "tiny"],
+  "keywords": ["rapid", "router", "routing", "signal", "reactive", "minimal", "tiny"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-router-core"
+    "directory": "packages/rapid-router-core"
   },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/zen-router-core#readme",
+  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router-core#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/rapid/issues"
   },

@@ -7,8 +7,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@rapid/signal': path.resolve(__dirname, '../zen/src/index.ts'),
-      '@rapid/signal-extensions/patterns': path.resolve(__dirname, '../zen-patterns/src/index.ts'),
+      '@rapid/signal': path.resolve(__dirname, '../rapid-signal/src/index.ts'),
+      '@rapid/signal-extensions/patterns': path.resolve(__dirname, '../rapid-signal-extensions/patterns/index.ts'),
     },
   },
 });

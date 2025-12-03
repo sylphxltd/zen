@@ -1,6 +1,6 @@
 # @rapid/signal-react
 
-React integration for Zen Signals with auto-unwrap and lifecycle management.
+React integration for Rapid Signals with auto-unwrap and lifecycle management.
 
 ## Installation
 

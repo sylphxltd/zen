@@ -28,8 +28,8 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".", // Added for paths resolution
     "paths": {
-      "@sylphlab/zen-core": ["../zen-core/dist/index.d.ts"], // Map back to built types
-      "@sylphlab/zen-core/*": ["../zen-core/dist/*"] // Map back to built types wildcard
+      "@rapid/signal-core": ["../rapid-signal-core/dist/index.d.ts"],
+      "@rapid/signal-core/*": ["../rapid-signal-core/dist/*"]
     },
 
     // Package-specific options

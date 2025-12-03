@@ -1,5 +1,5 @@
 /**
- * Type definitions for Zen
+ * Type definitions for Rapid
  * Simplified - only types needed for current API
  */
 

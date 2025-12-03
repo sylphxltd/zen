@@ -21,13 +21,13 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["zen", "tui", "terminal", "cli", "advanced", "window", "splitter", "fullscreen"],
-  "author": "Zen Team",
+  "keywords": ["rapid", "tui", "terminal", "cli", "advanced", "window", "splitter", "fullscreen"],
+  "author": "Rapid Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-tui-advanced"
+    "directory": "packages/rapid-tui-advanced"
   },
   "dependencies": {
     "@rapid/runtime": "workspace:*",

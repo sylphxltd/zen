@@ -43,19 +43,19 @@ export function NewHero() {
         <div class="flex flex-wrap gap-4 justify-center mb-16">
           <a
             href="/docs"
-            class="px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-zen shadow-zen transition-all hover:scale-105 text-lg"
+            class="px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-rapid shadow-rapid transition-all hover:scale-105 text-lg"
           >
             Get Started
           </a>
           <a
             href="/playground"
-            class="px-8 py-4 bg-bg-lighter hover:bg-bg border border-border text-text font-semibold rounded-zen transition-all hover:scale-105 text-lg"
+            class="px-8 py-4 bg-bg-lighter hover:bg-bg border border-border text-text font-semibold rounded-rapid transition-all hover:scale-105 text-lg"
           >
             5-Min Tutorial
           </a>
           <a
             href="/migration"
-            class="px-8 py-4 bg-bg-lighter hover:bg-bg border border-primary/50 text-primary font-semibold rounded-zen transition-all hover:scale-105 text-lg"
+            class="px-8 py-4 bg-bg-lighter hover:bg-bg border border-primary/50 text-primary font-semibold rounded-rapid transition-all hover:scale-105 text-lg"
           >
             Migrate from React
           </a>
@@ -65,7 +65,7 @@ export function NewHero() {
         <div class="max-w-5xl mx-auto">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* React example */}
-            <div class="bg-bg-light border border-border rounded-zen overflow-hidden">
+            <div class="bg-bg-light border border-border rounded-rapid overflow-hidden">
               <div class="bg-bg-lighter border-b border-border px-4 py-3 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <span class="text-text font-medium">React</span>
@@ -95,7 +95,7 @@ function Counter() {
             </div>
 
             {/* Rapid example */}
-            <div class="bg-bg-light border-2 border-primary/50 rounded-zen overflow-hidden relative">
+            <div class="bg-bg-light border-2 border-primary/50 rounded-rapid overflow-hidden relative">
               <div class="absolute top-2 right-2 px-2 py-1 bg-primary text-white text-xs font-bold rounded">
                 Recommended
               </div>

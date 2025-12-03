@@ -1,4 +1,4 @@
-# Zen TUI Component Roadmap
+# Rapid TUI Component Roadmap
 
 ## Vision
 
@@ -24,10 +24,10 @@
 ### ✅ Layout (4 components)
 | Component | Console App | Full Screen App | React Ink | Status |
 |-----------|-------------|-----------------|-----------|--------|
-| FullscreenLayout | ❌ | ✅ | ❌ | **Zen exclusive** |
-| ScrollBox | ⚠️ | ✅ | ❌ | **Zen exclusive** |
-| Scrollbar | ❌ | ✅ | ❌ | **Zen exclusive** |
-| Divider | ✅ | ✅ | ❌ | **Zen exclusive** |
+| FullscreenLayout | ❌ | ✅ | ❌ | **Rapid exclusive** |
+| ScrollBox | ⚠️ | ✅ | ❌ | **Rapid exclusive** |
+| Scrollbar | ❌ | ✅ | ❌ | **Rapid exclusive** |
+| Divider | ✅ | ✅ | ❌ | **Rapid exclusive** |
 
 ### ✅ Input (7 components)
 | Component | Console App | Full Screen App | React Ink | Status |
@@ -36,8 +36,8 @@
 | SelectInput | ✅ | ✅ | 📦 | Enhanced |
 | MultiSelect | ✅ | ✅ | 📦 | Enhanced (limit, scroll) |
 | Checkbox | ✅ | ✅ | 📦 | Complete |
-| Radio | ✅ | ✅ | ❌ | **Zen exclusive** |
-| Button | ✅ | ✅ | ❌ | **Zen exclusive** |
+| Radio | ✅ | ✅ | ❌ | **Rapid exclusive** |
+| Button | ✅ | ✅ | ❌ | **Rapid exclusive** |
 | Confirmation | ✅ | ✅ | 📦 | Complete |
 
 ### ✅ Feedback (5 components)
@@ -45,42 +45,42 @@
 |-----------|-------------|-----------------|-----------|--------|
 | Spinner | ✅ | ✅ | 📦 | Enhanced (6 types) |
 | ProgressBar | ✅ | ✅ | 📦 | Complete |
-| StatusMessage | ✅ | ✅ | ❌ | **Zen exclusive** |
-| Badge | ✅ | ✅ | ❌ | **Zen exclusive** |
-| Toast | ⚠️ | ✅ | ❌ | **Zen exclusive** |
+| StatusMessage | ✅ | ✅ | ❌ | **Rapid exclusive** |
+| Badge | ✅ | ✅ | ❌ | **Rapid exclusive** |
+| Toast | ⚠️ | ✅ | ❌ | **Rapid exclusive** |
 
 ### ✅ Data Display (3 components)
 | Component | Console App | Full Screen App | React Ink | Status |
 |-----------|-------------|-----------------|-----------|--------|
-| Table | ✅ | ✅ | ❌ | **Zen exclusive** |
-| TreeView | ⚠️ | ✅ | ❌ | **Zen exclusive** |
-| Markdown | ⚠️ | ✅ | ❌ | **Zen exclusive** |
+| Table | ✅ | ✅ | ❌ | **Rapid exclusive** |
+| TreeView | ⚠️ | ✅ | ❌ | **Rapid exclusive** |
+| Markdown | ⚠️ | ✅ | ❌ | **Rapid exclusive** |
 
 ### ✅ Navigation (4 components)
 | Component | Console App | Full Screen App | React Ink | Status |
 |-----------|-------------|-----------------|-----------|--------|
-| Tabs | ⚠️ | ✅ | ❌ | **Zen exclusive** |
+| Tabs | ⚠️ | ✅ | ❌ | **Rapid exclusive** |
 | Link | ✅ | ✅ | 📦 | Complete |
-| Router | ❌ | ✅ | ❌ | **Zen exclusive** |
-| RouterLink | ❌ | ✅ | ❌ | **Zen exclusive** |
+| Router | ❌ | ✅ | ❌ | **Rapid exclusive** |
+| RouterLink | ❌ | ✅ | ❌ | **Rapid exclusive** |
 
 ### ✅ Overlay (2 components)
 | Component | Console App | Full Screen App | React Ink | Status |
 |-----------|-------------|-----------------|-----------|--------|
-| Modal | ⚠️ | ✅ | ❌ | **Zen exclusive** |
-| CommandPalette | ❌ | ✅ | ❌ | **Zen exclusive** |
+| Modal | ⚠️ | ✅ | ❌ | **Rapid exclusive** |
+| CommandPalette | ❌ | ✅ | ❌ | **Rapid exclusive** |
 
 ### ✅ Chrome (1 component)
 | Component | Console App | Full Screen App | React Ink | Status |
 |-----------|-------------|-----------------|-----------|--------|
-| StatusBar | ❌ | ✅ | ❌ | **Zen exclusive** |
+| StatusBar | ❌ | ✅ | ❌ | **Rapid exclusive** |
 
 ### ✅ Interactive (3 components)
 | Component | Console App | Full Screen App | React Ink | Status |
 |-----------|-------------|-----------------|-----------|--------|
-| Pressable | ❌ | ✅ | ❌ | **Zen exclusive** (mouse) |
-| Draggable | ❌ | ✅ | ❌ | **Zen exclusive** (mouse) |
-| Hoverable | ❌ | ✅ | ❌ | **Zen exclusive** (mouse) |
+| Pressable | ❌ | ✅ | ❌ | **Rapid exclusive** (mouse) |
+| Draggable | ❌ | ✅ | ❌ | **Rapid exclusive** (mouse) |
+| Hoverable | ❌ | ✅ | ❌ | **Rapid exclusive** (mouse) |
 
 **Current Total: 38 components**
 
@@ -342,25 +342,25 @@ For terminals with image support (iTerm2, Kitty)
 
 ---
 
-## Comparison: Zen TUI vs React Ink vs Other Frameworks
+## Comparison: Rapid TUI vs React Ink vs Other Frameworks
 
 ### React Ink Ecosystem
-| Feature | React Ink Core | React Ink Ecosystem | Zen TUI | Winner |
+| Feature | React Ink Core | React Ink Ecosystem | Rapid TUI | Winner |
 |---------|----------------|---------------------|---------|--------|
 | Basic components | 5 | 5 | 5 | ✅ Tie |
-| Input components | 0 | 4 (via packages) | 7 | ✅ Zen (built-in) |
-| Full-screen mode | ❌ | ❌ | ✅ | ✅ Zen |
-| Mouse support | ❌ | ❌ | ✅ | ✅ Zen |
-| Scrolling | ❌ | ❌ | ✅ | ✅ Zen |
-| Router | ❌ | ❌ | ✅ | ✅ Zen |
-| Command Palette | ❌ | ❌ | ✅ | ✅ Zen |
-| Table | ❌ | 📦 ink-table | ✅ | ✅ Zen (built-in) |
-| TreeView | ❌ | ❌ | ✅ | ✅ Zen |
-| Markdown | ❌ | 📦 ink-markdown | ✅ | ✅ Zen (built-in) |
+| Input components | 0 | 4 (via packages) | 7 | ✅ Rapid (built-in) |
+| Full-screen mode | ❌ | ❌ | ✅ | ✅ Rapid |
+| Mouse support | ❌ | ❌ | ✅ | ✅ Rapid |
+| Scrolling | ❌ | ❌ | ✅ | ✅ Rapid |
+| Router | ❌ | ❌ | ✅ | ✅ Rapid |
+| Command Palette | ❌ | ❌ | ✅ | ✅ Rapid |
+| Table | ❌ | 📦 ink-table | ✅ | ✅ Rapid (built-in) |
+| TreeView | ❌ | ❌ | ✅ | ✅ Rapid |
+| Markdown | ❌ | 📦 ink-markdown | ✅ | ✅ Rapid (built-in) |
 | Splitter/Panes | ❌ | ❌ | ❌ | ⚠️ None |
 | MenuBar | ❌ | ❌ | ❌ | ⚠️ None |
 
-**Zen TUI 已經超越 React Ink，但 Full Screen App 支持仍不完整。**
+**Rapid TUI 已經超越 React Ink，但 Full Screen App 支持仍不完整。**
 
 ### Blessed (Node.js)
 Blessed 是最完整的 Node.js TUI 庫，支持：
@@ -370,8 +370,8 @@ Blessed 是最完整的 Node.js TUI 庫，支持：
 - ✅ ProgressBar, Log
 - ✅ Terminal, Image (for supported terminals)
 
-**Zen TUI vs Blessed:**
-- Zen: 更現代、reactive、TypeScript
+**Rapid TUI vs Blessed:**
+- Rapid: 更現代、reactive、TypeScript
 - Blessed: 更完整、更多 widgets、更成熟
 - **Goal:** 達到 Blessed 的組件完整度，但更現代化
 
@@ -383,14 +383,14 @@ Textual 是最先進的 Python TUI 框架：
 - ✅ Animation support
 - ✅ **極其專業的 Full Screen App 支持**
 
-**Goal:** Zen TUI 應該達到 Textual 的專業度
+**Goal:** Rapid TUI 應該達到 Textual 的專業度
 
 ---
 
 ## Implementation Priority
 
 ### Phase 1: Full Screen App Essentials (P0)
-**Goal:** 讓 Zen TUI 能夠構建專業的 full-screen app（如 ranger, lazygit）
+**Goal:** 讓 Rapid TUI 能夠構建專業的 full-screen app（如 ranger, lazygit）
 
 1. ✅ **List** (通用列表組件) - 1-2 days
 2. ✅ **Splitter / ResizablePane** (分割窗格) - 2-3 days
@@ -431,7 +431,7 @@ Textual 是最先進的 Python TUI 框架：
 - ✅ Tables and data display
 - ✅ Spinners and loading states
 
-**Result:** Zen TUI 已經完美支持 Console App
+**Result:** Rapid TUI 已經完美支持 Console App
 
 ### For Full Screen Apps ⚠️ (Needs Phase 1 + Phase 2)
 After Phase 1:
@@ -468,7 +468,7 @@ After Phase 2:
 - **Polish & Examples:** 1 week
 - **Documentation:** 1 week
 
-**Total: ~6 weeks to complete Zen TUI 1.0**
+**Total: ~6 weeks to complete Rapid TUI 1.0**
 
 ---
 

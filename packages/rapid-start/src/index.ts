@@ -1,5 +1,5 @@
 /**
- * @rapid/start - Full-stack framework for Zen
+ * @rapid/start - Full-stack framework for Rapid
  *
  * PLACEHOLDER - Not yet implemented
  * Will be implemented in future phases.

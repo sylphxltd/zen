@@ -1,7 +1,7 @@
 {
   "name": "@rapid/native",
   "version": "0.0.0",
-  "description": "Native renderer for Zen framework - iOS and Android support",
+  "description": "Native renderer for Rapid framework - iOS and Android support",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -25,13 +25,13 @@
     "dev": "bun run --watch src/index.ts",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["zen", "native", "react-native", "ios", "android", "mobile"],
-  "author": "Zen Team",
+  "keywords": ["rapid", "native", "react-native", "ios", "android", "mobile"],
+  "author": "Rapid Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-native"
+    "directory": "packages/rapid-native"
   },
   "dependencies": {
     "@rapid/runtime": "workspace:*",

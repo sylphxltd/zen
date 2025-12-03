@@ -280,8 +280,8 @@ const doubled = computed(() => count.value * 2)  // Computed<number>`,
                 type="button"
                 class={
                   activeCategory.value === cat.id
-                    ? 'px-6 py-3 bg-primary text-white rounded-zen font-medium transition-all shadow-zen'
-                    : 'px-6 py-3 bg-bg-light hover:bg-bg-lighter text-text-muted hover:text-text border border-border rounded-zen font-medium transition-all'
+                    ? 'px-6 py-3 bg-primary text-white rounded-rapid font-medium transition-all shadow-rapid'
+                    : 'px-6 py-3 bg-bg-light hover:bg-bg-lighter text-text-muted hover:text-text border border-border rounded-rapid font-medium transition-all'
                 }
                 onClick={() => {
                   activeCategory.value = cat.id;
@@ -298,7 +298,7 @@ const doubled = computed(() => count.value * 2)  // Computed<number>`,
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <For each={integrations[activeCategory.value]}>
             {(integration) => (
-              <div class="bg-bg-light border border-border rounded-zen overflow-hidden hover:border-primary/50 transition-colors">
+              <div class="bg-bg-light border border-border rounded-rapid overflow-hidden hover:border-primary/50 transition-colors">
                 <div class="bg-bg-lighter border-b border-border px-6 py-4">
                   <div class="flex items-center gap-3 mb-2">
                     <Icon
@@ -323,7 +323,7 @@ const doubled = computed(() => count.value * 2)  // Computed<number>`,
                   </div>
                 </div>
                 <div class="p-6">
-                  <pre class="text-sm text-text-muted font-mono overflow-x-auto bg-bg border border-border rounded-zen p-4">
+                  <pre class="text-sm text-text-muted font-mono overflow-x-auto bg-bg border border-border rounded-rapid p-4">
                     {integration.setup}
                   </pre>
                 </div>
@@ -333,7 +333,7 @@ const doubled = computed(() => count.value * 2)  // Computed<number>`,
         </div>
 
         {/* Bottom message */}
-        <div class="mt-12 text-center bg-bg-light border border-border rounded-zen p-8">
+        <div class="mt-12 text-center bg-bg-light border border-border rounded-rapid p-8">
           <p class="text-lg text-text mb-2">
             <span class="font-semibold text-primary">Fully compatible with existing ecosystem</span>
           </p>

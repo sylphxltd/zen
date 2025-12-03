@@ -71,7 +71,7 @@ export function Docs() {
                   Examples
                 </a>
                 <a
-                  href="https://github.com/peterbartha/zen"
+                  href="https://github.com/SylphxAI/rapid"
                   target="_blank"
                   rel="noreferrer"
                   class="flex items-center gap-2 text-sm text-text-muted hover:text-primary transition-colors"

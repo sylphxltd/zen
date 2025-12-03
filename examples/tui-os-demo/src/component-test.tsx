@@ -77,9 +77,7 @@ function ComponentTest() {
         <Box style={{ flexDirection: 'column', width: '100%', height: '100%' }}>
           {/* Header */}
           <Box style={{ backgroundColor: 'blue', height: 1, paddingLeft: 1 }}>
-            <Text style={{ color: 'white', bold: true }}>
-              @rapid/tui-advanced Component Test
-            </Text>
+            <Text style={{ color: 'white', bold: true }}>@rapid/tui-advanced Component Test</Text>
           </Box>
 
           {/* Tab Bar */}
@@ -226,10 +224,30 @@ function MenuBarTest({ isFocused }: TestProps) {
   const status = signal('Ready');
 
   const menuItems = [
-    { label: 'File', onSelect: () => { status.value = 'File clicked!'; } },
-    { label: 'Edit', onSelect: () => { status.value = 'Edit clicked!'; } },
-    { label: 'View', onSelect: () => { status.value = 'View clicked!'; } },
-    { label: 'Help', onSelect: () => { status.value = 'Help clicked!'; } },
+    {
+      label: 'File',
+      onSelect: () => {
+        status.value = 'File clicked!';
+      },
+    },
+    {
+      label: 'Edit',
+      onSelect: () => {
+        status.value = 'Edit clicked!';
+      },
+    },
+    {
+      label: 'View',
+      onSelect: () => {
+        status.value = 'View clicked!';
+      },
+    },
+    {
+      label: 'Help',
+      onSelect: () => {
+        status.value = 'Help clicked!';
+      },
+    },
   ];
 
   return (
@@ -261,7 +279,9 @@ function AllTest({ isFocused }: TestProps) {
 
   return (
     <Box style={{ flexDirection: 'column', height: '100%' }}>
-      <MenuBar items={[{ label: 'New' }, { label: 'Open' }, { label: 'Save' }, { label: 'Quit' }]} />
+      <MenuBar
+        items={[{ label: 'New' }, { label: 'Open' }, { label: 'Save' }, { label: 'Quit' }]}
+      />
       <Box style={{ flex: 1 }}>
         <Splitter orientation="horizontal" sizes={[25, 75]}>
           <Pane minSize={15}>

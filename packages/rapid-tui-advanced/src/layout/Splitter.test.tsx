@@ -6,7 +6,13 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { createRoot, signal } from '@rapid/runtime';
-import { Text, clearInputHandlers, dispatchInput, setPlatformOps, tuiPlatformOps } from '@rapid/tui';
+import {
+  Text,
+  clearInputHandlers,
+  dispatchInput,
+  setPlatformOps,
+  tuiPlatformOps,
+} from '@rapid/tui';
 import { Pane, Splitter } from './Splitter.js';
 
 setPlatformOps(tuiPlatformOps);

@@ -3,7 +3,7 @@
  * Test with flex: 1 on content area
  */
 
-import { Box, Text, useInput, useTerminalSize, renderApp, FullscreenLayout} from '@rapid/tui';
+import { Box, FullscreenLayout, Text, renderApp, useInput, useTerminalSize } from '@rapid/tui';
 
 function App() {
   const { width, height } = useTerminalSize();
@@ -19,7 +19,14 @@ function App() {
       <Box style={{ position: 'relative', flex: 1 }}>
         <Box
           style={{
-            position: 'absolute', left: 5, top: 2, width: 45, height: 12, flexDirection: 'column', borderStyle: 'single'}}
+            position: 'absolute',
+            left: 5,
+            top: 2,
+            width: 45,
+            height: 12,
+            flexDirection: 'column',
+            borderStyle: 'single',
+          }}
         >
           {/* Title bar */}
           <Box style={{ backgroundColor: 'blue', paddingLeft: 1 }}>

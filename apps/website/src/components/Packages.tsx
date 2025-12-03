@@ -41,7 +41,7 @@ export function Packages() {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <For each={corePackages}>
               {(pkg) => (
-                <div class="bg-bg-light border border-border rounded-zen p-8 hover:border-primary transition-colors">
+                <div class="bg-bg-light border border-border rounded-rapid p-8 hover:border-primary transition-colors">
                   <div class="flex items-start justify-between mb-4">
                     <h4 class="text-xl font-semibold text-primary">{pkg.name}</h4>
                     <span class="px-3 py-1 bg-bg border border-border rounded-full text-xs text-primary">
@@ -59,7 +59,7 @@ export function Packages() {
                       )}
                     </For>
                   </ul>
-                  <pre class="bg-bg border border-border rounded-zen p-3 text-sm text-primary font-mono overflow-x-auto">
+                  <pre class="bg-bg border border-border rounded-rapid p-3 text-sm text-primary font-mono overflow-x-auto">
                     npm install {pkg.name}
                   </pre>
                 </div>
@@ -73,7 +73,7 @@ export function Packages() {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <For each={integrations}>
               {(pkg) => (
-                <div class="bg-bg-light border border-border rounded-zen p-6 hover:border-primary transition-colors">
+                <div class="bg-bg-light border border-border rounded-rapid p-6 hover:border-primary transition-colors">
                   <h4 class="text-lg font-semibold text-primary mb-2">{pkg.name}</h4>
                   <p class="text-text-muted text-sm">{pkg.desc}</p>
                 </div>
@@ -87,7 +87,7 @@ export function Packages() {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <For each={utilities}>
               {(pkg) => (
-                <div class="bg-bg-light border border-border rounded-zen p-6 hover:border-primary transition-colors">
+                <div class="bg-bg-light border border-border rounded-rapid p-6 hover:border-primary transition-colors">
                   <h4 class="text-lg font-semibold text-primary mb-2">{pkg.name}</h4>
                   <p class="text-text-muted text-sm">{pkg.desc}</p>
                 </div>

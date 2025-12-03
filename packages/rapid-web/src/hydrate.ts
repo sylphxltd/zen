@@ -82,7 +82,7 @@ export function exitHydrateParent(parent: Element): void {
  * res.send(`<div id="root">${html}</div>`);
  *
  * // Client
- * import { hydrate } from '@rapid/zen/hydrate';
+ * import { hydrate } from '@rapid/web/hydrate';
  *
  * const root = document.getElementById('root');
  * hydrate(() => <App />, root);

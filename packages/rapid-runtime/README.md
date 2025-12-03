@@ -1,6 +1,6 @@
 # @rapid/runtime
 
-Platform-agnostic runtime for Zen framework.
+Platform-agnostic runtime for Rapid framework.
 
 ## Features
 
@@ -34,4 +34,4 @@ This package contains **platform-agnostic** code only:
 - Pure reactive primitives and components
 - Can be used with any renderer (@rapid/web, @rapid/native, @rapid/tui)
 
-For web-specific features, see [@rapid/web](../zen-web).
+For web-specific features, see [@rapid/web](../rapid-web).

@@ -1,5 +1,5 @@
 /**
- * Preact adapter for Zen Router
+ * Preact adapter for Rapid Router
  *
  * @example
  * ```tsx

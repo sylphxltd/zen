@@ -43,7 +43,7 @@ if (!tsResult || !tsResult.code) {
   process.exit(1);
 }
 
-// Second pass: Apply zen-jsx plugin for lazy children
+// Second pass: Apply rapid-jsx plugin for lazy children
 const result = transformSync(tsResult.code, {
   filename: inputPath,
   plugins: [zenJsxPlugin],

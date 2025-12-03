@@ -15,7 +15,7 @@ import type { PlatformOps } from '@rapid/runtime';
  * Custom element to act as transparent container for reactive content.
  * Uses display:contents to be invisible in layout while holding children.
  */
-const CONTAINER_TAG = 'zen-container';
+const CONTAINER_TAG = 'rapid-container';
 
 /**
  * Web platform operations using native DOM APIs

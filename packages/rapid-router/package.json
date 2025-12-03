@@ -1,7 +1,7 @@
 {
   "name": "@rapid/router",
   "version": "0.0.0",
-  "description": "Zen framework router with Router and Link components",
+  "description": "Rapid framework router with Router and Link components",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -19,15 +19,15 @@
     "dev": "bunup --format esm,cjs --dts --target node --watch",
     "clean": "bun rimraf dist .turbo"
   },
-  "keywords": ["zen", "router", "routing", "framework", "component"],
+  "keywords": ["rapid", "router", "routing", "framework", "component"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-router"
+    "directory": "packages/rapid-router"
   },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/zen-router#readme",
+  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/rapid/issues"
   },

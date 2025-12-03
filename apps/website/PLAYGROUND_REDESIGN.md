@@ -1,10 +1,10 @@
 # Playground Redesign Plan
 
 ## Core Goal
-讓 user 在 browser 親身感受 Zen 的 **runtime-first fine-grained reactive framework** 有多強大。
+讓 user 在 browser 親身感受 Rapid 的 **runtime-first fine-grained reactive framework** 有多強大。
 
 ## Current Problems
-1. **看不出 Zen 的特別之處** - 只係普通 code editor + preview
+1. **看不出 Rapid 的特別之處** - 只係普通 code editor + preview
 2. **1 秒延遲** - 感覺唔夠即時
 3. **Performance metrics 無意義** - ops/sec benchmark 同 example 無關
 4. **Examples 太多 styling code** - 分散注意力
@@ -57,7 +57,7 @@
 唔係 benchmark，係實際運行數據：
 - **DOM Updates**: 幾多次 DOM 操作
 - **Signal Updates**: 幾多次 signal 改變
-- **Re-renders**: 0（因為 Zen 冇 re-render！）
+- **Re-renders**: 0（因為 Rapid 冇 re-render！）
 - **Comparison**: 「React 會需要 X 次 re-render」
 
 ### 4. Instant Execution
@@ -77,7 +77,7 @@
 ### Option A: Three Panel
 ```
 ┌────────────────────────────────────────────────────────────┐
-│ [Examples ▼]  [Share]  [Settings]              Zen Playground │
+│ [Examples ▼]  [Share]  [Settings]              Rapid Playground │
 ├──────────────────┬───────────────────┬─────────────────────┤
 │                  │                   │                     │
 │   Code Editor    │   Live Preview    │  Signal Inspector   │
@@ -93,7 +93,7 @@
 ### Option B: Two Panel + Bottom Inspector
 ```
 ┌────────────────────────────────────────────────────────────┐
-│ [Examples ▼]  [Share]                        Zen Playground │
+│ [Examples ▼]  [Share]                        Rapid Playground │
 ├────────────────────────────┬───────────────────────────────┤
 │                            │                               │
 │       Code Editor          │        Live Preview           │
@@ -137,7 +137,7 @@
 ## Technical Considerations
 
 ### DOM Update Tracking
-需要 patch Zen 的 DOM operations 來追蹤：
+需要 patch Rapid 的 DOM operations 來追蹤：
 ```typescript
 // Wrapper to track DOM updates
 const trackDOMUpdate = (element: Element) => {
@@ -148,7 +148,7 @@ const trackDOMUpdate = (element: Element) => {
 ```
 
 ### Signal Tracking
-可以用 Zen 的 effect 來追蹤 signal reads：
+可以用 Rapid 的 effect 來追蹤 signal reads：
 ```typescript
 // Track all signals in scope
 const signals = new Map<string, Signal<unknown>>();

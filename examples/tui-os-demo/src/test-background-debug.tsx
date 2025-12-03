@@ -3,7 +3,7 @@
  * Debug background color rendering
  */
 
-import { Box, Text, useInput, renderApp, FullscreenLayout} from '@rapid/tui';
+import { Box, FullscreenLayout, Text, renderApp, useInput } from '@rapid/tui';
 
 function App() {
   useInput((_input, key) => {
@@ -23,7 +23,15 @@ function App() {
       {/* Test 2: Box with flexDirection row and space-between */}
       <Box
         style={{
-          backgroundColor: 'blue', width: 40, height: 1, marginBottom: 1, flexDirection: 'row', justifyContent: 'space-between', paddingLeft: 1, paddingRight: 1}}
+          backgroundColor: 'blue',
+          width: 40,
+          height: 1,
+          marginBottom: 1,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          paddingLeft: 1,
+          paddingRight: 1,
+        }}
       >
         <Text style={{ color: 'white' }}>Left</Text>
         <Text style={{ color: 'red' }}>Right</Text>
@@ -32,7 +40,15 @@ function App() {
       {/* Test 3: Same but with emoji */}
       <Box
         style={{
-          backgroundColor: 'blue', width: 40, height: 1, marginBottom: 1, flexDirection: 'row', justifyContent: 'space-between', paddingLeft: 1, paddingRight: 1}}
+          backgroundColor: 'blue',
+          width: 40,
+          height: 1,
+          marginBottom: 1,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          paddingLeft: 1,
+          paddingRight: 1,
+        }}
       >
         <Text style={{ color: 'white' }}>🖥️ Left</Text>
         <Text style={{ color: 'red' }}>✕</Text>

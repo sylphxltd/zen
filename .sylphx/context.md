@@ -1,7 +1,7 @@
 # Project Context
 
 ## What
-Zen - Cross-platform reactive framework with fine-grained reactivity.
+Rapid - Cross-platform reactive framework with fine-grained reactivity.
 
 **Core Packages:**
 - `@rapid/signal` - Reactive primitives (signal, computed, effect)
@@ -12,7 +12,7 @@ Zen - Cross-platform reactive framework with fine-grained reactivity.
 - `@rapid/compiler` - Optional JSX transformer (auto-lazy, auto-unwrap)
 - `@rapid/start` - Full-stack meta-framework
 
-**Convenience Package:** `@rapid/zen` - Re-exports runtime + web for easy migration
+**Convenience Package:** `@rapid/rapid` - Re-exports runtime + web for easy migration
 
 ## Why
 Provide production-ready reactive framework with:
@@ -27,8 +27,8 @@ Provide production-ready reactive framework with:
 **Users:** Developers building reactive applications across platforms
 **Use cases:**
 - Web applications (fine-grained reactivity, no vdom)
-- Native mobile apps (React Native-style with Zen)
-- CLI/TUI applications (Terminal UI with Zen)
+- Native mobile apps (React Native-style with Rapid)
+- CLI/TUI applications (Terminal UI with Rapid)
 - Full-stack applications (@rapid/start meta-framework)
 - Cross-framework state management (React, Vue, Preact integrations)
 
@@ -63,7 +63,7 @@ Provide production-ready reactive framework with:
 
 ## Source of Truth
 - Version: `packages/*/package.json` (managed by changesets)
-- Core implementation: `packages/zen-signal/src/zen.ts`
-- Tests: `packages/zen-signal/src/zen.test.ts`
+- Core implementation: `packages/rapid-signal/src/rapid.ts`
+- Tests: `packages/rapid-signal/src/rapid.test.ts`
 - Architecture decisions: `.sylphx/decisions/`
 - Package structure: Bun monorepo with Turbo task runner

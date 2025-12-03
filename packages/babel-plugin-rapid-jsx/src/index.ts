@@ -30,7 +30,7 @@ export default function zenJsxPlugin(babel: typeof BabelCore): BabelCore.PluginO
   const { types: t } = babel;
 
   return {
-    name: 'zen-jsx-lazy-children',
+    name: 'rapid-jsx-lazy-children',
     visitor: {
       JSXElement(path) {
         // Get the opening element
@@ -80,7 +80,7 @@ export default function zenJsxPlugin(babel: typeof BabelCore): BabelCore.PluginO
         }
 
         // jsx(type, props)
-        const [type, propsArg] = path.node.arguments;
+        const [_type, propsArg] = path.node.arguments;
 
         if (!propsArg || !t.isObjectExpression(propsArg)) {
           return;

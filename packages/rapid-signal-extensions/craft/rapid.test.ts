@@ -1,7 +1,7 @@
-import { zen as atom, subscribe } from '@rapid/signal';
+import { signal as atom, subscribe } from '@rapid/signal';
 import { describe, expect, it, vi } from 'vitest';
 import type { Patch } from './types';
-import { craftZen } from './zen';
+import { craftSignal } from './rapid';
 
 // Define interfaces for test states
 interface SimpleState {
@@ -12,14 +12,14 @@ interface NestedState {
   data: { value: number; items: string[] };
 }
 
-describe('craftZen', () => {
+describe('craftSignal', () => {
   it('should update atom state immutably based on recipe mutations', () => {
     const baseState: SimpleState = { a: 1, b: { c: 2 } };
     const myZen = atom(baseState);
     const listener = vi.fn();
     subscribe(myZen, listener);
 
-    craftZen(
+    craftSignal(
       myZen,
       (draft) => {
         draft.a = 10;
@@ -51,7 +51,7 @@ describe('craftZen', () => {
     const listener = vi.fn();
     subscribe(myZen, listener);
 
-    craftZen(
+    craftSignal(
       myZen,
       (_draft) => {
         // No changes made
@@ -60,7 +60,7 @@ describe('craftZen', () => {
     );
 
     expect(myZen.value).toBe(baseState); // Should be the exact same object
-    // TODO: Listener called 1x due to craft returning new ref always? Investigate zen-core set.
+    // TODO: Listener called 1x due to craft returning new ref always? Investigate rapid-signal-core set.
     expect(listener).toHaveBeenCalledTimes(1); // Adjusted expectation
     // Note: Patch verification removed - craft doesn't support patches yet
   });
@@ -72,10 +72,10 @@ describe('craftZen', () => {
     subscribe(myZen, listener);
     const newState = { b: 2 }; // A completely different object
 
-    // craftZen's recipe *should* ideally return T | undefined.
+    // craftSignal's recipe *should* ideally return T | undefined.
     // We test if the underlying produce handles returning a new object,
     // even if the type signature isn't perfect.
-    craftZen(
+    craftSignal(
       myZen,
       (_draft) => {
         // Change draft to _draft as it's not used
@@ -102,7 +102,7 @@ describe('craftZen', () => {
     const listener = vi.fn();
     subscribe(myZen, listener);
 
-    craftZen(
+    craftSignal(
       myZen,
       (draft) => {
         draft.data.value = 20;
@@ -129,7 +129,7 @@ describe('craftZen', () => {
   it('should pass options correctly to the underlying produce function', () => {
     const baseState = { count: 0 };
     const myZen = atom(baseState);
-    craftZen(
+    craftSignal(
       myZen,
       (draft) => {
         draft.count++;

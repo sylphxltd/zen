@@ -68,7 +68,9 @@ function HeroSection() {
               <button
                 type="button"
                 class="p-1.5 hover:bg-bg-dark rounded-lg text-text-muted hover:text-text transition-colors"
-                onClick={() => navigator.clipboard.writeText('npm install @rapid/signal @rapid/web')}
+                onClick={() =>
+                  navigator.clipboard.writeText('npm install @rapid/signal @rapid/web')
+                }
               >
                 <Icon icon="lucide:code" width="16" height="16" />
               </button>

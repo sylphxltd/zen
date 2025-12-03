@@ -1,8 +1,8 @@
 /**
- * Zen Signal - Vue JSX Runtime
+ * Rapid Signal - Vue JSX Runtime
  *
  * Runtime-first signal integration for Vue.
- * Auto-detects and unwraps Zen signals without compiler transformations.
+ * Auto-detects and unwraps Rapid signals without compiler transformations.
  *
  * Usage:
  * ```vue
@@ -25,8 +25,8 @@ import { type VNode, ref, h as vueH, watchEffect } from 'vue';
 // ============================================================================
 
 /**
- * Check if value is a Zen signal
- * Matches Zen framework's isReactive check
+ * Check if value is a Rapid signal
+ * Matches Rapid framework's isReactive check
  */
 // biome-ignore lint/suspicious/noExplicitAny: Runtime detection requires dynamic type
 function isZenSignal(value: any): boolean {
@@ -38,7 +38,7 @@ function isZenSignal(value: any): boolean {
 // ============================================================================
 
 /**
- * Wrap a Zen signal in a Vue ref that auto-updates
+ * Wrap a Rapid signal in a Vue ref that auto-updates
  *
  * Strategy:
  * 1. Create a Vue ref with initial signal value

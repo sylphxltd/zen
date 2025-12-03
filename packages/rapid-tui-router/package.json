@@ -21,13 +21,13 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["zen", "tui", "router", "terminal", "cli", "routing"],
-  "author": "Zen Team",
+  "keywords": ["rapid", "tui", "router", "terminal", "cli", "routing"],
+  "author": "Rapid Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-tui-router"
+    "directory": "packages/rapid-tui-router"
   },
   "dependencies": {
     "@rapid/router-core": "workspace:*"

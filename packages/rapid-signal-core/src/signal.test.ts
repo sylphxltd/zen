@@ -667,7 +667,7 @@ describe('integration', () => {
     expect(tripled.value).toBe(15);
   });
 
-  it('should track zen signal changes in effects', () => {
+  it('should track rapid signal changes in effects', () => {
     const count = signal(1);
     const values: number[] = [];
 

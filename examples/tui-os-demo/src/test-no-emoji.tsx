@@ -3,7 +3,7 @@
  * Test without emoji - does it work?
  */
 
-import { Box, Text, useInput, useTerminalSize, renderApp, FullscreenLayout} from '@rapid/tui';
+import { Box, FullscreenLayout, Text, renderApp, useInput, useTerminalSize } from '@rapid/tui';
 
 function App() {
   const { width, height } = useTerminalSize();
@@ -19,12 +19,23 @@ function App() {
       <Box style={{ position: 'relative', flex: 1 }}>
         <Box
           style={{
-            position: 'absolute', left: 5, top: 2, width: 45, height: 12, flexDirection: 'column', borderStyle: 'single'}}
+            position: 'absolute',
+            left: 5,
+            top: 2,
+            width: 45,
+            height: 12,
+            flexDirection: 'column',
+            borderStyle: 'single',
+          }}
         >
           {/* Title bar WITHOUT emoji */}
           <Box
             style={{
-              backgroundColor: 'blue', paddingLeft: 1, paddingRight: 1, justifyContent: 'space-between'}}
+              backgroundColor: 'blue',
+              paddingLeft: 1,
+              paddingRight: 1,
+              justifyContent: 'space-between',
+            }}
           >
             <Text style={{ color: 'white', bold: true }}>AA Terminal</Text>
             <Text style={{ color: 'red' }}>X</Text>

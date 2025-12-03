@@ -54,7 +54,14 @@
  * @module
  */
 
-import { type MaybeReactive, type Owner, effect, getOwner, onCleanup, resolve } from '@rapid/runtime';
+import {
+  type MaybeReactive,
+  type Owner,
+  effect,
+  getOwner,
+  onCleanup,
+  resolve,
+} from '@rapid/runtime';
 
 /**
  * Input handler function.

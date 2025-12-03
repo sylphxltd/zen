@@ -323,4 +323,4 @@ MIT
 
 ---
 
-**Built with ❤️ by the Zen Team**
+**Built with ❤️ by the Rapid Team**

@@ -41,8 +41,7 @@ export function TUIShowcase() {
             <span>@rapid/tui</span>
           </div>
           <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
-            Beautiful{' '}
-            <span class="text-green-400">Terminal UIs</span>
+            Beautiful <span class="text-green-400">Terminal UIs</span>
           </h2>
           <p class="text-xl text-gray-400 max-w-3xl mx-auto">
             Build interactive CLI applications with the same reactive model.
@@ -62,7 +61,9 @@ export function TUIShowcase() {
                     ? 'px-5 py-2.5 bg-green-500 text-black rounded font-medium transition-all flex items-center gap-2'
                     : 'px-5 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 rounded font-medium transition-all flex items-center gap-2'
                 }
-                onClick={() => { activeDemo.value = demo.id; }}
+                onClick={() => {
+                  activeDemo.value = demo.id;
+                }}
               >
                 <Icon icon={demo.icon} width="18" height="18" />
                 {demo.name}
@@ -81,7 +82,7 @@ export function TUIShowcase() {
                 <div class="w-3 h-3 rounded-full bg-yellow-500" />
                 <div class="w-3 h-3 rounded-full bg-green-500" />
               </div>
-              <span class="text-gray-400 text-sm ml-2 font-mono">zen-tui-demo</span>
+              <span class="text-gray-400 text-sm ml-2 font-mono">rapid-tui-demo</span>
             </div>
 
             {/* Terminal Content */}
@@ -98,7 +99,9 @@ export function TUIShowcase() {
                     <input
                       type="text"
                       value={inputValue.value}
-                      onInput={(e) => { inputValue.value = (e.target as HTMLInputElement).value; }}
+                      onInput={(e) => {
+                        inputValue.value = (e.target as HTMLInputElement).value;
+                      }}
                       class="bg-transparent border-none outline-none text-white flex-1"
                       placeholder="Type here..."
                     />
@@ -115,7 +118,9 @@ export function TUIShowcase() {
               {/* Select Demo */}
               <Show when={computed(() => activeDemo.value === 'select')}>
                 <div class="space-y-1">
-                  <div class="text-cyan-400 font-bold mb-3">Select an option (↑/↓ to navigate):</div>
+                  <div class="text-cyan-400 font-bold mb-3">
+                    Select an option (↑/↓ to navigate):
+                  </div>
                   <For each={selectOptions}>
                     {(option, index) => (
                       <div
@@ -124,7 +129,9 @@ export function TUIShowcase() {
                             ? 'text-black bg-cyan-400 px-2 -mx-2'
                             : 'text-gray-300'
                         }`}
-                        onClick={() => { selectedOption.value = index(); }}
+                        onClick={() => {
+                          selectedOption.value = index();
+                        }}
                       >
                         {index() === selectedOption.value ? '❯ ' : '  '}
                         {option}
@@ -146,8 +153,8 @@ export function TUIShowcase() {
                         >
                           <span class={item.checked ? 'text-green-400' : 'text-gray-500'}>
                             {item.checked ? '☑' : '☐'}
-                          </span>
-                          {' '}{item.label}
+                          </span>{' '}
+                          {item.label}
                         </div>
                       )}
                     </For>
@@ -174,7 +181,9 @@ export function TUIShowcase() {
                       min="0"
                       max="100"
                       value={progressValue.value}
-                      onInput={(e) => { progressValue.value = Number((e.target as HTMLInputElement).value); }}
+                      onInput={(e) => {
+                        progressValue.value = Number((e.target as HTMLInputElement).value);
+                      }}
                       class="w-full mt-2 accent-green-500"
                     />
                   </div>
@@ -198,7 +207,9 @@ export function TUIShowcase() {
                   </div>
 
                   <div>
-                    <div class="text-magenta-400 font-bold mb-2 text-purple-400">Status Messages:</div>
+                    <div class="text-magenta-400 font-bold mb-2 text-purple-400">
+                      Status Messages:
+                    </div>
                     <div class="space-y-1">
                       <div class="text-green-400">✔ Build successful</div>
                       <div class="text-yellow-400">⚠ 3 warnings</div>
@@ -237,10 +248,16 @@ export function TUIShowcase() {
                   <div class="border border-purple-500/50 p-3">
                     <div class="text-purple-400 mb-2">Nested Flexbox:</div>
                     <div class="flex gap-2">
-                      <div class="bg-red-500/20 border border-red-500/50 p-2 flex-1 text-center text-red-400">A</div>
+                      <div class="bg-red-500/20 border border-red-500/50 p-2 flex-1 text-center text-red-400">
+                        A
+                      </div>
                       <div class="flex flex-col gap-2 flex-1">
-                        <div class="bg-green-500/20 border border-green-500/50 p-2 text-center text-green-400">B</div>
-                        <div class="bg-blue-500/20 border border-blue-500/50 p-2 text-center text-blue-400">C</div>
+                        <div class="bg-green-500/20 border border-green-500/50 p-2 text-center text-green-400">
+                          B
+                        </div>
+                        <div class="bg-blue-500/20 border border-blue-500/50 p-2 text-center text-blue-400">
+                          C
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -429,9 +446,7 @@ render(<Dashboard />)`}</pre>
 
         {/* TUI Components Grid */}
         <div class="mt-16">
-          <h3 class="text-2xl font-bold text-white text-center mb-8">
-            Complete Component Library
-          </h3>
+          <h3 class="text-2xl font-bold text-white text-center mb-8">Complete Component Library</h3>
 
           <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {[
@@ -471,7 +486,7 @@ render(<Dashboard />)`}</pre>
               TUI Documentation
             </a>
             <a
-              href="https://github.com/peterbartha/zen/tree/main/packages/zen-tui"
+              href="https://github.com/SylphxAI/rapid/tree/main/packages/rapid-tui"
               class="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg border border-gray-700 transition-all hover:scale-105 flex items-center gap-2"
             >
               <Icon icon="lucide:github" width="20" height="20" />

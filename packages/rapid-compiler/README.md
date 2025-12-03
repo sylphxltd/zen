@@ -1,6 +1,6 @@
 # @rapid/compiler
 
-Optional JSX transformer for Zen framework.
+Optional JSX transformer for Rapid framework.
 
 ## Features
 

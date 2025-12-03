@@ -2,16 +2,16 @@
 
 ## System Overview
 
-Zen is a **runtime-first reactive framework** supporting multiple platforms (web, native, TUI). The core philosophy: everything must work at runtime without build tools. Compiler is optional DX optimization only.
+Rapid is a **runtime-first reactive framework** supporting multiple platforms (web, native, TUI). The core philosophy: everything must work at runtime without build tools. Compiler is optional DX optimization only.
 
 ## Key Components
 
-- **@rapid/signal** (`packages/zen-signal/`): Core reactivity system (signals, computed, effects)
-- **@rapid/runtime** (`packages/zen-runtime/`): Platform-agnostic runtime (Context, children() helper, lifecycle)
-- **@rapid/compiler** (`packages/zen-compiler/`): **OPTIONAL** JSX transformer for DX (auto-lazy children, signal unwrap)
-- **@rapid/web** (`packages/zen-web/`): Web DOM renderer
-- **@rapid/tui** (`packages/zen-tui/`): Terminal UI renderer
-- **@rapid/native** (`packages/zen-native/`): React Native renderer
+- **@rapid/signal** (`packages/rapid-signal/`): Core reactivity system (signals, computed, effects)
+- **@rapid/runtime** (`packages/rapid-runtime/`): Platform-agnostic runtime (Context, children() helper, lifecycle)
+- **@rapid/compiler** (`packages/rapid-compiler/`): **OPTIONAL** JSX transformer for DX (auto-lazy children, signal unwrap)
+- **@rapid/web** (`packages/rapid-web/`): Web DOM renderer
+- **@rapid/tui** (`packages/rapid-tui/`): Terminal UI renderer
+- **@rapid/native** (`packages/rapid-native/`): React Native renderer
 
 ## Design Patterns
 
@@ -89,7 +89,7 @@ executeDescriptor(desc) // Provider → Child (correct order ✅)
 - **Benefit**: Context propagation works, zero-config, runtime-first
 - **Impact**: <1% overhead, no VDOM, no diffing, no re-renders
 
-**vs React**: React uses VDOM + reconciliation (heavy). Zen uses transient descriptors (minimal).
+**vs React**: React uses VDOM + reconciliation (heavy). Rapid uses transient descriptors (minimal).
 
 See: ADR-011
 
@@ -145,7 +145,7 @@ Signal change → Effect on node → Direct update → Mark dirty
 
 **Key Differences from React Ink:**
 - React Ink: Top-down re-render → VDOM diff → reconcile
-- Zen TUI: Bottom-up effects → direct node updates (no reconciler)
+- Rapid TUI: Bottom-up effects → direct node updates (no reconciler)
 - Same API as web, better performance
 
 **Trade-off:**

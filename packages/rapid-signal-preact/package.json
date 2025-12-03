@@ -1,7 +1,7 @@
 {
   "name": "@rapid/signal-preact",
   "version": "0.0.0",
-  "description": "Preact integration for Zen Signals with auto-unwrap and lifecycle management",
+  "description": "Preact integration for Rapid Signals with auto-unwrap and lifecycle management",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -38,15 +38,15 @@
     "build": "bunup --entry 'src/index.ts' 'src/vite.ts' 'src/webpack.ts' 'src/rollup.ts' 'src/esbuild.ts' --format esm,cjs --dts --target node --minify",
     "clean": "bun rimraf dist .turbo"
   },
-  "keywords": ["zen", "signal", "reactive", "preact", "hooks", "state-management"],
+  "keywords": ["rapid", "signal", "reactive", "preact", "hooks", "state-management"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-signal-preact"
+    "directory": "packages/rapid-signal-preact"
   },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/zen-signal-preact#readme",
+  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-signal-preact#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/rapid/issues"
   },

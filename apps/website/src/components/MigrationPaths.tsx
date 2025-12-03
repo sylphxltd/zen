@@ -215,8 +215,8 @@ $: value = $countStore`,
                 type="button"
                 class={
                   activeTab.value === fw.id
-                    ? 'px-6 py-3 bg-primary text-white rounded-zen font-medium transition-all shadow-zen'
-                    : 'px-6 py-3 bg-bg-light hover:bg-bg-lighter text-text-muted hover:text-text border border-border rounded-zen font-medium transition-all'
+                    ? 'px-6 py-3 bg-primary text-white rounded-rapid font-medium transition-all shadow-rapid'
+                    : 'px-6 py-3 bg-bg-light hover:bg-bg-lighter text-text-muted hover:text-text border border-border rounded-rapid font-medium transition-all'
                 }
                 onClick={() => {
                   activeTab.value = fw.id;
@@ -230,7 +230,7 @@ $: value = $countStore`,
         </div>
 
         {/* Migration content */}
-        <div class="bg-bg-light border border-border rounded-zen p-8">
+        <div class="bg-bg-light border border-border rounded-rapid p-8">
           <div class="text-center mb-8">
             <h3 class="text-3xl font-bold text-text mb-2">
               {migrationSteps[activeTab.value]?.title}
@@ -241,7 +241,7 @@ $: value = $countStore`,
           <div class="space-y-8">
             <For each={migrationSteps[activeTab.value]?.steps}>
               {(step) => (
-                <div class="bg-bg border border-border rounded-zen overflow-hidden">
+                <div class="bg-bg border border-border rounded-rapid overflow-hidden">
                   <div class="bg-bg-lighter border-b border-border px-6 py-4">
                     <div class="flex items-start justify-between">
                       <div>
@@ -268,7 +268,7 @@ $: value = $countStore`,
         <div class="mt-12 text-center">
           <a
             href="/docs/migration"
-            class="inline-block px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-zen shadow-zen transition-all hover:scale-105"
+            class="inline-block px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-rapid shadow-rapid transition-all hover:scale-105"
           >
             View Full Migration Guide →
           </a>

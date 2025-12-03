@@ -21,7 +21,7 @@ Only needed during development/testing?
 ## Rules by Package Type
 
 ### 1. Framework Integration Packages
-**Examples:** @rapid/signal-zen (adapter for Zen framework)
+**Examples:** @rapid/signal-rapid (adapter for Rapid framework)
 
 ```json
 {
@@ -191,15 +191,15 @@ Only needed during development/testing?
 {
   "peerDependencies": {
     "@rapid/signal": "^0.0.0",
-    "@rapid/zen": "^0.0.0"
+    "@rapid/rapid": "^0.0.0"
   },
   "devDependencies": {
     "@rapid/signal": "workspace:*",
-    "@rapid/zen": "workspace:*"
+    "@rapid/rapid": "workspace:*"
   }
 }
 ```
-**Used by:** @rapid/signal-zen
+**Used by:** @rapid/signal-rapid
 
 ### Pattern 2: Utility Extension
 ```json

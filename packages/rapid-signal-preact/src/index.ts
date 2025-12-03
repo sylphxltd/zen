@@ -1,7 +1,7 @@
 /**
  * @rapid/signal-preact
  *
- * Preact integration for Zen Signals
+ * Preact integration for Rapid Signals
  * Provides signal primitives with Preact lifecycle integration
  */
 

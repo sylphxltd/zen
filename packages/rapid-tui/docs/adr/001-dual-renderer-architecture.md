@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Zen TUI needs to support two fundamentally different rendering modes:
+Rapid TUI needs to support two fundamentally different rendering modes:
 
 1. **Inline Mode**: Console applications that render within the normal terminal flow, like `npm install` progress bars, questionnaire forms, or CLI wizards. Content can be arbitrarily long and the terminal naturally scrolls.
 

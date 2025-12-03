@@ -1,7 +1,7 @@
 {
   "name": "unplugin-rapid-signal",
   "version": "0.1.0",
-  "description": "Universal plugin for using Zen Signals across all frameworks with unified syntax",
+  "description": "Universal plugin for using Rapid Signals across all frameworks with unified syntax",
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
@@ -54,7 +54,7 @@
   },
   "files": ["dist", "jsx-runtime", "svelte-preprocessor", "README.md"],
   "keywords": [
-    "zen",
+    "rapid",
     "signal",
     "reactive",
     "unplugin",

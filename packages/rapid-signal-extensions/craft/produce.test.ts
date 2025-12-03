@@ -423,7 +423,7 @@ describe('produce', () => {
         { autoFreeze: true },
       );
       expect(nextState).not.toBe(baseState);
-      expect(Object.isFrozen(nextState)).toBe(true);
+      expect(Object.isFrosignal(nextState)).toBe(true);
     });
 
     it('should not freeze the original state', () => {
@@ -436,7 +436,7 @@ describe('produce', () => {
         },
         { autoFreeze: true },
       );
-      expect(Object.isFrozen(baseState)).toBe(false);
+      expect(Object.isFrosignal(baseState)).toBe(false);
     });
 
     it('should not freeze if no changes were made', () => {
@@ -450,7 +450,7 @@ describe('produce', () => {
       );
       expect(nextState).toBe(baseState);
       // Immer freezes result even if unchanged
-      expect(Object.isFrozen(nextState)).toBe(true);
+      expect(Object.isFrosignal(nextState)).toBe(true);
     });
 
     it('should recursively freeze nested structures', () => {
@@ -464,8 +464,8 @@ describe('produce', () => {
         },
         { autoFreeze: true },
       );
-      expect(Object.isFrozen(nextState)).toBe(true);
-      expect(Object.isFrozen(nextState.b)).toBe(true);
+      expect(Object.isFrosignal(nextState)).toBe(true);
+      expect(Object.isFrosignal(nextState.b)).toBe(true);
     });
   });
 });

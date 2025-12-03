@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "moduleResolution": "bundler",
     "paths": {
-      "@rapid/signal": ["../zen-signal/src/index.ts"]
+      "@rapid/signal": ["../rapid-signal/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

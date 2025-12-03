@@ -116,7 +116,7 @@ export function SearchModal(props: SearchModalProps) {
           <input
             type="text"
             placeholder="Search docs..."
-            class="w-full pl-10 pr-4 py-3 bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-zen text-text dark:text-text-dark placeholder-text-muted dark:placeholder-text-dark-muted focus:outline-none focus:border-primary"
+            class="w-full pl-10 pr-4 py-3 bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-rapid text-text dark:text-text-dark placeholder-text-muted dark:placeholder-text-dark-muted focus:outline-none focus:border-primary"
             value={searchQuery}
             onInput={(e: Event) => {
               const newValue = (e.target as HTMLInputElement).value;
@@ -140,7 +140,7 @@ export function SearchModal(props: SearchModalProps) {
               <button
                 type="button"
                 onClick={() => handleSelect(result)}
-                class="w-full text-left p-4 rounded-zen hover:bg-bg-lighter dark:hover:bg-bg-dark-lighter border border-transparent hover:border-border dark:hover:border-border-dark transition-all group"
+                class="w-full text-left p-4 rounded-rapid hover:bg-bg-lighter dark:hover:bg-bg-dark-lighter border border-transparent hover:border-border dark:hover:border-border-dark transition-all group"
               >
                 <div class="flex items-start gap-3">
                   <Icon

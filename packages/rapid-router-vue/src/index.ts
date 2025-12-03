@@ -1,5 +1,5 @@
 /**
- * Vue adapter for Zen Router
+ * Vue adapter for Rapid Router
  *
  * @example
  * ```tsx

@@ -1,7 +1,7 @@
-// Entry point for @rapid/zen-router
+// Entry point for @rapid/router-core
 
 // TODO: Implement router logic inspired by @nanostores/router
-// Goals: Tiny size, high performance, zen/FP principles
+// Goals: Tiny size, high performance, FP principles
 
 import { map } from '@rapid/signal-extensions/patterns';
 import type { MapStore } from '@rapid/signal-extensions/patterns';

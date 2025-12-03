@@ -7,7 +7,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      class="p-2 rounded-zen hover:bg-bg-lighter dark:hover:bg-bg-light transition-colors"
+      class="p-2 rounded-rapid hover:bg-bg-lighter dark:hover:bg-bg-light transition-colors"
       aria-label="Toggle theme"
     >
       <Show when={() => theme.value === 'dark'}>

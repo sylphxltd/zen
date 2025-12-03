@@ -1,6 +1,6 @@
 # @rapid/signal-vue
 
-Vue integration for Zen Signals with auto-unwrap and lifecycle management.
+Vue integration for Rapid Signals with auto-unwrap and lifecycle management.
 
 ## Installation
 

@@ -1,5 +1,5 @@
 /**
- * Zen framework transformer
+ * Rapid framework transformer
  *
  * Transforms:
  *   const count = signal(0);
@@ -20,7 +20,7 @@ interface SignalUsage {
   positions: Array<{ start: number; end: number }>;
 }
 
-export function transformZen(code: string, s: MagicString, _id: string, debug: boolean): void {
+export function transformRapid(code: string, s: MagicString, _id: string, debug: boolean): void {
   // Step 1: Find all signal variables
   const signals = findSignalVariables(code);
 

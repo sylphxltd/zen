@@ -90,10 +90,6 @@ export function jsx(
             ? '#text'
             : '#comment'
         : 'null';
-      console.warn(
-        `[zen-web] Hydration mismatch: expected <${type}>, found ${actual}. ` +
-          'This may cause UI inconsistencies. Ensure server and client render the same content.',
-      );
     }
   }
 
@@ -433,10 +429,6 @@ function appendChild(parent: Element, child: unknown, hydrating: boolean): void 
           ? `<${(node as Element).tagName.toLowerCase()}>`
           : '#comment'
         : 'null';
-      console.warn(
-        `[zen-web] Hydration mismatch: expected text "${String(child).slice(0, 20)}...", found ${actual}. ` +
-          'Ensure server and client render the same content.',
-      );
     }
   } else {
     parent.appendChild(document.createTextNode(String(child)));

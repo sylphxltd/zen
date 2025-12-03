@@ -1,7 +1,7 @@
 {
   "name": "@rapid/router-preact",
   "version": "0.0.0",
-  "description": "Preact hooks for Zen Router with auto-intercepting navigation",
+  "description": "Preact hooks for Rapid Router with auto-intercepting navigation",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -18,15 +18,15 @@
     "build": "bunup --format esm,cjs --dts --target node --minify",
     "clean": "bun rimraf dist .turbo"
   },
-  "keywords": ["zen", "router", "routing", "preact", "hooks", "navigation"],
+  "keywords": ["rapid", "router", "routing", "preact", "hooks", "navigation"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-router-preact"
+    "directory": "packages/rapid-router-preact"
   },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/zen-router-preact#readme",
+  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router-preact#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/rapid/issues"
   },

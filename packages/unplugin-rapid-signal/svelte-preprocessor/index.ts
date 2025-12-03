@@ -1,8 +1,8 @@
 /**
- * Zen Signal - Svelte Preprocessor
+ * Rapid Signal - Svelte Preprocessor
  *
  * Runtime-first signal integration for Svelte.
- * Auto-detects and unwraps Zen signals using preprocessor + runtime helpers.
+ * Auto-detects and unwraps Rapid signals using preprocessor + runtime helpers.
  *
  * Usage:
  * ```svelte
@@ -29,7 +29,7 @@ import type { PreprocessorGroup, Processed } from 'svelte/types/compiler/preproc
  */
 const UNWRAP_HELPER = `
 function __zenUnwrap(value) {
-  // Check if it's a Zen signal
+  // Check if it's a Rapid signal
   if (value !== null && typeof value === 'object' && '_kind' in value) {
     return value.value;
   }
@@ -115,11 +115,11 @@ function transformTemplate(
 }
 
 /**
- * Svelte preprocessor that auto-unwraps Zen signals
+ * Svelte preprocessor that auto-unwraps Rapid signals
  */
 export function zenSignalPreprocessor(): PreprocessorGroup {
   return {
-    name: 'zen-signal-preprocessor',
+    name: 'rapid-signal-preprocessor',
 
     markup({ content, filename }): Processed | undefined {
       // Skip non-.svelte files

@@ -52,10 +52,10 @@ describe('deepFreeze', () => {
   it('should freeze plain objects recursively', () => {
     const obj = { a: 1, b: { c: 2 }, d: [3, { e: 4 }] };
     deepFreeze(obj);
-    expect(Object.isFrozen(obj)).toBe(true);
-    expect(Object.isFrozen(obj.b)).toBe(true);
-    expect(Object.isFrozen(obj.d)).toBe(true);
-    expect(Object.isFrozen(obj.d[1])).toBe(true);
+    expect(Object.isFrosignal(obj)).toBe(true);
+    expect(Object.isFrosignal(obj.b)).toBe(true);
+    expect(Object.isFrosignal(obj.d)).toBe(true);
+    expect(Object.isFrosignal(obj.d[1])).toBe(true);
   });
 
   it('should not freeze non-plain objects like Map/Set/Date', () => {
@@ -64,10 +64,10 @@ describe('deepFreeze', () => {
     const date = new Date();
     const obj = { map, set, date };
     deepFreeze(obj);
-    expect(Object.isFrozen(obj)).toBe(true); // The container object is frozen
-    expect(Object.isFrozen(map)).toBe(false);
-    expect(Object.isFrozen(set)).toBe(false);
-    expect(Object.isFrozen(date)).toBe(false);
+    expect(Object.isFrosignal(obj)).toBe(true); // The container object is frozen
+    expect(Object.isFrosignal(map)).toBe(false);
+    expect(Object.isFrosignal(set)).toBe(false);
+    expect(Object.isFrosignal(date)).toBe(false);
   });
 
   it('should handle null and primitives', () => {
@@ -79,6 +79,6 @@ describe('deepFreeze', () => {
   it('should handle already frozen objects', () => {
     const obj = Object.freeze({ a: 1 });
     expect(() => deepFreeze(obj)).not.toThrow();
-    expect(Object.isFrozen(obj)).toBe(true);
+    expect(Object.isFrosignal(obj)).toBe(true);
   });
 });

@@ -1,10 +1,10 @@
-# Zen TUI Architecture
+# Rapid TUI Architecture
 
 ## Fragment-Based Reactive Architecture
 
 ### Overview
 
-Zen TUI uses a **fragment-based architecture** for handling reactive content. This design follows the same pattern as React Fragments, providing a clean, first-class solution for dynamic content.
+Rapid TUI uses a **fragment-based architecture** for handling reactive content. This design follows the same pattern as React Fragments, providing a clean, first-class solution for dynamic content.
 
 ### Node Types
 

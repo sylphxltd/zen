@@ -19,11 +19,11 @@ export function Footer() {
   ];
 
   const community = [
-    { label: 'GitHub', href: 'https://github.com/peterbartha/zen', external: true },
-    { label: 'Issues', href: 'https://github.com/peterbartha/zen/issues', external: true },
+    { label: 'GitHub', href: 'https://github.com/SylphxAI/rapid', external: true },
+    { label: 'Issues', href: 'https://github.com/SylphxAI/rapid/issues', external: true },
     {
       label: 'Discussions',
-      href: 'https://github.com/peterbartha/zen/discussions',
+      href: 'https://github.com/SylphxAI/rapid/discussions',
       external: true,
     },
   ];

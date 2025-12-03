@@ -1,10 +1,15 @@
 /** @jsxImportSource @rapid/web */
 /**
- * Router component for Zen framework
+ * Router component for Rapid framework
  * Powered by @rapid/router-core
  */
 
-import { $router, defineRoutes, startHistoryListener, stopHistoryListener } from '@rapid/router-core';
+import {
+  $router,
+  defineRoutes,
+  startHistoryListener,
+  stopHistoryListener,
+} from '@rapid/router-core';
 import type { RouteConfig } from '@rapid/router-core';
 import { executeDescriptor, isDescriptor } from '@rapid/runtime';
 import { computed, disposeNode, effect, onCleanup, onMount } from '@rapid/signal';

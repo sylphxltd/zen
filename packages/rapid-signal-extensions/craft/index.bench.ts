@@ -1,7 +1,7 @@
-// Import zen atom factory
-import { zen } from '@rapid/signal';
+// Import signal atom factory
+import { signal } from '@rapid/signal';
 import { bench, describe } from 'vitest';
-import { craftZen, produce } from './index';
+import { craftSignal, produce } from './index';
 
 // --- produce Benchmarks ---
 // Note: produce() internally uses @sylphx/craft, these benchmarks measure the overhead
@@ -122,39 +122,39 @@ describe('produce: Set Clear', () => {
     });
   });
 });
-// --- craftZen Benchmarks ---
-// These measure the performance of rapid-craft integration with zen atoms
-describe('craftZen: Simple Object Replace', () => {
-  const myZen = zen({ value: 1 });
-  bench('rapid-craft + zen', () => {
-    craftZen(myZen, (draft) => {
+// --- craftSignal Benchmarks ---
+// These measure the performance of rapid-craft integration with signal atoms
+describe('craftSignal: Simple Object Replace', () => {
+  const mySignal = signal({ value: 1 });
+  bench('rapid-craft + signal', () => {
+    craftSignal(mySignal, (draft) => {
       draft.value = draft.value === 1 ? 2 : 1;
     });
   });
 });
 
-describe('craftZen: Nested Object Replace', () => {
-  const myZen = zen({ a: { b: { c: 1 } } });
-  bench('rapid-craft + zen', () => {
-    craftZen(myZen, (draft) => {
+describe('craftSignal: Nested Object Replace', () => {
+  const mySignal = signal({ a: { b: { c: 1 } } });
+  bench('rapid-craft + signal', () => {
+    craftSignal(mySignal, (draft) => {
       draft.a.b.c = draft.a.b.c === 1 ? 2 : 1;
     });
   });
 });
 
-describe('craftZen: Array Update (Small)', () => {
-  const myZen = zen({ items: [1, 2, 3] });
-  bench('rapid-craft + zen', () => {
-    craftZen(myZen, (draft) => {
+describe('craftSignal: Array Update (Small)', () => {
+  const mySignal = signal({ items: [1, 2, 3] });
+  bench('rapid-craft + signal', () => {
+    craftSignal(mySignal, (draft) => {
       draft.items[0] = draft.items[0] + 1;
     });
   });
 });
 
-describe('craftZen: Array Update (Large)', () => {
-  const myZen = zen({ items: Array.from({ length: 1000 }, (_, i) => i) });
-  bench('rapid-craft + zen', () => {
-    craftZen(myZen, (draft) => {
+describe('craftSignal: Array Update (Large)', () => {
+  const mySignal = signal({ items: Array.from({ length: 1000 }, (_, i) => i) });
+  bench('rapid-craft + signal', () => {
+    craftSignal(mySignal, (draft) => {
       draft.items[500] = draft.items[500] + 1;
     });
   });

@@ -1,7 +1,7 @@
 {
   "name": "@rapid/tui",
   "version": "0.0.0",
-  "description": "Terminal UI renderer for Zen framework - build beautiful CLI apps",
+  "description": "Terminal UI renderer for Rapid framework - build beautiful CLI apps",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,13 +31,13 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["zen", "tui", "terminal", "cli", "ink"],
-  "author": "Zen Team",
+  "keywords": ["rapid", "tui", "terminal", "cli", "ink"],
+  "author": "Rapid Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-tui"
+    "directory": "packages/rapid-tui"
   },
   "dependencies": {
     "@rapid/router-core": "workspace:*",

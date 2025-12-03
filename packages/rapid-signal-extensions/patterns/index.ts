@@ -1,7 +1,7 @@
 /**
  * @rapid/signal-extensions/patterns
  *
- * Useful patterns built on top of Zen Signal:
+ * Useful patterns built on top of Rapid Signal:
  * - store: Zustand-style factory wrapper
  * - async: Async state management (computedAsync)
  * - map: Key-level reactivity

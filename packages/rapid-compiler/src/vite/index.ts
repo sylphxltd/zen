@@ -1,8 +1,8 @@
 /**
- * Vite plugin for Zen compiler
+ * Vite plugin for Rapid compiler
  */
 import type { Plugin } from 'vite';
-import { transformZenJSX } from '../core/transform.js';
+import { transformRapidJSX } from '../core/transform.js';
 import type { CompilerOptions } from '../core/types.js';
 
 export default function zenCompiler(options: CompilerOptions = {}): Plugin {
@@ -23,7 +23,7 @@ export default function zenCompiler(options: CompilerOptions = {}): Plugin {
       }
 
       try {
-        const result = transformZenJSX(code, id, options);
+        const result = transformRapidJSX(code, id, options);
 
         if (!result) {
           return null;

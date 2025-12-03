@@ -1,5 +1,5 @@
 /**
- * Zen Ultimate v2 (v3.49.0)
+ * Rapid Ultimate v2 (v3.49.0)
  *
  * Combines the best optimizations from all 56 versions:
  * - v3.1.1: Prototype-based, no timestamps, simple dirty flags
@@ -20,7 +20,7 @@ export type Listener<T> = (value: T, oldValue?: T | null) => void;
 export type Unsubscribe = () => void;
 
 type SignalCore<T> = {
-  _kind: 'zen' | 'computed';
+  _kind: 'signal' | 'computed';
   _value: T;
   _listeners?: Listener<T>[];
 };
@@ -55,20 +55,20 @@ let currentListener: ComputedCore<any> | null = null;
 // biome-ignore lint/suspicious/noExplicitAny: HMR global storage
 const getGlobalBatchState = () => {
   const g = globalThis as any;
-  if (!g.__ZEN_BATCH_STATE__) {
-    g.__ZEN_BATCH_STATE__ = {
+  if (!g.__RAPID_BATCH_STATE__) {
+    g.__RAPID_BATCH_STATE__ = {
       batchDepth: 0,
       pendingNotifications: new Map<AnySignal, any>(),
       pendingEffects: [] as Array<() => void>,
     };
   }
-  return g.__ZEN_BATCH_STATE__;
+  return g.__RAPID_BATCH_STATE__;
 };
 
 const batchState = getGlobalBatchState();
 
-function notifyListeners<T>(zen: SignalCore<T>, newValue: T, oldValue: T): void {
-  const listeners = zen._listeners;
+function notifyListeners<T>(sig: SignalCore<T>, newValue: T, oldValue: T): void {
+  const listeners = sig._listeners;
   if (!listeners) return;
 
   // Mark computed listeners as dirty first (same as signal setter does)
@@ -76,8 +76,8 @@ function notifyListeners<T>(zen: SignalCore<T>, newValue: T, oldValue: T): void 
   const len = listeners.length;
   for (let i = 0; i < len; i++) {
     const listener = listeners[i];
-    if ((listener as any)._computedZen) {
-      (listener as any)._computedZen._dirty = true;
+    if ((listener as any)._computedSig) {
+      (listener as any)._computedSig._dirty = true;
     }
   }
 
@@ -90,10 +90,10 @@ function notifyListeners<T>(zen: SignalCore<T>, newValue: T, oldValue: T): void 
 }
 
 // ============================================================================
-// ZEN (Core Signal)
+// SIGNAL (Core Signal)
 // ============================================================================
 
-const zenProto = {
+const signalProto = {
   get value() {
     // Auto-tracking: register as dependency if inside computed
     if (currentListener) {
@@ -137,8 +137,8 @@ const zenProto = {
 };
 
 export function signal<T>(initialValue: T): Signal<T> {
-  const sig = Object.create(zenProto) as Signal<T>;
-  sig._kind = 'zen';
+  const sig = Object.create(signalProto) as Signal<T>;
+  sig._kind = 'signal';
   sig._value = initialValue;
   return sig;
 }
@@ -148,38 +148,38 @@ export function signal<T>(initialValue: T): Signal<T> {
 // ============================================================================
 
 export function subscribe<A extends AnySignal>(
-  zen: A,
+  sig: A,
   listener: Listener<SignalValue<A>>,
 ): Unsubscribe {
-  const zenData = zen._kind === 'zen' ? zen : zen;
+  const sigData = sig._kind === 'signal' ? sig : sig;
 
   // Add listener
-  if (!zenData._listeners) zenData._listeners = [];
-  zenData._listeners.push(listener as any);
+  if (!sigData._listeners) sigData._listeners = [];
+  sigData._listeners.push(listener as any);
 
   // Force initial computation for computed signals (without notification)
-  if (zen._kind === 'computed' && zen._unsubs === undefined) {
+  if (sig._kind === 'computed' && sig._unsubs === undefined) {
     // Need to compute to discover dependencies (auto-tracking)
     // Skip notification but do compute
     const prevListener = currentListener;
-    currentListener = zen as any;
+    currentListener = sig as any;
 
     try {
-      const newValue = (zen as any)._calc();
-      (zen as any)._value = newValue;
-      (zen as any)._dirty = false;
+      const newValue = (sig as any)._calc();
+      (sig as any)._value = newValue;
+      (sig as any)._dirty = false;
 
       // Track static deps if needed
-      if ((zen as any)._sources.length > 0 && (zen as any)._staticDepsCount === undefined) {
-        (zen as any)._staticDepsCount = 0;
+      if ((sig as any)._sources.length > 0 && (sig as any)._staticDepsCount === undefined) {
+        (sig as any)._staticDepsCount = 0;
       }
     } finally {
       currentListener = prevListener;
     }
 
     // Subscribe to sources after discovering them
-    if ((zen as any)._sources.length > 0) {
-      subscribeToSources(zen as any);
+    if ((sig as any)._sources.length > 0) {
+      subscribeToSources(sig as any);
     }
   }
 
@@ -188,7 +188,7 @@ export function subscribe<A extends AnySignal>(
 
   // Return unsubscribe
   return () => {
-    const listeners = zenData._listeners;
+    const listeners = sigData._listeners;
     if (!listeners) return;
 
     const idx = listeners.indexOf(listener as any);
@@ -198,9 +198,9 @@ export function subscribe<A extends AnySignal>(
 
     // Unsubscribe computed from sources if no more listeners
     if (listeners.length === 0) {
-      zenData._listeners = undefined;
-      if (zen._kind === 'computed' && zen._unsubs) {
-        unsubscribeFromSources(zen as any);
+      sigData._listeners = undefined;
+      if (sig._kind === 'computed' && sig._unsubs) {
+        unsubscribeFromSources(sig as any);
       }
     }
   };
@@ -226,13 +226,13 @@ export function batch<T>(fn: () => T): T {
         // Flush all pending notifications
         if (batchState.pendingNotifications.size > 0) {
           // Mark all computed listeners as dirty first
-          for (const [zen] of batchState.pendingNotifications) {
-            const listeners = zen._listeners;
+          for (const [sig] of batchState.pendingNotifications) {
+            const listeners = sig._listeners;
             if (listeners) {
               for (let i = 0; i < listeners.length; i++) {
                 const listener = listeners[i];
-                if ((listener as any)._computedZen) {
-                  (listener as any)._computedZen._dirty = true;
+                if ((listener as any)._computedSig) {
+                  (listener as any)._computedSig._dirty = true;
                 }
               }
             }
@@ -240,13 +240,13 @@ export function batch<T>(fn: () => T): T {
 
           // Call listeners for each signal that changed
           // Note: Same listener can be called multiple times if subscribed to multiple signals
-          for (const [zen, oldValue] of batchState.pendingNotifications) {
-            const listeners = zen._listeners;
+          for (const [sig, oldValue] of batchState.pendingNotifications) {
+            const listeners = sig._listeners;
             if (listeners) {
               const listenersCopy = listeners.slice();
               const len = listenersCopy.length;
               for (let i = 0; i < len; i++) {
-                listenersCopy[i](zen._value, oldValue);
+                listenersCopy[i](sig._value, oldValue);
               }
             }
           }
@@ -381,8 +381,8 @@ function subscribeToSources(c: ComputedCore<any>): void {
     const len = listeners.length;
     for (let i = 0; i < len; i++) {
       const listener = listeners[i];
-      if ((listener as any)._computedZen) {
-        (listener as any)._computedZen._dirty = true;
+      if ((listener as any)._computedSig) {
+        (listener as any)._computedSig._dirty = true;
       }
     }
 
@@ -445,7 +445,7 @@ function subscribeToSources(c: ComputedCore<any>): void {
       currentListener = prevListener;
     }
   };
-  (onSourceChange as any)._computedZen = c;
+  (onSourceChange as any)._computedSig = c;
 
   c._unsubs = attachListener(c._sources, onSourceChange);
 }
@@ -512,8 +512,8 @@ export type Computed<T> = ComputedCore<T>;
 // HMR-compatible: Store on globalThis to survive Vite HMR reloads
 // biome-ignore lint/suspicious/noExplicitAny: HMR global storage
 const effectExecutors: WeakMap<EffectCore, () => void> =
-  (globalThis as any).__ZEN_EFFECT_EXECUTORS__ ||
-  ((globalThis as any).__ZEN_EFFECT_EXECUTORS__ = new WeakMap());
+  (globalThis as any).__RAPID_EFFECT_EXECUTORS__ ||
+  ((globalThis as any).__RAPID_EFFECT_EXECUTORS__ = new WeakMap());
 
 type EffectCore = {
   _sources: AnySignal[];

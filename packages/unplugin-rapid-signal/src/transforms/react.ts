@@ -32,7 +32,7 @@ export function transformReact(code: string, s: MagicString, _id: string, debug:
   }
 
   // Step 2: Find all .value accesses in JSX children context only
-  // Match {signal.value} patterns (similar to Zen transformer)
+  // Match {signal.value} patterns (similar to Rapid transformer)
   const usages = new Map<string, SignalUsage>();
 
   for (const [signalName, signalInfo] of signals) {

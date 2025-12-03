@@ -1,4 +1,4 @@
-# Zen 響應式架構分析
+# Rapid 響應式架構分析
 
 ## 核心設計原則
 
@@ -82,7 +82,7 @@ executeEffect(e);  // Immediate sync (outside batch)
 
 ## 對比其他框架
 
-### SolidJS (same as Zen)
+### SolidJS (same as Rapid)
 - Signals: Immediate
 - Computeds: Lazy
 - Effects: Immediate
@@ -108,7 +108,7 @@ executeEffect(e);  // Immediate sync (outside batch)
 
 ---
 
-## 為什麼 Zen 的設計最優
+## 為什麼 Rapid 的設計最優
 
 ### ✅ 優點
 1. **性能**: Lazy computed 避免不必要計算
@@ -154,4 +154,4 @@ Signal 改變 → (push) → 標記 Computed dirty → (push) → 觸發 Effect
 ## 參考
 - SolidJS reactivity: https://www.solidjs.com/docs/latest/api#createeffect
 - Diamond Problem: https://en.wikipedia.org/wiki/Multiple_inheritance#The_diamond_problem
-- Implementation: `packages/zen-signal-core/src/signal.ts`
+- Implementation: `packages/rapid-signal-core/src/signal.ts`

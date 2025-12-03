@@ -1,7 +1,7 @@
 /**
  * @rapid/router
  *
- * Zen framework router with Router and Link components
+ * Rapid framework router with Router and Link components
  * Built on @rapid/router-core reactive primitives
  */
 
@@ -19,7 +19,7 @@ export {
 
 export type { RouteConfig, RouterState, RouteParams } from '@rapid/router-core';
 
-// Export Zen framework components
+// Export Rapid framework components
 export { Router } from './Router.js';
 export type { ZenRoute } from './Router.js';
 

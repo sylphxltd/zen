@@ -1,6 +1,6 @@
-# Zen Signal - Svelte Preprocessor
+# Rapid Signal - Svelte Preprocessor
 
-Runtime-first signal integration for Svelte. Auto-detects and unwraps Zen signals using preprocessor + runtime helpers.
+Runtime-first signal integration for Svelte. Auto-detects and unwraps Rapid signals using preprocessor + runtime helpers.
 
 ## Installation
 
@@ -141,7 +141,7 @@ const zenCount = signal(0);
 
 <div>
   <p>Svelte: {$svelteCount}</p>
-  <p>Zen: {zenCount}</p>
+  <p>Rapid: {zenCount}</p>
 </div>
 ```
 
@@ -151,7 +151,7 @@ The injected helper function:
 
 ```js
 function __zenUnwrap(value) {
-  // Check if it's a Zen signal
+  // Check if it's a Rapid signal
   if (value !== null && typeof value === 'object' && '_kind' in value) {
     return value.value;
   }
@@ -160,7 +160,7 @@ function __zenUnwrap(value) {
 ```
 
 This function:
-- Checks for Zen signal marker (`_kind`)
+- Checks for Rapid signal marker (`_kind`)
 - Returns `.value` if it's a signal
 - Returns value as-is otherwise
 - Zero overhead for non-signal values
@@ -182,7 +182,7 @@ export default {
     // 1. Transform TypeScript first
     sveltePreprocess(),
 
-    // 2. Then unwrap Zen signals
+    // 2. Then unwrap Rapid signals
     zenSignalPreprocessor(),
 
     // 3. Other transformations

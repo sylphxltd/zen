@@ -1,7 +1,7 @@
 /**
- * @rapid/tui - Terminal UI renderer for Zen
+ * @rapid/tui - Terminal UI renderer for Rapid
  *
- * Build beautiful CLI applications with Zen.
+ * Build beautiful CLI applications with Rapid.
  * Uses @rapid/runtime components with terminal rendering.
  */
 

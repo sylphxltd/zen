@@ -1,7 +1,7 @@
 /**
  * @rapid/signal-extensions
  *
- * Unified package for all Zen Signal extensions:
+ * Unified package for all Rapid Signal extensions:
  * - patterns (store, async, map, deepMap)
  * - persistent (localStorage/sessionStorage sync)
  * - craft (immutable updates with JSON Patches)

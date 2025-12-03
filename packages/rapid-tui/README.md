@@ -1,6 +1,6 @@
 # @rapid/tui
 
-> Terminal UI renderer for Zen - Build beautiful CLI applications with reactive signals
+> Terminal UI renderer for Rapid - Build beautiful CLI applications with reactive signals
 
 **@rapid/tui** is a modern, high-performance terminal UI library that combines the simplicity of [React Ink](https://github.com/vadimdemedes/ink) with the power of fine-grained reactivity.
 
@@ -177,7 +177,7 @@ React-like hooks for terminal functionality.
 
 ### Automatic Emoji Width Detection
 
-Zen TUI automatically detects how your terminal renders emoji with **Variation Selector-16 (VS-16)**. This ensures consistent layout across different terminals.
+Rapid TUI automatically detects how your terminal renders emoji with **Variation Selector-16 (VS-16)**. This ensures consistent layout across different terminals.
 
 **Why this matters:**
 - Emoji like 🖥️ (U+1F5A5 + U+FE0F) render as **width 1** in macOS Terminal.app but **width 2** in iTerm2
@@ -229,11 +229,11 @@ For more details, see:
 
 ## React Ink Migration
 
-Zen TUI is designed for easy migration from React Ink. Most components have identical APIs.
+Rapid TUI is designed for easy migration from React Ink. Most components have identical APIs.
 
 ### Key Differences
 
-| Feature | React Ink | Zen TUI |
+| Feature | React Ink | Rapid TUI |
 |---------|-----------|---------|
 | **State** | `useState`, `useReducer` | `signal`, `computed` |
 | **Reactivity** | Virtual DOM diffing | Fine-grained signals |
@@ -261,7 +261,7 @@ function App() {
 render(<App />);
 ```
 
-**After (Zen TUI):**
+**After (Rapid TUI):**
 ```tsx
 import { signal } from '@rapid/signal';
 import { render, Box, Text } from '@rapid/tui';
@@ -283,7 +283,7 @@ See [INK-COMPATIBILITY.md](./INK-COMPATIBILITY.md) for full migration guide.
 
 ## Rendering Modes
 
-Zen TUI supports two rendering modes, each optimized for different use cases:
+Rapid TUI supports two rendering modes, each optimized for different use cases:
 
 ### Inline Mode (Default)
 
@@ -420,7 +420,7 @@ See [ADVANCED-FEATURES.md](./ADVANCED-FEATURES.md) for more details.
 
 ## Architecture
 
-Zen TUI uses a **dual renderer architecture** with **fragment-based reactivity**:
+Rapid TUI uses a **dual renderer architecture** with **fragment-based reactivity**:
 
 1. **Dual Renderers**: Separate `InlineRenderer` and `FullscreenRenderer` optimized for each mode
 2. **Fragment Nodes**: Transparent containers for reactive content (like React Fragments)
@@ -448,7 +448,7 @@ All components are thoroughly tested:
 
 ```bash
 # Run all tests
-bun test packages/zen-tui/
+bun test packages/rapid-tui/
 
 # Test coverage: 347 tests across 22 files
 # All core components tested
@@ -468,7 +468,7 @@ bun test packages/zen-tui/
 - **Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)
 - **React Ink Compatibility**: [INK-COMPATIBILITY.md](./INK-COMPATIBILITY.md)
 - **Advanced Features**: [ADVANCED-FEATURES.md](./ADVANCED-FEATURES.md)
-- **Zen Signal**: [@rapid/signal](../zen-signal)
+- **Rapid Signal**: [@rapid/signal](../rapid-signal)
 - **Examples**: [examples/tui-demo](../../examples/tui-demo)
 
 ## License
@@ -477,4 +477,4 @@ MIT
 
 ---
 
-**Built with ❤️ by the Zen Team**
+**Built with ❤️ by the Rapid Team**

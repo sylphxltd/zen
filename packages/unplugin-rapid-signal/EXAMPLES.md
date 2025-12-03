@@ -9,7 +9,7 @@ Complete examples for all supported frameworks.
 - [React](#react)
 - [Vue](#vue)
 - [Svelte](#svelte)
-- [Zen Framework](#zen-framework)
+- [Rapid Framework](#rapid-framework)
 - [Advanced](#advanced)
 
 ---
@@ -423,20 +423,20 @@ import { cart, total, itemCount, removeFromCart } from './store.js';
 
 ---
 
-## Zen Framework
+## Rapid Framework
 
 ### Basic Counter (NO PLUGIN NEEDED!)
 
 **1. Install dependencies:**
 ```bash
-npm install vite @rapid/zen @rapid/signal
+npm install vite @rapid/web @rapid/signal
 ```
 
 **2. Configure Vite (OPTIONAL):**
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite';
-// NO PLUGIN NEEDED! Zen has native signal support.
+// NO PLUGIN NEEDED! Rapid has native signal support.
 // Only add zenSignal() if you want compiler mode (~10% faster):
 // import { zenSignal } from 'unplugin-rapid-signal/vite';
 
@@ -466,7 +466,7 @@ export function Counter() {
 }
 ```
 
-**That's it!** Signals work natively in Zen - no plugin configuration required.
+**That's it!** Signals work natively in Rapid - no plugin configuration required.
 
 ---
 
@@ -666,9 +666,9 @@ export default defineConfig({
 
 **Console output:**
 ```
-[zen-signal] Auto-detected framework: react
-[zen-signal] Hybrid mode: using 'runtime' (development)
-[zen-signal] Configuring React runtime mode (Vite)
+[rapid-signal] Auto-detected framework: react
+[rapid-signal] Hybrid mode: using 'runtime' (development)
+[rapid-signal] Configuring React runtime mode (Vite)
 ```
 
 ---

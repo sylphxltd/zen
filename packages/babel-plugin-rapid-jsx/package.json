@@ -1,7 +1,7 @@
 {
   "name": "@rapid/babel-plugin-jsx",
   "version": "0.1.0",
-  "description": "Babel plugin for Zen JSX transform with lazy children evaluation",
+  "description": "Babel plugin for Rapid JSX transform with lazy children evaluation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,7 +9,7 @@
     "dev": "bunup src/index.ts --format cjs --watch",
     "test": "vitest"
   },
-  "keywords": ["zen", "jsx", "babel", "transform", "reactive"],
+  "keywords": ["rapid", "jsx", "babel", "transform", "reactive"],
   "author": "SylphxAI",
   "license": "MIT",
   "peerDependencies": {

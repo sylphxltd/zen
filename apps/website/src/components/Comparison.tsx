@@ -22,7 +22,7 @@ export function Comparison() {
           See how Rapid compares to other popular frameworks
         </p>
         <div class="overflow-x-auto">
-          <table class="w-full border-collapse bg-bg border border-border rounded-zen overflow-hidden">
+          <table class="w-full border-collapse bg-bg border border-border rounded-rapid overflow-hidden">
             <thead>
               <tr class="bg-bg-lighter">
                 <th class="text-left p-4 text-text font-semibold border-b border-border">

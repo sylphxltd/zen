@@ -1,8 +1,8 @@
 /**
- * Zen Signal - React JSX Runtime
+ * Rapid Signal - React JSX Runtime
  *
  * Runtime-first signal integration for React.
- * Auto-detects and unwraps Zen signals without compiler transformations.
+ * Auto-detects and unwraps Rapid signals without compiler transformations.
  *
  * Usage:
  * ```tsx
@@ -21,8 +21,8 @@ import * as ReactJSX from 'react/jsx-runtime';
 // ============================================================================
 
 /**
- * Check if value is a Zen signal
- * Matches Zen framework's isReactive check
+ * Check if value is a Rapid signal
+ * Matches Rapid framework's isReactive check
  */
 // biome-ignore lint/suspicious/noExplicitAny: Runtime detection requires dynamic type
 function isZenSignal(value: any): boolean {

@@ -1,4 +1,4 @@
-import { zen } from '@rapid/signal';
+import { signal } from '@rapid/signal';
 import { bench, describe } from 'vitest';
 import { computedAsync } from './async';
 
@@ -26,19 +26,19 @@ describe('computedAsync primitives', () => {
 
 describe('computedAsync with dependencies', () => {
   bench('create with 1 dep', () => {
-    const id = zen(1);
+    const id = signal(1);
     computedAsync(async () => ({ id: id.value }), [id]);
   });
 
   bench('create with 3 deps', () => {
-    const a = zen(1);
-    const b = zen(2);
-    const c = zen(3);
+    const a = signal(1);
+    const b = signal(2);
+    const c = signal(3);
     computedAsync(async () => ({ a: a.value, b: b.value, c: c.value }), [a, b, c]);
   });
 
   bench('dep change triggers refetch', async () => {
-    const userId = zen(1);
+    const userId = signal(1);
     const _user = computedAsync(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1));
       return { id: userId.value };
@@ -64,7 +64,7 @@ describe('computedAsync patterns', () => {
   });
 
   bench('reactive async with deps', () => {
-    const query = zen('');
+    const query = signal('');
     const _results = computedAsync(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1));
       return query.value ? [`Result for ${query.value}`] : [];

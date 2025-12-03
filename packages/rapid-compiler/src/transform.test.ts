@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { transformZenJSX } from './core/transform.js';
+import { transformRapidJSX } from './core/transform.js';
 
-describe('transformZenJSX', () => {
+describe('transformRapidJSX', () => {
   describe('signal auto-unwrap', () => {
     it('should NOT transform {signal} (runtime handles it)', () => {
       const input = `
@@ -9,7 +9,7 @@ describe('transformZenJSX', () => {
         <Text>{message}</Text>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       // Should remain as {message}, not wrapped
       expect(result!.code).toContain('{message}');
@@ -22,7 +22,7 @@ describe('transformZenJSX', () => {
         <Text>{message.value}</Text>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       expect(result!.code).toContain('() => message.value');
     });
@@ -33,7 +33,7 @@ describe('transformZenJSX', () => {
         <Text>{() => message.value}</Text>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       // Should remain as arrow function, not double-wrapped
       expect(result!.code).toContain('() => message.value');
@@ -50,7 +50,7 @@ describe('transformZenJSX', () => {
         </div>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       // {count} should NOT be transformed (runtime handles it)
       expect(result!.code).toContain('{count}');
@@ -69,7 +69,7 @@ describe('transformZenJSX', () => {
         </div>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       // All expressions containing .value should be transformed
       expect(result!.code).toContain('() => count.value + 2');
@@ -87,7 +87,7 @@ describe('transformZenJSX', () => {
         </div>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       // Plain variables should NOT be transformed
       expect(result!.code).toContain('{name}');
@@ -104,7 +104,7 @@ describe('transformZenJSX', () => {
         </Show>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       // Should wrap children in arrow function
       expect(result!.code).toMatch(/=>\s*<>/); // Arrow function returning fragment
@@ -117,7 +117,7 @@ describe('transformZenJSX', () => {
         </For>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       expect(result!.code).toMatch(/=>\s*<>/);
     });
@@ -129,7 +129,7 @@ describe('transformZenJSX', () => {
         </Box>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx');
+      const result = transformRapidJSX(input, 'test.tsx');
       expect(result).not.toBeNull();
       // Should not wrap in arrow function
       expect(result!.code).not.toMatch(/Box[^>]*>\s*{\s*\(\)\s*=>/);
@@ -142,7 +142,7 @@ describe('transformZenJSX', () => {
         <Text>{message}</Text>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx', { autoUnwrap: false });
+      const result = transformRapidJSX(input, 'test.tsx', { autoUnwrap: false });
       expect(result).not.toBeNull();
       // Should NOT transform to arrow function
       expect(result!.code).not.toContain('() =>');
@@ -155,7 +155,7 @@ describe('transformZenJSX', () => {
         </Show>
       `;
 
-      const result = transformZenJSX(input, 'test.tsx', { autoLazy: false });
+      const result = transformRapidJSX(input, 'test.tsx', { autoLazy: false });
       expect(result).not.toBeNull();
       // Should NOT wrap children
       expect(result!.code).not.toMatch(/=>\s*<>/);

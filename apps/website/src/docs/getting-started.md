@@ -8,13 +8,13 @@ Install Rapid using your favorite package manager:
 
 ```bash
 # npm
-npm install @rapid/zen
+npm install @rapid/web
 
 # bun
-bun add @rapid/zen
+bun add @rapid/web
 
 # pnpm
-pnpm add @rapid/zen
+pnpm add @rapid/web
 ```
 
 ## Your First App
@@ -22,7 +22,7 @@ pnpm add @rapid/zen
 Create a simple counter application:
 
 ```typescript
-import { render, signal } from '@rapid/zen';
+import { render, signal } from '@rapid/web';
 
 function Counter() {
   const count = signal(0);
@@ -51,7 +51,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   esbuild: {
     jsx: 'automatic',
-    jsxImportSource: '@rapid/zen'
+    jsxImportSource: '@rapid/web'
   }
 });
 ```
@@ -61,7 +61,7 @@ export default defineConfig({
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "@rapid/zen"
+    "jsxImportSource": "@rapid/web"
   }
 }
 ```

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { zen } from '@rapid/signal';
+import { signal } from '@rapid/signal';
 import { computedAsync } from './async';
 
 describe('computedAsync', () => {
@@ -92,7 +92,7 @@ describe('computedAsync', () => {
   });
 
   it('should re-execute when deps change', async () => {
-    const userId = zen(1);
+    const userId = signal(1);
     const callCounts: number[] = [];
 
     const user = computedAsync(

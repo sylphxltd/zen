@@ -1,5 +1,5 @@
 /**
- * Core JSX transformer for Zen
+ * Core JSX transformer for Rapid
  *
  * Transforms:
  * 1. Signal.value auto-unwrap: {signal.value} → {() => signal.value}
@@ -13,7 +13,7 @@ import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { CompilerOptions } from './types.js';
 
-export function transformZenJSX(
+export function transformRapidJSX(
   code: string,
   filename: string,
   options: CompilerOptions = {},

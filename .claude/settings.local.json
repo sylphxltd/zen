@@ -1,8 +1,3 @@
 {
-  "enabledMcpjsonServers": [
-    "context7",
-    "grep",
-    "coderag",
-    "playwright"
-  ]
+  "enabledMcpjsonServers": ["context7", "grep", "coderag", "playwright"]
 }

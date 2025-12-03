@@ -2,9 +2,9 @@
 
 # Rapid Ecosystem 🧘
 
-**Ultra-fast reactive primitives (@rapid/signal) and fine-grained framework (@rapid/zen)**
+**Ultra-fast reactive primitives (@rapid/signal) and fine-grained framework (@rapid/web)**
 
-[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](https://github.com/SylphxAI/zen/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](https://github.com/SylphxAI/rapid/blob/main/LICENSE)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff?style=flat-square&logo=pnpm)](https://pnpm.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 
@@ -66,20 +66,20 @@ Rapid:
 
 ### 🎯 Core Packages
 
-**[@rapid/signal](packages/zen-signal)**
+**[@rapid/signal](packages/rapid-signal)**
 - Core reactive primitives (signal, computed, effect)
 - Auto-tracking dependency system
 - Ultra-tiny bundle (1.75 KB)
 - Foundation for Rapid ecosystem
 
-**[@rapid/web](packages/zen-web)**
+**[@rapid/web](packages/rapid-web)**
 - Web renderer with fine-grained reactivity
 - No virtual DOM - direct DOM updates
 - Component render once, signals auto-update
 - JSX with automatic signal unwrapping
 - SSR and hydration support
 
-**[@rapid/tui](packages/zen-tui)**
+**[@rapid/tui](packages/rapid-tui)**
 - Terminal UI renderer for CLI applications
 - Build beautiful terminal dashboards
 - Same reactive primitives as web
@@ -105,24 +105,24 @@ npm install @rapid/signal
 
 ### 🎨 Framework Integrations
 
-**[@rapid/signal-react](packages/zen-signal-react)**
+**[@rapid/signal-react](packages/rapid-signal-react)**
 - React hooks integration
 - Automatic re-renders
 - Concurrent mode compatible
 
-**[@rapid/signal-vue](packages/zen-signal-vue)**
+**[@rapid/signal-vue](packages/rapid-signal-vue)**
 - Vue 3 composition API
 - Seamless integration
 
-**[@rapid/signal-svelte](packages/zen-signal-svelte)**
+**[@rapid/signal-svelte](packages/rapid-signal-svelte)**
 - Svelte stores compatibility
 - Reactive bindings
 
-**[@rapid/signal-preact](packages/zen-signal-preact)**
+**[@rapid/signal-preact](packages/rapid-signal-preact)**
 - Preact signals integration
 - Lightweight alternative to React
 
-**[@rapid/signal-solid](packages/zen-signal-solid)**
+**[@rapid/signal-solid](packages/rapid-signal-solid)**
 - SolidJS primitives
 - Fine-grained reactivity
 
@@ -139,7 +139,7 @@ npm install @rapid/signal-svelte
 
 ### 🛠️ Utilities
 
-**[@rapid/signal-patterns](packages/zen-signal-patterns)** - **NEW v2.0** 🎉
+**[@rapid/signal-patterns](packages/rapid-signal-patterns)** - **NEW v2.0** 🎉
 - Useful patterns built on zen core APIs
 - Store pattern (Zustand-style)
 - Async state management
@@ -147,12 +147,12 @@ npm install @rapid/signal-svelte
 - DeepMap pattern (path-level reactivity)
 - Only **936 B gzipped**
 
-**[@rapid/signal-craft](packages/zen-signal-craft)**
+**[@rapid/signal-craft](packages/rapid-signal-craft)**
 - Immutable state updates
 - 1.4-35x faster than immer
 - Type-safe mutations
 
-**[@rapid/signal-persistent](packages/zen-signal-persistent)**
+**[@rapid/signal-persistent](packages/rapid-signal-persistent)**
 - LocalStorage/SessionStorage persistence
 - Automatic synchronization
 - Debounced writes

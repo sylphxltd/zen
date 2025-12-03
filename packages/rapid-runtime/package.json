@@ -1,7 +1,7 @@
 {
   "name": "@rapid/runtime",
   "version": "0.0.0",
-  "description": "Platform-agnostic runtime for Zen framework - components and utilities that work everywhere",
+  "description": "Platform-agnostic runtime for Rapid framework - components and utilities that work everywhere",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -20,13 +20,13 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["zen", "runtime", "reactive", "components", "platform-agnostic", "cross-platform"],
-  "author": "Zen Team",
+  "keywords": ["rapid", "runtime", "reactive", "components", "platform-agnostic", "cross-platform"],
+  "author": "Rapid Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-runtime"
+    "directory": "packages/rapid-runtime"
   },
   "dependencies": {
     "@rapid/signal": "workspace:*",

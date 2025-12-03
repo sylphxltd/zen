@@ -3,7 +3,7 @@
  * Debug border rendering
  */
 
-import { Box, Text, useInput, renderApp, FullscreenLayout} from '@rapid/tui';
+import { Box, FullscreenLayout, Text, renderApp, useInput } from '@rapid/tui';
 
 function App() {
   useInput((_input, key) => {
@@ -18,7 +18,11 @@ function App() {
       {/* Test 1: Small box */}
       <Box
         style={{
-          width: 20, height: 3, borderStyle: 'single', borderColor: 'cyan'}}
+          width: 20,
+          height: 3,
+          borderStyle: 'single',
+          borderColor: 'cyan',
+        }}
       >
         <Text>Test 1</Text>
       </Box>
@@ -28,7 +32,11 @@ function App() {
       {/* Test 2: Medium box */}
       <Box
         style={{
-          width: 40, height: 3, borderStyle: 'single', borderColor: 'green'}}
+          width: 40,
+          height: 3,
+          borderStyle: 'single',
+          borderColor: 'green',
+        }}
       >
         <Text>Test 2 - Medium</Text>
       </Box>
@@ -38,7 +46,12 @@ function App() {
       {/* Test 3: Box with background */}
       <Box
         style={{
-          width: 30, height: 3, borderStyle: 'single', borderColor: 'yellow', backgroundColor: 'blue'}}
+          width: 30,
+          height: 3,
+          borderStyle: 'single',
+          borderColor: 'yellow',
+          backgroundColor: 'blue',
+        }}
       >
         <Text style={{ color: 'white' }}>Test 3 - BG</Text>
       </Box>

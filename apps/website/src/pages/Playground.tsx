@@ -24,10 +24,10 @@ import { examples } from '../data/examples.ts';
 
 // CSS for reactivity highlighting
 const HIGHLIGHT_CSS = `
-  .zen-updated {
-    animation: zen-highlight 0.5s ease-out;
+  .rapid-updated {
+    animation: rapid-highlight 0.5s ease-out;
   }
-  @keyframes zen-highlight {
+  @keyframes rapid-highlight {
     0% { outline: 2px solid #22d3ee; outline-offset: 2px; background-color: rgba(34, 211, 238, 0.1); }
     100% { outline: 2px solid transparent; outline-offset: 2px; background-color: transparent; }
   }
@@ -35,9 +35,9 @@ const HIGHLIGHT_CSS = `
 
 export function Playground() {
   // Inject highlight CSS
-  if (typeof document !== 'undefined' && !document.getElementById('zen-highlight-style')) {
+  if (typeof document !== 'undefined' && !document.getElementById('rapid-highlight-style')) {
     const style = document.createElement('style');
-    style.id = 'zen-highlight-style';
+    style.id = 'rapid-highlight-style';
     style.textContent = HIGHLIGHT_CSS;
     document.head.appendChild(style);
   }
@@ -247,10 +247,10 @@ export function Playground() {
                   ? (mutation.target as Element)
                   : mutation.target.parentElement;
               if (target) {
-                target.classList.remove('zen-updated');
+                target.classList.remove('rapid-updated');
                 // Trigger reflow to restart animation
                 void target.offsetWidth;
-                target.classList.add('zen-updated');
+                target.classList.add('rapid-updated');
               }
             }
           }

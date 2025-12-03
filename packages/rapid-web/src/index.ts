@@ -1,5 +1,5 @@
 /**
- * @rapid/web - Web renderer for Zen
+ * @rapid/web - Web renderer for Rapid
  *
  * DOM-specific operations, JSX runtime, SSR, and hydration.
  * Depends on @rapid/runtime for platform-agnostic components.

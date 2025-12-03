@@ -40,7 +40,7 @@ describe('persistentMap', () => {
   });
 
   it('should load value from storage if present', () => { // Remove async
-    const storedValue = { name: 'Zen', age: 1 };
+    const storedValue = { name: 'Rapid', age: 1 };
     localStorageMock.setItem(TEST_KEY, JSON.stringify(storedValue));
 
     const initial = { name: 'Anon', age: 0 }; // Different initial value
@@ -52,7 +52,7 @@ describe('persistentMap', () => {
   it('should update storage when the whole map value is set', () => { // Remove async
     const initial = { name: 'Anon', age: 0 };
     const store = persistentMap(TEST_KEY, initial);
-    const newValue = { name: 'Zen Master', age: 99, location: 'Cloud' };
+    const newValue = { name: 'Rapid Master', age: 99, location: 'Cloud' };
 
     store._state.value = newValue; // Update the underlying state
 

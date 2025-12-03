@@ -76,5 +76,5 @@ export function resetIdCounter(): void {
  * ```
  */
 export function createUniqueId(): string {
-  return `zen-${serverIdPrefix}${idCounter++}`;
+  return `rapid-${serverIdPrefix}${idCounter++}`;
 }

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Build comprehensive TUI component library matching Ink ecosystem capabilities, using Zen's reactive primitives.
+Build comprehensive TUI component library matching Ink ecosystem capabilities, using Rapid's reactive primitives.
 
 ## Architecture
 
@@ -344,7 +344,7 @@ Build comprehensive TUI component library matching Ink ecosystem capabilities, u
 ### BigText
 ```tsx
 <BigText
-  text="ZEN TUI"
+  text="rapid TUI"
   font="block"
   colors={['cyan', 'magenta']}
   space={true}
@@ -531,11 +531,11 @@ import { Gradient, BigText, BarChart } from '@rapid/tui-visual';
 
 ## Comparison with Ink
 
-| Feature | Ink | Zen Packages |
+| Feature | Ink | Rapid Packages |
 |---------|-----|--------------|
 | **Core** |
 | JSX/TSX | ✅ | ✅ @rapid/tui |
-| Reactive updates | ✅ React hooks | ✅ Zen signals |
+| Reactive updates | ✅ React hooks | ✅ Rapid signals |
 | Box, Text | ✅ ink | ✅ @rapid/tui |
 | Static | ✅ ink | ⚠️ @rapid/tui (planned) |
 | Layout (Flexbox) | ✅ ink | ⚠️ @rapid/tui (planned) |

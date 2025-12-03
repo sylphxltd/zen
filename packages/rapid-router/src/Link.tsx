@@ -1,6 +1,6 @@
 /** @jsxImportSource @rapid/web */
 /**
- * Link component for Zen framework
+ * Link component for Rapid framework
  * Powered by @rapid/router-core
  */
 

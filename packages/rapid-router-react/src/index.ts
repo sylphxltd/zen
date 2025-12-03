@@ -1,5 +1,5 @@
 /**
- * React adapter for Zen Router
+ * React adapter for Rapid Router
  *
  * @example
  * ```tsx

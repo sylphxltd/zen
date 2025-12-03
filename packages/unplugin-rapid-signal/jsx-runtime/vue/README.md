@@ -1,6 +1,6 @@
-# Zen Signal - Vue JSX Runtime
+# Rapid Signal - Vue JSX Runtime
 
-Runtime-first signal integration for Vue. Auto-detects and unwraps Zen signals without any compiler transformations.
+Runtime-first signal integration for Vue. Auto-detects and unwraps Rapid signals without any compiler transformations.
 
 ## Installation
 
@@ -47,7 +47,7 @@ const count = signal(0);
 The custom runtime:
 1. **Detects signals** using `_kind` property check
 2. **Wraps signals** in Vue `ref()` with `watchEffect()`
-3. **Syncs changes** from Zen signal to Vue ref
+3. **Syncs changes** from Rapid signal to Vue ref
 4. **Auto-updates** the DOM through Vue's reactivity
 
 ## Performance
@@ -144,7 +144,7 @@ const items = signal(['Apple', 'Banana', 'Cherry']);
 
 ## Integration with Vue Reactivity
 
-Zen signals work seamlessly with Vue's reactivity:
+Rapid signals work seamlessly with Vue's reactivity:
 
 ```vue
 <script setup>
@@ -158,7 +158,7 @@ const zenCount = signal(0);
 <template>
   <div>
     <p>Vue: {{ vueCount }}</p>
-    <p>Zen: {{ zenCount }}</p>
+    <p>Rapid: {{ zenCount }}</p>
   </div>
 </template>
 ```

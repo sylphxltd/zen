@@ -4,7 +4,7 @@
  * This mimics the exact structure from ZenOS
  */
 
-import { Box, Text, useInput, useTerminalSize, renderApp} from '@rapid/tui';
+import { Box, Text, renderApp, useInput, useTerminalSize } from '@rapid/tui';
 
 function TerminalContent() {
   return (
@@ -40,12 +40,25 @@ function App() {
         {/* Terminal Window */}
         <Box
           style={{
-            position: 'absolute', left: 15, top: 3, width: 45, height: 12, zIndex: 1, flexDirection: 'column', borderStyle: 'single', borderColor: 'cyan'}}
+            position: 'absolute',
+            left: 15,
+            top: 3,
+            width: 45,
+            height: 12,
+            zIndex: 1,
+            flexDirection: 'column',
+            borderStyle: 'single',
+            borderColor: 'cyan',
+          }}
         >
           {/* Title bar */}
           <Box
             style={{
-              backgroundColor: 'blue', paddingLeft: 1, paddingRight: 1, justifyContent: 'space-between'}}
+              backgroundColor: 'blue',
+              paddingLeft: 1,
+              paddingRight: 1,
+              justifyContent: 'space-between',
+            }}
           >
             <Text style={{ color: 'white', bold: true }}>🖥️ Terminal</Text>
             <Text style={{ color: 'red' }}>✕</Text>

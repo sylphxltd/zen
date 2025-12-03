@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-The Zen framework provides two rendering targets: `@rapid/web` for browser DOM and `@rapid/tui` for terminal UI. While they share the same reactive runtime (`@rapid/runtime`, `@rapid/signal`), their rendering approaches differ significantly due to platform constraints.
+The Rapid framework provides two rendering targets: `@rapid/web` for browser DOM and `@rapid/tui` for terminal UI. While they share the same reactive runtime (`@rapid/runtime`, `@rapid/signal`), their rendering approaches differ significantly due to platform constraints.
 
 ## Decision
 

@@ -105,7 +105,7 @@ export function startHistoryListener(): void {
     } else {
       // Optionally, retry with DOMContentLoaded or similar if needed in real app
     }
-    // console.log('[zen-router] History listeners started.'); // Optional debug log
+    // console.log('[rapid-router] History listeners started.'); // Optional debug log
   } else {
   }
 }
@@ -120,7 +120,7 @@ export function stopHistoryListener(): void {
     if (document.body) {
       document.body.removeEventListener('click', handleLinkClick);
     }
-    // console.log('[zen-router] History listeners stopped.'); // Optional debug log
+    // console.log('[rapid-router] History listeners stopped.'); // Optional debug log
   }
   // No warning needed if called outside browser, it's a no-op
 }

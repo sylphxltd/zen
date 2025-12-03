@@ -22,8 +22,8 @@ export function Hero() {
           <strong class="text-text font-semibold">@rapid/signal</strong> - Ultra-fast reactive
           primitives
           <br />
-          <strong class="text-text font-semibold">@rapid/web</strong> - Fine-grained framework with no
-          virtual DOM
+          <strong class="text-text font-semibold">@rapid/web</strong> - Fine-grained framework with
+          no virtual DOM
         </p>
 
         <div class="flex gap-12 justify-center mb-12">
@@ -44,14 +44,14 @@ export function Hero() {
         <div class="flex gap-4 justify-center">
           <a
             href="#packages"
-            class="px-8 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-zen shadow-zen transition-colors duration-200"
+            class="px-8 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-rapid shadow-rapid transition-colors duration-200"
           >
             Explore Packages
           </a>
           <a
             href="https://github.com/SylphxAI/zen"
             target="_blank"
-            class="px-8 py-3 bg-bg-lighter hover:bg-bg border border-border text-text font-medium rounded-zen transition-colors duration-200"
+            class="px-8 py-3 bg-bg-lighter hover:bg-bg border border-border text-text font-medium rounded-rapid transition-colors duration-200"
             rel="noreferrer"
           >
             GitHub

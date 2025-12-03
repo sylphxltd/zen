@@ -28,7 +28,7 @@ export function isSet(value: unknown): value is Set<unknown> {
 // --- Auto-Freeze Implementation ---
 export function deepFreeze(obj: unknown) {
   // Avoid freezing non-objects or already frozen objects
-  if (obj === null || typeof obj !== 'object' || Object.isFrozen(obj)) {
+  if (obj === null || typeof obj !== 'object' || Object.isFrosignal(obj)) {
     return;
   }
 

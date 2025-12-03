@@ -1,7 +1,7 @@
 /**
  * @rapid/signal-react
  *
- * React integration for Zen Signals
+ * React integration for Rapid Signals
  * Provides signal primitives with React lifecycle integration
  */
 

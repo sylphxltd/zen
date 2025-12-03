@@ -1,7 +1,7 @@
 /**
  * Server-side rendering utilities
  *
- * Render Zen components to HTML strings for SSR
+ * Render Rapid components to HTML strings for SSR
  */
 
 import { resetIdCounter } from '@rapid/runtime';

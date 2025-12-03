@@ -1,7 +1,7 @@
 /**
  * @rapid/signal
  *
- * Zen framework signals with lifecycle integration
+ * Rapid framework signals with lifecycle integration
  * Re-exports all primitives from @rapid/signal-core and adds lifecycle system
  */
 
@@ -17,7 +17,7 @@ import { getOwner, onCleanup } from './lifecycle.js';
 /**
  * Lifecycle-aware effect that automatically registers cleanup with owner system.
  *
- * When used inside a Zen component, cleanup is automatic.
+ * When used inside a Rapid component, cleanup is automatic.
  * When used outside components, behaves like raw effect.
  *
  * @param callback - Effect callback function

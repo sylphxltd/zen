@@ -1,6 +1,6 @@
 /** @jsxImportSource @rapid/tui */
 import { signal } from '@rapid/signal';
-import { Static, renderApp} from '@rapid/tui';
+import { Static, renderApp } from '@rapid/tui';
 import { Box, Text } from '@rapid/tui';
 
 interface LogItem {

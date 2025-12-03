@@ -8,7 +8,7 @@ import { unplugin } from 'unplugin-rapid-signal';
 import type { Options } from 'unplugin-rapid-signal';
 
 /**
- * Rollup plugin for Zen Signals in Vue
+ * Rollup plugin for Rapid Signals in Vue
  */
 export const zenSignal = (options: Omit<Options, 'framework'> = {}) =>
   unplugin.rollup({ framework: 'vue', ...options });

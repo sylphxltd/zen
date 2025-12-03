@@ -578,7 +578,7 @@ Signal Change
 ## File Structure
 
 ```
-packages/zen-tui/src/
+packages/rapid-tui/src/
 ├── core/
 │   ├── renderer/
 │   │   ├── index.ts              # Export

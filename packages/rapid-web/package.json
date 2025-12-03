@@ -1,7 +1,7 @@
 {
   "name": "@rapid/web",
   "version": "0.0.0",
-  "description": "Web renderer for Zen framework - DOM operations, JSX runtime, SSR",
+  "description": "Web renderer for Rapid framework - DOM operations, JSX runtime, SSR",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -43,13 +43,13 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["zen", "web", "dom", "jsx", "ssr", "hydration"],
-  "author": "Zen Team",
+  "keywords": ["rapid", "web", "dom", "jsx", "ssr", "hydration"],
+  "author": "Rapid Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-web"
+    "directory": "packages/rapid-web"
   },
   "dependencies": {
     "@rapid/runtime": "workspace:*",

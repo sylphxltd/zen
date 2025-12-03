@@ -505,7 +505,7 @@ Enables mouse tracking. Required for Pressable/Draggable/Hoverable.
 ## File Structure
 
 ```
-packages/zen-tui/src/
+packages/rapid-tui/src/
 ├── core/
 │   ├── render.ts          # Single render() API
 │   ├── types.ts

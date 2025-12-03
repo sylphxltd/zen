@@ -37,7 +37,7 @@ const GenericJSONSerializer = {
 /** @internal Handles storage event updates for persistentZen */
 function _handleStorageEventUpdate<Value>(
   event: StorageEvent,
-  baseZen: Signal<Value>,
+  baseRapid: Signal<Value>,
   serializer: Serializer<Value>,
   initialValue: Value, // Needed for reset case
 ): void {
@@ -59,20 +59,20 @@ function _handleStorageEventUpdate<Value>(
 }
 
 /**
- * Creates a persistent zen that synchronizes its state with Web Storage
+ * Creates a persistent signal that synchronizes its state with Web Storage
  * (localStorage or sessionStorage) and across browser tabs.
  *
  * @param key Unique key for the storage entry.
  * @param initialValue Initial value if nothing is found in storage.
  * @param options Configuration options.
- * @returns A writable zen synchronized with storage.
+ * @returns A writable signal synchronized with storage.
  */
-export function persistentZen<Value>(
+export function persistentRapid<Value>(
   key: string,
   initialValue: Value,
   options?: PersistentOptions<Value>,
 ): Signal<Value> {
-  // Use Zen<Value> type
+  // Use Signal<Value> type
   const storage = options?.storage ?? (typeof window !== 'undefined' ? localStorage : undefined);
   const serializer = options?.serializer ?? GenericJSONSerializer;
   const shouldListen = options?.listen ?? true;
@@ -100,7 +100,7 @@ export function persistentZen<Value>(
 
   let ignoreNextStorageEvent = false; // Flag to prevent echo from self-triggered events
 
-  // Function to write the current zen value to storage
+  // Function to write the current signal value to storage
   const writeToStorage = (value: Value) => {
     try {
       const encoded = serializer.encode(value);
@@ -210,7 +210,7 @@ export function persistentMap<Value extends object>(
   }
 
   // Subscribe to persist future changes immediately after creation.
-  // Use _state to subscribe to the underlying zen atom instead of the MapStore
+  // Use _state to subscribe to the underlying signal atom instead of the MapStore
   subscribe(baseMap._state, (newValue: Value) => {
     writeToStorage(newValue);
   });

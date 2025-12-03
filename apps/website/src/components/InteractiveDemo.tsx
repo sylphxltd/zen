@@ -5,9 +5,9 @@
  * Users can modify values and see immediate updates
  */
 
-import { computed, signal } from '@rapid/signal';
-import { Show, Switch, Match } from '@rapid/web';
 import { createContext, useContext } from '@rapid/runtime';
+import { computed, signal } from '@rapid/signal';
+import { Match, Show, Switch } from '@rapid/web';
 
 export function InteractiveDemo() {
   return (
@@ -193,7 +193,12 @@ function SwitchDemo() {
   const status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const cycleStatus = () => {
-    const states: Array<'idle' | 'loading' | 'success' | 'error'> = ['idle', 'loading', 'success', 'error'];
+    const states: Array<'idle' | 'loading' | 'success' | 'error'> = [
+      'idle',
+      'loading',
+      'success',
+      'error',
+    ];
     const currentIndex = states.indexOf(status.value);
     status.value = states[(currentIndex + 1) % states.length];
   };
@@ -201,22 +206,22 @@ function SwitchDemo() {
   return (
     <div class="demo-card">
       <h3 class="demo-title">Switch / Match</h3>
-      <p class="demo-description">
-        Pattern matching for cleaner conditional rendering.
-      </p>
+      <p class="demo-description">Pattern matching for cleaner conditional rendering.</p>
 
       <div class="demo-visual">
         <div class="demo-output">
-          <div style={{
-            padding: '24px',
-            borderRadius: '12px',
-            background: '#f9fafb',
-            textAlign: 'center',
-            minHeight: '100px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
+          <div
+            style={{
+              padding: '24px',
+              borderRadius: '12px',
+              background: '#f9fafb',
+              textAlign: 'center',
+              minHeight: '100px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Switch>
               <Match when={computed(() => status.value === 'idle')}>
                 <div style={{ color: '#6b7280' }}>
@@ -226,7 +231,15 @@ function SwitchDemo() {
               </Match>
               <Match when={computed(() => status.value === 'loading')}>
                 <div style={{ color: '#3b82f6' }}>
-                  <span style={{ fontSize: '32px', display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span>
+                  <span
+                    style={{
+                      fontSize: '32px',
+                      display: 'inline-block',
+                      animation: 'spin 1s linear infinite',
+                    }}
+                  >
+                    ⏳
+                  </span>
                   <p style={{ marginTop: '8px' }}>Loading...</p>
                 </div>
               </Match>
@@ -296,9 +309,7 @@ function ContextDemo() {
   return (
     <div class="demo-card">
       <h3 class="demo-title">Context API</h3>
-      <p class="demo-description">
-        Share state across components without prop drilling.
-      </p>
+      <p class="demo-description">Share state across components without prop drilling.</p>
 
       <div class="demo-visual">
         <ThemeContext.Provider value={theme.value}>
@@ -306,7 +317,7 @@ function ContextDemo() {
             style={{
               padding: '20px',
               borderRadius: '12px',
-              background: () => theme.value === 'dark' ? '#1f2937' : '#f9fafb',
+              background: () => (theme.value === 'dark' ? '#1f2937' : '#f9fafb'),
               border: () => `2px solid ${theme.value === 'dark' ? '#374151' : '#e5e7eb'}`,
               transition: 'all 0.3s ease',
             }}
@@ -341,12 +352,14 @@ function Child() {
 function ThemedHeader() {
   const theme = useContext(ThemeContext);
   return (
-    <h4 style={{
-      margin: '0 0 12px 0',
-      color: theme === 'dark' ? '#f9fafb' : '#111827',
-      fontSize: '18px',
-      fontWeight: '600',
-    }}>
+    <h4
+      style={{
+        margin: '0 0 12px 0',
+        color: theme === 'dark' ? '#f9fafb' : '#111827',
+        fontSize: '18px',
+        fontWeight: '600',
+      }}
+    >
       🎨 Themed Component
     </h4>
   );
@@ -355,11 +368,13 @@ function ThemedHeader() {
 function ThemedContent() {
   const theme = useContext(ThemeContext);
   return (
-    <p style={{
-      margin: '0 0 16px 0',
-      color: theme === 'dark' ? '#9ca3af' : '#6b7280',
-      fontSize: '14px',
-    }}>
+    <p
+      style={{
+        margin: '0 0 16px 0',
+        color: theme === 'dark' ? '#9ca3af' : '#6b7280',
+        fontSize: '14px',
+      }}
+    >
       Current theme: <strong>{theme}</strong>
       <br />
       All children receive the theme via Context.

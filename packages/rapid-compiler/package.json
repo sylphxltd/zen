@@ -1,7 +1,7 @@
 {
   "name": "@rapid/compiler",
   "version": "0.0.0",
-  "description": "Optional JSX transformer for Zen - auto-lazy children and signal unwrapping",
+  "description": "Optional JSX transformer for Rapid - auto-lazy children and signal unwrapping",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -31,13 +31,13 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["zen", "compiler", "jsx", "transform", "vite", "webpack", "metro", "plugin"],
-  "author": "Zen Team",
+  "keywords": ["rapid", "compiler", "jsx", "transform", "vite", "webpack", "metro", "plugin"],
+  "author": "Rapid Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-compiler"
+    "directory": "packages/rapid-compiler"
   },
   "dependencies": {
     "@babel/core": "^7.26.0",

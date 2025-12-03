@@ -89,7 +89,14 @@ function renderAttributes(props: Record<string, any>): string {
       value = value.value;
     } else if (typeof value === 'function') {
       // Only unwrap for reactive attributes (same list as client-side)
-      const reactiveAttrs = ['value', 'checked', 'disabled', 'selected', 'innerHTML', 'textContent'];
+      const reactiveAttrs = [
+        'value',
+        'checked',
+        'disabled',
+        'selected',
+        'innerHTML',
+        'textContent',
+      ];
       if (reactiveAttrs.includes(key)) {
         value = value();
       }

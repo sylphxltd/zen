@@ -1,4 +1,4 @@
-# Zen Website Redesign Strategy
+# Rapid Website Redesign Strategy
 
 ## 競爭分析 (Competitive Analysis)
 
@@ -9,7 +9,7 @@
 4. **Solid** - Fine-grained reactivity (7KB, 性能優異)
 5. **Preact** - React 輕量替代 (3KB, 但功能受限)
 
-### Zen 的獨特優勢
+### Rapid 的獨特優勢
 1. **極致輕量** - Signal 1.75KB, Framework <5KB (市場最小)
 2. **真正的 Fine-grained** - 不需要編譯器，純運行時
 3. **無 VDOM** - 直接 DOM 更新，性能最優
@@ -36,10 +36,10 @@ const [count, setCount] = useState(0)
 const doubled = useMemo(() => count * 2, [count])
 // 需要: React (42KB) + 重新渲染整個組件
 
-// Zen - 簡單且小
+// Rapid - 簡單且小
 const count = signal(0)
 const doubled = computed(() => count.value * 2)
-// 需要: Zen Signal (1.75KB) + 只更新變化的節點
+// 需要: Rapid Signal (1.75KB) + 只更新變化的節點
 ```
 
 ### 2. 遷移路徑 (Migration Paths)
@@ -56,7 +56,7 @@ function Counter() {
 }
 
 // Step 2: 漸進替換組件 (一個個來)
-// React 組件和 Zen 組件可以共存
+// React 組件和 Rapid 組件可以共存
 <ReactComponent>
   <ZenComponent />
 </ReactComponent>
@@ -72,22 +72,22 @@ function Counter() {
 const count = ref(0)
 const doubled = computed(() => count.value * 2)
 
-// Zen - 幾乎一樣！
+// Rapid - 幾乎一樣！
 const count = signal(0)
 const doubled = computed(() => count.value * 2)
 
-// 可以在 Vue 中使用 Zen Signal
+// 可以在 Vue 中使用 Rapid Signal
 import { useZen } from '@rapid/signal-vue'
 ```
 
 #### 從 Solid 遷移
 ```tsx
-// Solid 用戶會發現 Zen 更簡單
+// Solid 用戶會發現 Rapid 更簡單
 // Solid
 const [count, setCount] = createSignal(0)
 const doubled = createMemo(() => count() * 2)
 
-// Zen - 統一的 .value API
+// Rapid - 統一的 .value API
 const count = signal(0)
 const doubled = computed(() => count.value * 2)
 
@@ -179,12 +179,12 @@ const router = createRouter({
 ### 新首頁結構
 ```
 1. Hero - 三大賣點 + 即時對比
-2. Why Zen? - 與競品對比 (大小、性能、易用性)
+2. Why Rapid? - 與競品對比 (大小、性能、易用性)
 3. 5 分鐘快速開始 - 互動式教學
 4. 遷移指南 - React/Vue/Svelte/Solid 一鍵遷移
 5. 生態系統 - 獨立套件展示
 6. 整合示例 - Tailwind/Panda/Iconify 等
-7. 成功案例 - 誰在用 Zen
+7. 成功案例 - 誰在用 Rapid
 8. 社區 - GitHub/Discord/Twitter
 ```
 

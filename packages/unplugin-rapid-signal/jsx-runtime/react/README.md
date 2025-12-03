@@ -1,6 +1,6 @@
-# Zen Signal - React JSX Runtime
+# Rapid Signal - React JSX Runtime
 
-Runtime-first signal integration for React. Auto-detects and unwraps Zen signals without any compiler transformations.
+Runtime-first signal integration for React. Auto-detects and unwraps Rapid signals without any compiler transformations.
 
 ## Installation
 

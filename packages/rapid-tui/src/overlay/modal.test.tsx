@@ -6,7 +6,13 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { createRoot, signal } from '@rapid/runtime';
-import { Text, clearInputHandlers, dispatchInput, setPlatformOps, tuiPlatformOps } from '@rapid/tui';
+import {
+  Text,
+  clearInputHandlers,
+  dispatchInput,
+  setPlatformOps,
+  tuiPlatformOps,
+} from '@rapid/tui';
 import { AlertDialog, ConfirmDialog, Modal, type ModalProps } from './Modal.js';
 
 setPlatformOps(tuiPlatformOps);

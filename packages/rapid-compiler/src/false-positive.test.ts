@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { transformZenJSX } from './core/transform.js';
+import { transformRapidJSX } from './core/transform.js';
 
 describe('false positives - non-signal .value access', () => {
   it('should transform plain object .value (false positive)', () => {
@@ -8,7 +8,7 @@ describe('false positives - non-signal .value access', () => {
       <Text>{user.value}</Text>
     `;
 
-    const result = transformZenJSX(input, 'test.tsx');
+    const result = transformRapidJSX(input, 'test.tsx');
     expect(result).not.toBeNull();
 
     // This WILL be transformed (false positive)
@@ -21,7 +21,7 @@ describe('false positives - non-signal .value access', () => {
       <Text>{config.value}</Text>
     `;
 
-    const result = transformZenJSX(input, 'test.tsx');
+    const result = transformRapidJSX(input, 'test.tsx');
     expect(result).not.toBeNull();
 
     // This WILL be transformed (false positive)
@@ -37,7 +37,7 @@ describe('false positives - non-signal .value access', () => {
       <Text>{obj.value}</Text>
     `;
 
-    const result = transformZenJSX(input, 'test.tsx');
+    const result = transformRapidJSX(input, 'test.tsx');
     expect(result).not.toBeNull();
 
     // Transformation happens, but it's harmless:

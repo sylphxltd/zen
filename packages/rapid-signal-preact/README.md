@@ -1,6 +1,6 @@
 # @rapid/signal-preact
 
-Preact integration for Zen Signals with auto-unwrap and lifecycle management.
+Preact integration for Rapid Signals with auto-unwrap and lifecycle management.
 
 ## Installation
 

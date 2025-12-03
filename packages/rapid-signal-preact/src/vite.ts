@@ -8,7 +8,7 @@ import { unplugin } from 'unplugin-rapid-signal';
 import type { Options } from 'unplugin-rapid-signal';
 
 /**
- * Vite plugin for Zen Signals in Preact
+ * Vite plugin for Rapid Signals in Preact
  *
  * @example
  * ```ts

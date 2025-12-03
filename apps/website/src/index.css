@@ -171,7 +171,7 @@
   }
 
   /* Container */
-  .container-zen {
+  .container-rapid {
     @apply max-w-6xl mx-auto px-6;
   }
 

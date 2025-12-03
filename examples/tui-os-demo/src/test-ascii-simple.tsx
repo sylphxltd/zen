@@ -4,7 +4,7 @@
  * Press ESC to exit
  */
 
-import { Box, Text, useInput, renderApp, FullscreenLayout} from '@rapid/tui';
+import { Box, FullscreenLayout, Text, renderApp, useInput } from '@rapid/tui';
 
 function App() {
   useInput((_input, key) => {

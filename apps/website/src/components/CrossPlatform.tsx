@@ -188,10 +188,10 @@ const ThemeContext = createContext('light')
         </div>
 
         {/* Platform Architecture Diagram */}
-        <div class="bg-bg-light border border-border rounded-zen p-8 mb-12">
+        <div class="bg-bg-light border border-border rounded-rapid p-8 mb-12">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Signal Core */}
-            <div class="md:col-span-3 bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 rounded-zen p-6 text-center">
+            <div class="md:col-span-3 bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 rounded-rapid p-6 text-center">
               <div class="flex items-center justify-center gap-3 mb-2">
                 <Icon icon="lucide:atom" width="28" height="28" class="text-primary" />
                 <span class="text-xl font-bold text-text">@rapid/signal-core</span>
@@ -199,13 +199,11 @@ const ThemeContext = createContext('light')
                   1.75 KB
                 </span>
               </div>
-              <p class="text-text-muted">
-                Pure reactive primitives: signal, computed, effect
-              </p>
+              <p class="text-text-muted">Pure reactive primitives: signal, computed, effect</p>
             </div>
 
             {/* Runtime */}
-            <div class="md:col-span-3 bg-bg border border-border rounded-zen p-6 text-center">
+            <div class="md:col-span-3 bg-bg border border-border rounded-rapid p-6 text-center">
               <div class="flex items-center justify-center gap-3 mb-2">
                 <Icon icon="lucide:box" width="24" height="24" class="text-secondary" />
                 <span class="text-lg font-bold text-text">@rapid/runtime</span>
@@ -219,15 +217,17 @@ const ThemeContext = createContext('light')
             </div>
 
             {/* Renderers */}
-            <For each={platforms.filter(p => p.id !== 'shared')}>
+            <For each={platforms.filter((p) => p.id !== 'shared')}>
               {(platform) => (
                 <div
-                  class={`bg-bg border rounded-zen p-6 text-center cursor-pointer transition-all ${
+                  class={`bg-bg border rounded-rapid p-6 text-center cursor-pointer transition-all ${
                     activeTab.value === platform.id
-                      ? 'border-primary shadow-zen'
+                      ? 'border-primary shadow-rapid'
                       : 'border-border hover:border-primary/50'
                   }`}
-                  onClick={() => { activeTab.value = platform.id; }}
+                  onClick={() => {
+                    activeTab.value = platform.id;
+                  }}
                 >
                   <div class="flex items-center justify-center gap-2 mb-2">
                     <Icon icon={platform.icon} width="24" height="24" class="text-primary" />
@@ -242,7 +242,7 @@ const ThemeContext = createContext('light')
             </For>
 
             {/* Future: Native */}
-            <div class="bg-bg border border-dashed border-border rounded-zen p-6 text-center opacity-60">
+            <div class="bg-bg border border-dashed border-border rounded-rapid p-6 text-center opacity-60">
               <div class="flex items-center justify-center gap-2 mb-2">
                 <Icon icon="lucide:smartphone" width="24" height="24" class="text-text-muted" />
                 <span class="text-lg font-bold text-text-muted">@rapid/native</span>
@@ -263,10 +263,12 @@ const ThemeContext = createContext('light')
                 type="button"
                 class={
                   activeTab.value === platform.id
-                    ? 'px-6 py-3 bg-primary text-white rounded-zen font-medium transition-all shadow-zen flex items-center gap-2'
-                    : 'px-6 py-3 bg-bg-light hover:bg-bg-lighter text-text-muted hover:text-text border border-border rounded-zen font-medium transition-all flex items-center gap-2'
+                    ? 'px-6 py-3 bg-primary text-white rounded-rapid font-medium transition-all shadow-rapid flex items-center gap-2'
+                    : 'px-6 py-3 bg-bg-light hover:bg-bg-lighter text-text-muted hover:text-text border border-border rounded-rapid font-medium transition-all flex items-center gap-2'
                 }
-                onClick={() => { activeTab.value = platform.id; }}
+                onClick={() => {
+                  activeTab.value = platform.id;
+                }}
               >
                 <Icon icon={platform.icon} width="20" height="20" />
                 {platform.name}
@@ -276,22 +278,16 @@ const ThemeContext = createContext('light')
         </div>
 
         {/* Code Example */}
-        <div class="bg-bg-light border border-border rounded-zen overflow-hidden">
+        <div class="bg-bg-light border border-border rounded-rapid overflow-hidden">
           <div class="bg-bg-lighter border-b border-border px-6 py-4">
-            <h3 class="text-xl font-bold text-text mb-1">
-              {() => currentExample.value.title}
-            </h3>
-            <p class="text-text-muted">
-              {() => currentExample.value.description}
-            </p>
+            <h3 class="text-xl font-bold text-text mb-1">{() => currentExample.value.title}</h3>
+            <p class="text-text-muted">{() => currentExample.value.description}</p>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
             {/* Code */}
             <div class="lg:col-span-2 p-6 bg-[#1e1e2e] overflow-x-auto">
-              <pre class="text-sm font-mono text-[#cdd6f4]">
-                {() => currentExample.value.code}
-              </pre>
+              <pre class="text-sm font-mono text-[#cdd6f4]">{() => currentExample.value.code}</pre>
             </div>
 
             {/* Features */}
@@ -301,7 +297,12 @@ const ThemeContext = createContext('light')
                 <For each={computed(() => currentExample.value.features)}>
                   {(feature) => (
                     <li class="flex items-start gap-2 text-text-muted">
-                      <Icon icon="lucide:check" width="20" height="20" class="text-success flex-shrink-0 mt-0.5" />
+                      <Icon
+                        icon="lucide:check"
+                        width="20"
+                        height="20"
+                        class="text-success flex-shrink-0 mt-0.5"
+                      />
                       <span>{feature}</span>
                     </li>
                   )}
@@ -312,7 +313,7 @@ const ThemeContext = createContext('light')
                 <Show when={computed(() => activeTab.value === 'tui')}>
                   <a
                     href="/docs/tui"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-zen transition-all"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-rapid transition-all"
                   >
                     <Icon icon="lucide:terminal" width="18" height="18" />
                     TUI Documentation
@@ -321,7 +322,7 @@ const ThemeContext = createContext('light')
                 <Show when={computed(() => activeTab.value === 'web')}>
                   <a
                     href="/docs"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-zen transition-all"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-rapid transition-all"
                   >
                     <Icon icon="lucide:book-open" width="18" height="18" />
                     Web Documentation
@@ -330,7 +331,7 @@ const ThemeContext = createContext('light')
                 <Show when={computed(() => activeTab.value === 'shared')}>
                   <a
                     href="/docs/components"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-zen transition-all"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-rapid transition-all"
                   >
                     <Icon icon="lucide:component" width="18" height="18" />
                     Component Reference
@@ -343,7 +344,7 @@ const ThemeContext = createContext('light')
 
         {/* Key Benefits */}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          <div class="bg-bg border border-border rounded-zen p-6 text-center">
+          <div class="bg-bg border border-border rounded-rapid p-6 text-center">
             <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Icon icon="lucide:repeat" width="24" height="24" class="text-primary" />
             </div>
@@ -353,7 +354,7 @@ const ThemeContext = createContext('light')
             </p>
           </div>
 
-          <div class="bg-bg border border-border rounded-zen p-6 text-center">
+          <div class="bg-bg border border-border rounded-rapid p-6 text-center">
             <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Icon icon="lucide:brain" width="24" height="24" class="text-secondary" />
             </div>
@@ -363,7 +364,7 @@ const ThemeContext = createContext('light')
             </p>
           </div>
 
-          <div class="bg-bg border border-border rounded-zen p-6 text-center">
+          <div class="bg-bg border border-border rounded-rapid p-6 text-center">
             <div class="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Icon icon="lucide:gauge" width="24" height="24" class="text-success" />
             </div>

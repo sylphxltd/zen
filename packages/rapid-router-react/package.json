@@ -1,7 +1,7 @@
 {
   "name": "@rapid/router-react",
   "version": "0.0.0",
-  "description": "React hooks for Zen Router with auto-intercepting navigation",
+  "description": "React hooks for Rapid Router with auto-intercepting navigation",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -18,15 +18,15 @@
     "build": "bunup --format esm,cjs --dts --target node --minify",
     "clean": "bun rimraf dist .turbo"
   },
-  "keywords": ["zen", "router", "routing", "react", "hooks", "navigation"],
+  "keywords": ["rapid", "router", "routing", "react", "hooks", "navigation"],
   "author": "Sylphx <hi@sylphx.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git",
-    "directory": "packages/zen-router-react"
+    "directory": "packages/rapid-router-react"
   },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/zen-router-react#readme",
+  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-router-react#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/rapid/issues"
   },

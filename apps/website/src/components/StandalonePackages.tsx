@@ -180,7 +180,7 @@ render(<App />)`,
         <div class="space-y-12">
           <For each={packages}>
             {(pkg) => (
-              <div class="bg-bg border border-border rounded-zen overflow-hidden">
+              <div class="bg-bg border border-border rounded-rapid overflow-hidden">
                 {/* Package header */}
                 <div class="bg-bg-lighter border-b border-border px-8 py-6">
                   <div class="flex items-start justify-between mb-4">
@@ -188,7 +188,7 @@ render(<App />)`,
                       <h3 class="text-2xl font-bold text-primary mb-2">{pkg.name}</h3>
                       <p class="text-lg text-text-muted">{pkg.description}</p>
                     </div>
-                    <div class="px-4 py-2 bg-success/20 text-success rounded-zen font-bold text-lg">
+                    <div class="px-4 py-2 bg-success/20 text-success rounded-rapid font-bold text-lg">
                       {pkg.size}
                     </div>
                   </div>
@@ -256,7 +256,7 @@ render(<App />)`,
           </p>
           <a
             href="/docs/packages"
-            class="inline-block px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-zen shadow-zen transition-all hover:scale-105"
+            class="inline-block px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-rapid shadow-rapid transition-all hover:scale-105"
           >
             View Full Package Documentation →
           </a>

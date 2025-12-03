@@ -3,7 +3,7 @@
  * Test terminal width detection
  */
 
-import { Box, Text, useInput, useTerminalSize, renderApp, FullscreenLayout} from '@rapid/tui';
+import { Box, FullscreenLayout, Text, renderApp, useInput, useTerminalSize } from '@rapid/tui';
 
 function App() {
   const { width, height } = useTerminalSize();

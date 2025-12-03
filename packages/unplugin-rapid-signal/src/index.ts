@@ -1,7 +1,7 @@
 /**
  * unplugin-rapid-signal
  *
- * Universal plugin for using Zen Signals across all frameworks with unified syntax.
+ * Universal plugin for using Rapid Signals across all frameworks with unified syntax.
  *
  * **Runtime Mode (Default):**
  * - Configures custom JSX runtimes/preprocessors
@@ -22,7 +22,7 @@ import { getRuntimeConfig } from './runtime-config';
 import { transformReact } from './transforms/react';
 import { transformSvelte } from './transforms/svelte';
 import { transformVue } from './transforms/vue';
-import { transformZen } from './transforms/zen';
+import { transformRapid } from './transforms/rapid';
 
 export interface Options {
   /**
@@ -189,8 +189,8 @@ export const unplugin = createUnplugin<Options>((options = {}) => {
         case 'svelte':
           transformSvelte(code, s, id, debug);
           break;
-        case 'zen':
-          transformZen(code, s, id, debug);
+        case 'rapid':
+          transformRapid(code, s, id, debug);
           break;
         default:
           throw new Error(`Unsupported framework: ${framework}`);

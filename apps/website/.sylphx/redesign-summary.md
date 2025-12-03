@@ -1,4 +1,4 @@
-# Zen 網站重新設計總結
+# Rapid 網站重新設計總結
 
 ## 🎯 核心策略
 
@@ -20,7 +20,7 @@
    - 三大賣點標籤：1.75KB | <5KB | 150M+ ops/sec
    - 主標題：世界最輕量 Fine-grained 框架
    - 副標題：唔需要編譯器/VDOM/學習新概念
-   - React vs Zen 代碼對比
+   - React vs Rapid 代碼對比
    - 三個 CTA：開始使用 | 5分鐘教學 | 從React遷移
 
 2. Features 特點
@@ -47,7 +47,7 @@
 
 6. Comparison 競品對比
    - 與 React/Vue/Solid/Preact 對比
-   - 突出 Zen 的優勢（體積、性能）
+   - 突出 Rapid 的優勢（體積、性能）
 
 7. Get Started 開始使用
    - 三步驟快速開始
@@ -63,7 +63,7 @@
 - ✅ **零鎖定**：隨時可以遷移走，無供應商鎖定
 
 ### 2. 價值展示（Value Demonstration）
-- ✅ **真實對比**：React (42KB) vs Zen (<5KB) = -88% 體積
+- ✅ **真實對比**：React (42KB) vs Rapid (<5KB) = -88% 體積
 - ✅ **代碼簡化**：直觀的代碼對比，一眼看出更簡單
 - ✅ **性能數據**：150M+ ops/sec, 3x 更快
 - ✅ **生態完整**：支持所有主流工具（Tailwind, Vite, TypeScript）

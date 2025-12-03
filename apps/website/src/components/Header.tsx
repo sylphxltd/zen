@@ -63,7 +63,7 @@ export function Header() {
 
               {/* GitHub Link */}
               <a
-                href="https://github.com/peterbartha/zen"
+                href="https://github.com/SylphxAI/rapid"
                 target="_blank"
                 rel="noreferrer"
                 class="p-2 text-text-muted hover:text-text hover:bg-bg-lighter rounded-lg transition-colors"

@@ -22,7 +22,7 @@ npm install unplugin-rapid-signal @rapid/signal
 
 ### One-Line Setup
 
-> **Note:** Zen framework users don't need this plugin - signals work natively! Only add it for compiler mode optimizations.
+> **Note:** Rapid framework users don't need this plugin - signals work natively! Only add it for compiler mode optimizations.
 
 **Vite (React/Vue/Svelte):**
 ```ts
@@ -69,7 +69,7 @@ import { signal } from '@rapid/signal';
 
 const count = signal(0);
 
-// React / Vue / Svelte / Zen - all the same!
+// React / Vue / Svelte / Rapid - all the same!
 <p>{count}</p>  {/* Automatically reactive! */}
 <button onClick={() => count.value++}>+</button>
 ```
@@ -101,7 +101,7 @@ Plugin automatically configures the appropriate runtime for your framework:
 | **React** | Injects custom JSX runtime | `{signal}` works in JSX |
 | **Vue** | Templates work natively | `{{ signal }}` works in templates |
 | **Svelte** | Injects preprocessor | `{signal}` works in templates |
-| **Zen** | Nothing (native support) | `{signal}` works natively |
+| **Rapid** | Nothing (native support) | `{signal}` works natively |
 
 **Performance overhead:** 2-10% vs compiler mode
 
@@ -134,7 +134,7 @@ Plugin transforms code at build time for maximum performance.
 ```ts
 interface Options {
   // Framework (auto-detected from package.json if omitted)
-  framework?: 'react' | 'vue' | 'svelte' | 'zen';
+  framework?: 'react' | 'vue' | 'svelte' | 'rapid';
 
   // Mode (default: 'runtime')
   mode?: 'runtime' | 'compiler' | 'hybrid';
@@ -281,7 +281,7 @@ $: count$ = count.value;
 
 ---
 
-### Zen Framework
+### Rapid Framework
 
 **Native support - NO PLUGIN NEEDED!**
 
@@ -455,7 +455,7 @@ interface Options {
    * Target framework
    * @default auto-detected from package.json
    */
-  framework?: 'react' | 'vue' | 'svelte' | 'zen';
+  framework?: 'react' | 'vue' | 'svelte' | 'rapid';
 
   /**
    * Transformation mode
@@ -491,7 +491,7 @@ interface Options {
 
 ### Signal API
 
-See [@rapid/signal documentation](../zen-signal/README.md)
+See [@rapid/signal documentation](../rapid-signal/README.md)
 
 ---
 

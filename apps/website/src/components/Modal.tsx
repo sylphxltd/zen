@@ -59,7 +59,7 @@ export function Modal(props: ModalProps) {
 
       {/* Modal content */}
       <div
-        class="relative bg-bg dark:bg-bg-dark-light border border-border dark:border-border-dark rounded-zen shadow-zen-lg max-w-2xl w-full max-h-[80vh] overflow-hidden animate-scale-in"
+        class="relative bg-bg dark:bg-bg-dark-light border border-border dark:border-border-dark rounded-rapid shadow-rapid-lg max-w-2xl w-full max-h-[80vh] overflow-hidden animate-scale-in"
         onClick={(e: Event) => e.stopPropagation()}
         onKeyDown={(e: KeyboardEvent) => e.stopPropagation()}
       >
@@ -70,7 +70,7 @@ export function Modal(props: ModalProps) {
             <button
               type="button"
               onClick={props.onClose}
-              class="p-2 text-text-muted dark:text-text-dark-muted hover:text-text dark:hover:text-text-dark hover:bg-bg-lighter dark:hover:bg-bg-dark-lighter rounded-zen transition-colors interactive-scale"
+              class="p-2 text-text-muted dark:text-text-dark-muted hover:text-text dark:hover:text-text-dark hover:bg-bg-lighter dark:hover:bg-bg-dark-lighter rounded-rapid transition-colors interactive-scale"
               aria-label="Close modal"
             >
               <svg

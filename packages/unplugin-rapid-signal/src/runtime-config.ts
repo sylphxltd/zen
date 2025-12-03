@@ -48,7 +48,7 @@ function createRuntimeConfig(
   },
 ): RuntimeConfig {
   return {
-    name: `zen-signal-runtime:${framework}`,
+    name: `rapid-signal-runtime:${framework}`,
 
     vite() {
       logRuntime(debug, framework, 'Vite', configs.vite?.logs);
@@ -83,7 +83,7 @@ export function getRuntimeConfig(framework: Framework, debug: boolean): RuntimeC
       return getVueRuntimeConfig(debug);
     case 'svelte':
       return getSvelteRuntimeConfig(debug);
-    case 'zen':
+    case 'rapid':
       return getZenRuntimeConfig(debug);
     default:
       throw new Error(`Unsupported framework: ${framework}`);
@@ -176,22 +176,22 @@ function getSvelteRuntimeConfig(debug: boolean): RuntimeConfig {
 }
 
 /**
- * Zen runtime configuration
+ * Rapid runtime configuration
  * Native support, no configuration needed
  */
 function getZenRuntimeConfig(debug: boolean): RuntimeConfig {
-  return createRuntimeConfig('zen', debug, {
+  return createRuntimeConfig('rapid', debug, {
     vite: {
-      logs: ['Zen framework has native signal support', 'No runtime configuration needed'],
+      logs: ['Rapid framework has native signal support', 'No runtime configuration needed'],
     },
     webpack: {
-      logs: ['Zen framework has native signal support'],
+      logs: ['Rapid framework has native signal support'],
     },
     rollup: {
-      logs: ['Zen framework has native signal support'],
+      logs: ['Rapid framework has native signal support'],
     },
     esbuild: {
-      logs: ['Zen framework has native signal support'],
+      logs: ['Rapid framework has native signal support'],
     },
   });
 }

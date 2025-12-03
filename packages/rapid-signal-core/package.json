@@ -24,7 +24,7 @@
   },
   "size-limit": [
     {
-      "name": "zen-signal (full)",
+      "name": "rapid-signal (full)",
       "path": "dist/index.js",
       "import": "{ signal, computed, effect, subscribe, batch }",
       "limit": "1.75 kB"
@@ -47,7 +47,7 @@
     "type": "git",
     "url": "git+https://github.com/SylphxAI/rapid.git"
   },
-  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/zen-signal-core#readme",
+  "homepage": "https://github.com/SylphxAI/rapid/tree/main/packages/rapid-signal-core#readme",
   "bugs": {
     "url": "https://github.com/SylphxAI/rapid/issues"
   },

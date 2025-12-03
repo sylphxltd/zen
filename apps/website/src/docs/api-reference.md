@@ -91,7 +91,7 @@ function render(
 
 **Example:**
 ```typescript
-import { render } from '@rapid/zen';
+import { render } from '@rapid/web';
 
 render(
   () => <App />,

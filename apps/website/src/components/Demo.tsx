@@ -27,7 +27,7 @@ export function Demo() {
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Counter Demo */}
-          <div class="bg-bg border border-border rounded-zen p-8">
+          <div class="bg-bg border border-border rounded-rapid p-8">
             <h3 class="text-2xl font-semibold mb-6 text-text">Counter</h3>
             <div class="mb-6">
               <div class="text-center mb-8">
@@ -37,21 +37,21 @@ export function Demo() {
               <div class="flex gap-3 justify-center">
                 <button
                   type="button"
-                  class="px-6 py-2 bg-bg-lighter hover:bg-bg border border-border text-text font-medium rounded-zen transition-colors"
+                  class="px-6 py-2 bg-bg-lighter hover:bg-bg border border-border text-text font-medium rounded-rapid transition-colors"
                   onClick={() => count.value--}
                 >
                   -
                 </button>
                 <button
                   type="button"
-                  class="px-6 py-2 bg-bg-lighter hover:bg-bg border border-border text-text font-medium rounded-zen transition-colors"
+                  class="px-6 py-2 bg-bg-lighter hover:bg-bg border border-border text-text font-medium rounded-rapid transition-colors"
                   onClick={() => count.value++}
                 >
                   +
                 </button>
                 <button
                   type="button"
-                  class="px-6 py-2 bg-secondary hover:bg-secondary/80 text-white font-medium rounded-zen transition-colors"
+                  class="px-6 py-2 bg-secondary hover:bg-secondary/80 text-white font-medium rounded-rapid transition-colors"
                   onClick={() => {
                     count.value = 0;
                   }}
@@ -60,7 +60,7 @@ export function Demo() {
                 </button>
               </div>
             </div>
-            <pre class="bg-bg-lighter border border-border rounded-zen p-4 text-sm text-text-muted overflow-x-auto font-mono">{`const count = signal(0);
+            <pre class="bg-bg-lighter border border-border rounded-rapid p-4 text-sm text-text-muted overflow-x-auto font-mono">{`const count = signal(0);
 const doubled = computed(() => count.value * 2);
 
 <div>{count}</div>
@@ -69,7 +69,7 @@ const doubled = computed(() => count.value * 2);
           </div>
 
           {/* Todo Demo */}
-          <div class="bg-bg border border-border rounded-zen p-8">
+          <div class="bg-bg border border-border rounded-rapid p-8">
             <h3 class="text-2xl font-semibold mb-6 text-text">Todo List</h3>
             <div class="mb-6">
               <div class="flex gap-2 mb-4">
@@ -81,12 +81,12 @@ const doubled = computed(() => count.value * 2);
                   }}
                   onKeyPress={(e) => e.key === 'Enter' && addTodo()}
                   placeholder="Add a todo..."
-                  class="flex-1 px-4 py-2 bg-bg-lighter border border-border rounded-zen text-text placeholder-text-muted focus:outline-none focus:border-primary transition-colors"
+                  class="flex-1 px-4 py-2 bg-bg-lighter border border-border rounded-rapid text-text placeholder-text-muted focus:outline-none focus:border-primary transition-colors"
                 />
                 <button
                   type="button"
                   onClick={addTodo}
-                  class="px-6 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-zen transition-colors"
+                  class="px-6 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-rapid transition-colors"
                 >
                   Add
                 </button>
@@ -94,7 +94,7 @@ const doubled = computed(() => count.value * 2);
               <ul class="space-y-2">
                 <For each={todos}>
                   {(todo, index) => (
-                    <li class="flex items-center justify-between p-3 bg-bg-lighter border border-border rounded-zen">
+                    <li class="flex items-center justify-between p-3 bg-bg-lighter border border-border rounded-rapid">
                       <span class="text-text">{todo}</span>
                       <button
                         type="button"
@@ -111,7 +111,7 @@ const doubled = computed(() => count.value * 2);
                 <div class="text-center text-text-muted py-8">No todos yet. Add one above!</div>
               </Show>
             </div>
-            <pre class="bg-bg-lighter border border-border rounded-zen p-4 text-sm text-text-muted overflow-x-auto font-mono">{`const todos = signal<string[]>([]);
+            <pre class="bg-bg-lighter border border-border rounded-rapid p-4 text-sm text-text-muted overflow-x-auto font-mono">{`const todos = signal<string[]>([]);
 const newTodo = signal('');
 
 const addTodo = () => {

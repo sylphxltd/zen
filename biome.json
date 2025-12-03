@@ -10,7 +10,7 @@
       "benchmark-*.ts",
       "**/*-backup.ts",
       "**/ultra-*.ts",
-      "packages/rapid-*/src/zen.ts"
+      "packages/rapid-signal-extensions/craft/rapid.ts"
     ]
   },
   "linter": {

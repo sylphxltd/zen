@@ -8,7 +8,7 @@ import { unplugin } from 'unplugin-rapid-signal';
 import type { Options } from 'unplugin-rapid-signal';
 
 /**
- * esbuild plugin for Zen Signals in React
+ * esbuild plugin for Rapid Signals in React
  *
  * @example
  * ```ts

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { zen } from '@rapid/signal';
+import { signal } from '@rapid/signal';
 import { store } from './store';
 
 describe('store', () => {
   it('should create a store from factory function', () => {
     const counter = store(() => {
-      const count = zen(0);
+      const count = signal(0);
       return {
         count,
         increase: () => count.value++,
@@ -19,8 +19,8 @@ describe('store', () => {
 
   it('should support multiple reactive values', () => {
     const myStore = store(() => {
-      const name = zen('Alice');
-      const age = zen(25);
+      const name = signal('Alice');
+      const age = signal(25);
       return { name, age };
     });
 
@@ -36,7 +36,7 @@ describe('store', () => {
 
   it('should support methods in store', () => {
     const todoStore = store(() => {
-      const todos = zen<string[]>([]);
+      const todos = signal<string[]>([]);
       return {
         todos,
         add: (todo: string) => {

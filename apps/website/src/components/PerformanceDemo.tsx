@@ -140,7 +140,7 @@ export function PerformanceDemo() {
           </p>
         </div>
 
-        <div class="bg-bg dark:bg-bg-dark-light border border-border dark:border-border-dark rounded-zen p-8 mb-8">
+        <div class="bg-bg dark:bg-bg-dark-light border border-border dark:border-border-dark rounded-rapid p-8 mb-8">
           {/* Controls */}
           <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div class="flex items-center gap-4">
@@ -148,7 +148,7 @@ export function PerformanceDemo() {
                 type="button"
                 onClick={start}
                 disabled={isRunning.value}
-                class="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-zen disabled:opacity-50 disabled:cursor-not-allowed transition-all interactive-scale"
+                class="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-rapid disabled:opacity-50 disabled:cursor-not-allowed transition-all interactive-scale"
               >
                 <Icon icon="lucide:play" width="20" height="20" class="inline mr-2" />
                 Start
@@ -157,7 +157,7 @@ export function PerformanceDemo() {
                 type="button"
                 onClick={stop}
                 disabled={!isRunning.value}
-                class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-zen disabled:opacity-50 disabled:cursor-not-allowed transition-all interactive-scale"
+                class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-rapid disabled:opacity-50 disabled:cursor-not-allowed transition-all interactive-scale"
               >
                 <Icon icon="lucide:square" width="20" height="20" class="inline mr-2" />
                 Stop
@@ -165,7 +165,7 @@ export function PerformanceDemo() {
               <button
                 type="button"
                 onClick={reset}
-                class="px-6 py-3 bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark text-text dark:text-text-dark font-semibold rounded-zen hover:border-primary transition-all interactive-scale"
+                class="px-6 py-3 bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark text-text dark:text-text-dark font-semibold rounded-rapid hover:border-primary transition-all interactive-scale"
               >
                 <Icon icon="lucide:rotate-ccw" width="20" height="20" class="inline mr-2" />
                 Reset
@@ -209,7 +209,7 @@ export function PerformanceDemo() {
 
           {/* Metrics */}
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-zen p-6 text-center">
+            <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-rapid p-6 text-center">
               <div class="text-text-muted dark:text-text-dark-muted text-sm font-medium mb-2">
                 FPS
               </div>
@@ -219,7 +219,7 @@ export function PerformanceDemo() {
               </div>
             </div>
 
-            <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-zen p-6 text-center">
+            <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-rapid p-6 text-center">
               <div class="text-text-muted dark:text-text-dark-muted text-sm font-medium mb-2">
                 Total Updates
               </div>
@@ -229,7 +229,7 @@ export function PerformanceDemo() {
               <div class="text-xs text-text-muted dark:text-text-dark-muted mt-1">Since start</div>
             </div>
 
-            <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-zen p-6 text-center">
+            <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-rapid p-6 text-center">
               <div class="text-text-muted dark:text-text-dark-muted text-sm font-medium mb-2">
                 Items Rendered
               </div>
@@ -241,7 +241,7 @@ export function PerformanceDemo() {
           </div>
 
           {/* Visual Grid */}
-          <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-zen p-4 overflow-hidden">
+          <div class="bg-bg-lighter dark:bg-bg-dark-lighter border border-border dark:border-border-dark rounded-rapid p-4 overflow-hidden">
             <div class="grid grid-cols-10 sm:grid-cols-20 gap-1 max-h-[400px] overflow-y-auto">
               <For each={items.value} key={(item) => item.id}>
                 {(item) => {
@@ -266,7 +266,7 @@ export function PerformanceDemo() {
         </div>
 
         {/* Explanation */}
-        <div class="bg-bg dark:bg-bg-dark-light border border-border dark:border-border-dark rounded-zen p-6">
+        <div class="bg-bg dark:bg-bg-dark-light border border-border dark:border-border-dark rounded-rapid p-6">
           <h3 class="text-xl font-semibold text-text dark:text-text-dark mb-4 flex items-center gap-2">
             <Icon icon="lucide:info" width="24" height="24" class="text-primary" />
             How It Works
@@ -283,8 +283,8 @@ export function PerformanceDemo() {
             </p>
             <p>
               <strong class="text-text dark:text-text-dark">Smooth performance:</strong> Even with
-              thousands of items and hundreds of updates per second, Rapid maintains peak performance
-              at your display's maximum refresh rate.
+              thousands of items and hundreds of updates per second, Rapid maintains peak
+              performance at your display's maximum refresh rate.
             </p>
             <p class="text-sm pt-2 border-t border-border dark:border-border-dark">
               Try increasing the item count and watch the FPS stay high. This is the power of

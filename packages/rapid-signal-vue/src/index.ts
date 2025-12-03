@@ -1,7 +1,7 @@
 /**
  * @rapid/signal-vue
  *
- * Vue integration for Zen Signals
+ * Vue integration for Rapid Signals
  * Provides signal primitives with Vue lifecycle integration
  */
 

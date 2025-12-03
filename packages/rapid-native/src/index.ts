@@ -1,5 +1,5 @@
 /**
- * @rapid/native - Native renderer for Zen (React Native)
+ * @rapid/native - Native renderer for Rapid (React Native)
  *
  * PLACEHOLDER - Not yet implemented
  * Will be implemented in Phase 4 of the cross-platform architecture.

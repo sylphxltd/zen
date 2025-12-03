@@ -1,7 +1,7 @@
 /**
  * Fine-Grained Reactivity Tests
  *
- * These tests lock down the core characteristics of Zen's fine-grained reactivity:
+ * These tests lock down the core characteristics of Rapid's fine-grained reactivity:
  * 1. Components render only once
  * 2. Effects execute immediately (synchronous)
  * 3. Computeds are lazy with equality checking

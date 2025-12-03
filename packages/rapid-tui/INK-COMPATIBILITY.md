@@ -1,12 +1,12 @@
 # React Ink API Compatibility
 
-**@rapid/tui** is designed to provide an API compatible with [React Ink](https://github.com/vadimdemedes/ink) for easy migration from Ink to Zen TUI.
+**@rapid/tui** is designed to provide an API compatible with [React Ink](https://github.com/vadimdemedes/ink) for easy migration from Ink to Rapid TUI.
 
 ## Coverage Summary
 
 ✅ **Full compatibility** - API matches Ink exactly
 ❌ **Not implemented** - Feature not available
-🎯 **Zen enhancement** - Additional features beyond Ink
+🎯 **Rapid enhancement** - Additional features beyond Ink
 
 **All core components and hooks are fully compatible with React Ink!**
 
@@ -388,9 +388,9 @@ function MyComponent() {
 
 ---
 
-## Additional Components (Zen Enhancements) 🎯
+## Additional Components (Rapid Enhancements) 🎯
 
-Beyond Ink compatibility, Zen TUI provides additional components:
+Beyond Ink compatibility, Rapid TUI provides additional components:
 
 ### TextInput 🎯
 
@@ -663,17 +663,17 @@ const [count, setCount] = useState(0);
 setCount(count + 1);
 ```
 
-**Zen TUI**: Uses Zen signals (auto-tracking reactivity)
+**Rapid TUI**: Uses Rapid signals (auto-tracking reactivity)
 
 ```tsx
-// Zen TUI
+// Rapid TUI
 import { signal } from '@rapid/signal';
 
 const count = signal(0);
 count.value++;  // Automatic re-render
 ```
 
-**Migration**: Replace React state hooks with Zen signals for reactive values.
+**Migration**: Replace React state hooks with Rapid signals for reactive values.
 
 ---
 
@@ -690,10 +690,10 @@ function MyComponent({ name }) {
 }
 ```
 
-**Zen TUI**: Plain functions returning TUINode descriptors
+**Rapid TUI**: Plain functions returning TUINode descriptors
 
 ```tsx
-// Zen TUI
+// Rapid TUI
 import { Text } from '@rapid/tui';
 
 function MyComponent({ name }) {
@@ -722,7 +722,7 @@ function MyComponent({ name }) {
 }
 ```
 
-**Zen TUI**: Uses custom JSX runtime (optional)
+**Rapid TUI**: Uses custom JSX runtime (optional)
 
 ```json
 {
@@ -748,7 +748,7 @@ import React from 'react';
 render(<App />);
 ```
 
-**Zen TUI**: `render()` function (similar API)
+**Rapid TUI**: `render()` function (similar API)
 
 ```tsx
 import { render } from '@rapid/tui';
@@ -768,7 +768,7 @@ render(App());
 # Remove Ink
 npm uninstall ink react
 
-# Install Zen TUI
+# Install Rapid TUI
 npm install @rapid/tui @rapid/signal
 ```
 
@@ -826,7 +826,7 @@ Run your application and verify:
 
 ## Compatibility Matrix
 
-| Feature | Ink | Zen TUI | Notes |
+| Feature | Ink | Rapid TUI | Notes |
 |---------|-----|---------|-------|
 | **Core Components** | | | |
 | Box | ✅ | ✅ | Full compatibility |
@@ -844,23 +844,23 @@ Run your application and verify:
 | useStdout | ✅ | ✅ | Full compatibility |
 | useStderr | ✅ | ✅ | Full compatibility |
 | **Additional** | | | |
-| TextInput | 📦 | 🎯 | Zen enhancement |
-| SelectInput | 📦 | 🎯 | Zen enhancement |
-| MultiSelect | 📦 | 🎯 | Zen enhancement |
-| Radio | 📦 | 🎯 | Zen enhancement |
-| Checkbox | 📦 | 🎯 | Zen enhancement |
-| Button | 📦 | 🎯 | Zen enhancement |
-| Tabs | 📦 | 🎯 | Zen enhancement |
-| Confirmation | 📦 | 🎯 | Zen enhancement |
-| Table | 📦 | 🎯 | Zen enhancement |
-| Link | 📦 | 🎯 | Zen enhancement |
+| TextInput | 📦 | 🎯 | Rapid enhancement |
+| SelectInput | 📦 | 🎯 | Rapid enhancement |
+| MultiSelect | 📦 | 🎯 | Rapid enhancement |
+| Radio | 📦 | 🎯 | Rapid enhancement |
+| Checkbox | 📦 | 🎯 | Rapid enhancement |
+| Button | 📦 | 🎯 | Rapid enhancement |
+| Tabs | 📦 | 🎯 | Rapid enhancement |
+| Confirmation | 📦 | 🎯 | Rapid enhancement |
+| Table | 📦 | 🎯 | Rapid enhancement |
+| Link | 📦 | 🎯 | Rapid enhancement |
 
 Legend:
 - ✅ Full compatibility
 - ⚠️ Partial compatibility
 - ❌ Not implemented
 - 📦 Available via separate package in Ink
-- 🎯 Zen enhancement (built-in)
+- 🎯 Rapid enhancement (built-in)
 
 ---
 
@@ -870,7 +870,7 @@ All components and hooks have been tested for React Ink compatibility:
 
 ```bash
 # Run all tests
-bun test packages/zen-tui/
+bun test packages/rapid-tui/
 
 # Test coverage: 347 tests across 22 files
 # All core components tested
@@ -890,9 +890,9 @@ Test files verify:
 
 ## Resources
 
-- **Zen TUI Documentation**: [packages/zen-tui](../zen-tui)
+- **Rapid TUI Documentation**: [packages/rapid-tui](../rapid-tui)
 - **React Ink Documentation**: https://github.com/vadimdemedes/ink
-- **Zen Signal Documentation**: [packages/zen-signal](../zen-signal)
+- **Rapid Signal Documentation**: [packages/rapid-signal](../rapid-signal)
 - **Migration Examples**: [examples/tui-demo](../../examples/tui-demo)
 
 ---
@@ -909,6 +909,6 @@ For migration assistance or compatibility questions:
 
 **Last Updated**: 2025
 
-**Zen TUI Version**: 1.0.0
+**Rapid TUI Version**: 1.0.0
 
 **React Ink Version Tested Against**: 3.2.0

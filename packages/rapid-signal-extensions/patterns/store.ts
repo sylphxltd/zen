@@ -6,7 +6,7 @@
  * @example
  * ```typescript
  * const counter = store(() => {
- *   const count = zen(0);
+ *   const count = signal(0);
  *   return {
  *     count,
  *     increase: () => count.value++,

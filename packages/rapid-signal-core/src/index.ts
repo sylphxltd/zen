@@ -1,5 +1,5 @@
 /**
- * Zen - Ultra-Performance Reactivity
+ * Rapid - Ultra-Performance Reactivity
  * Auto-tracking signals, computed, and effects
  */
 
