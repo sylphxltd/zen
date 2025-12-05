@@ -5,7 +5,7 @@
  * Enables mouse interaction with specific components.
  */
 
-import type { TUINode } from '../core/types.js';
+import type { TUINode, TUIStyle } from '../core/types.js';
 import type { LayoutMap, LayoutResult } from '../core/yoga-layout.js';
 
 /**
@@ -57,9 +57,10 @@ function pointInRect(x: number, y: number, rect: LayoutResult): boolean {
  * Get zIndex value from a node's style
  */
 function getZIndex(node: TUINode): number {
-  const style = typeof node.style === 'function' ? node.style() : node.style;
+  const style = typeof node.style === 'function' ? (node.style as () => TUIStyle)() : node.style;
   if (!style) return 0;
-  const zIndex = typeof style.zIndex === 'function' ? style.zIndex() : style.zIndex;
+  const zIndex =
+    typeof style.zIndex === 'function' ? (style.zIndex as () => number)() : style.zIndex;
   return typeof zIndex === 'number' ? zIndex : 0;
 }
 
@@ -67,9 +68,10 @@ function getZIndex(node: TUINode): number {
  * Check if a node is absolute positioned
  */
 function isAbsolutePositioned(node: TUINode): boolean {
-  const style = typeof node.style === 'function' ? node.style() : node.style;
+  const style = typeof node.style === 'function' ? (node.style as () => TUIStyle)() : node.style;
   if (!style) return false;
-  const position = typeof style.position === 'function' ? style.position() : style.position;
+  const position =
+    typeof style.position === 'function' ? (style.position as () => string)() : style.position;
   return position === 'absolute';
 }
 
@@ -145,7 +147,8 @@ function findElementAtPoint(
 
     // Then check normal flow children in reverse order (last rendered first)
     for (let i = normalHits.length - 1; i >= 0; i--) {
-      const hit = findElementAtPoint(normalHits[i], x, y, layoutMap);
+      // biome-ignore lint/style/noNonNullAssertion: i < normalHits.length guarantees element exists
+      const hit = findElementAtPoint(normalHits[i]!, x, y, layoutMap);
       if (hit) return hit;
     }
   }
@@ -281,7 +284,7 @@ export function findClickableAncestor(result: HitTestResult | null): TUINode | n
   }
 
   // Check if current node has onClick
-  if (result.node.props?.onClick) {
+  if (result.node.props?.['onClick']) {
     return result.node;
   }
 

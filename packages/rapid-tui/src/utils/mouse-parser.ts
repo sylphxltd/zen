@@ -29,9 +29,12 @@ export function parseMouseEvent(data: string): MouseEvent | null {
   if (!match) return null;
 
   const [, buttonCode, xStr, yStr, action] = match;
-  const b = Number.parseInt(buttonCode, 10);
-  const x = Number.parseInt(xStr, 10);
-  const y = Number.parseInt(yStr, 10);
+  // biome-ignore lint/style/noNonNullAssertion: regex match guarantees these groups exist
+  const b = Number.parseInt(buttonCode!, 10);
+  // biome-ignore lint/style/noNonNullAssertion: regex match guarantees these groups exist
+  const x = Number.parseInt(xStr!, 10);
+  // biome-ignore lint/style/noNonNullAssertion: regex match guarantees these groups exist
+  const y = Number.parseInt(yStr!, 10);
 
   // Extract modifiers from button code
   const ctrl = !!(b & 16);

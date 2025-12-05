@@ -192,7 +192,16 @@ function renderBorder(
   borderColor?: string,
   backgroundColor?: string,
 ): void {
-  const box = cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single;
+  const box = (cliBoxes[borderStyle as keyof typeof cliBoxes] || cliBoxes.single) as {
+    topLeft: string;
+    top: string;
+    topRight: string;
+    left: string;
+    right: string;
+    bottomLeft: string;
+    bottom: string;
+    bottomRight: string;
+  };
 
   const colorFn = borderColor ? getColorFn(borderColor) : (s: string) => s;
 
@@ -260,9 +269,12 @@ function renderNodeToBuffer(
   fullRender = true,
 ): void {
   // Get style (resolve functions)
-  const preStyle = typeof node.style === 'function' ? node.style() : node.style || {};
+  const preStyle =
+    typeof node.style === 'function' ? (node.style as () => TUIStyle)() : node.style || {};
   const positionType =
-    typeof preStyle.position === 'function' ? preStyle.position() : preStyle.position;
+    typeof preStyle.position === 'function'
+      ? (preStyle.position as () => string)()
+      : preStyle.position;
 
   // Skip absolute positioned nodes if requested (they're rendered separately for zIndex ordering)
   if (skipAbsolute && positionType === 'absolute') {
@@ -279,7 +291,8 @@ function renderNodeToBuffer(
   const height = Math.floor(layout.height);
 
   // Get style (resolve functions)
-  const style = typeof node.style === 'function' ? node.style() : node.style || {};
+  const style =
+    typeof node.style === 'function' ? (node.style as () => TUIStyle)() : node.style || {};
 
   // ============================================================================
   // Fine-Grained Rendering: Check if node is dirty
@@ -331,9 +344,16 @@ function renderNodeToBuffer(
   // Calculate content area (inside border and padding)
   const hasBorder = style.borderStyle && style.borderStyle !== 'none';
   const borderOffset = hasBorder ? 1 : 0;
-  const padding = style.padding ?? 0;
-  const paddingX = style.paddingX ?? padding;
-  const paddingY = style.paddingY ?? padding;
+  const resolvePadding = (
+    v: number | (() => number | undefined) | undefined,
+    fallback: number,
+  ): number => {
+    const resolved = typeof v === 'function' ? v() : v;
+    return resolved ?? fallback;
+  };
+  const paddingVal = resolvePadding(style.padding, 0);
+  const paddingX = resolvePadding(style.paddingX, paddingVal);
+  const paddingY = resolvePadding(style.paddingY, paddingVal);
 
   const contentX = x + borderOffset + paddingX;
   const contentY = y + borderOffset + paddingY;
@@ -417,7 +437,9 @@ function renderNodeToBuffer(
             // Nested Text node - merge styles (child overrides parent)
             if (childNode.type === 'text') {
               const childStyle =
-                typeof childNode.style === 'function' ? childNode.style() : childNode.style || {};
+                typeof childNode.style === 'function'
+                  ? (childNode.style as () => TUIStyle)()
+                  : childNode.style || {};
               const mergedStyle = { ...parentStyle, ...childStyle };
               return collectStyledText(childNode.children, mergedStyle);
             }
@@ -680,7 +702,7 @@ export function renderToBuffer(
     n: TUINode,
     parentLayout: { x: number; y: number } = { x: 0, y: 0 },
   ): void {
-    const style = typeof n.style === 'function' ? n.style() : n.style || {};
+    const style = typeof n.style === 'function' ? (n.style as () => TUIStyle)() : n.style || {};
     const layout = layoutMap.get(n);
 
     const positionValue = typeof style.position === 'function' ? style.position() : style.position;

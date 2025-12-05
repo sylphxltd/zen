@@ -48,7 +48,7 @@ export function Dynamic<P = any>(props: DynamicProps<P>): any {
   }
 
   // Warn in development
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env['NODE_ENV'] !== 'production') {
   }
 
   return component(restProps as P);

@@ -19,6 +19,10 @@ export interface TerminalSize {
   width: number;
   /** Terminal height in rows */
   height: number;
+  /** Alias for width (terminal columns) */
+  columns: number;
+  /** Alias for height (terminal rows) */
+  rows: number;
 }
 
 /** Default terminal width (VT100 standard) */
@@ -87,6 +91,12 @@ export function useTerminalSize(): TerminalSize {
     get height() {
       return terminalHeight.value;
     },
+    get columns() {
+      return terminalWidth.value;
+    },
+    get rows() {
+      return terminalHeight.value;
+    },
   };
 }
 
@@ -96,9 +106,13 @@ export function useTerminalSize(): TerminalSize {
  * Use this for one-time reads without setting up a listener.
  */
 export function getTerminalSize(): TerminalSize {
+  const w = process.stdout.columns || DEFAULT_TERMINAL_WIDTH;
+  const h = process.stdout.rows || DEFAULT_TERMINAL_HEIGHT;
   return {
-    width: process.stdout.columns || DEFAULT_TERMINAL_WIDTH,
-    height: process.stdout.rows || DEFAULT_TERMINAL_HEIGHT,
+    width: w,
+    height: h,
+    columns: w,
+    rows: h,
   };
 }
 

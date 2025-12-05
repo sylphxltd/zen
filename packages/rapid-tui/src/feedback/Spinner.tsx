@@ -74,7 +74,7 @@ export function createAnimatedSpinner(
   intervalMs = 80,
 ): { node: TUINode; cleanup: () => void; frameIndex: Signal<number> } {
   const frameIndex = signal(0);
-  const type = props.type || 'dots';
+  const type = resolve(props.type) || 'dots';
   const frames = SPINNER_FRAMES[type];
 
   const interval = setInterval(() => {
@@ -86,9 +86,10 @@ export function createAnimatedSpinner(
   const node = Text({
     children: () => {
       const currentFrame = frames[frameIndex.value % frames.length];
-      return props.label ? `${currentFrame} ${props.label}` : currentFrame;
+      const label = resolve(props.label);
+      return label ? `${currentFrame} ${label}` : currentFrame;
     },
-    color: props.color || 'cyan',
+    color: () => resolve(props.color) || 'cyan',
   });
 
   return { node, cleanup, frameIndex };

@@ -95,15 +95,21 @@ export const webPlatformOps: PlatformOps<Node> = {
     return document.createComment(name);
   },
 
-  createFragment(): DocumentFragment {
-    return document.createDocumentFragment();
+  createFragment(): Node[] {
+    return [];
   },
 
-  insertBefore(parent: Node, child: Node | DocumentFragment, reference: Node | Comment): void {
-    parent.insertBefore(child, reference);
+  insertBefore(parent: Node, child: Node | Node[], reference: Node | Comment): void {
+    if (Array.isArray(child)) {
+      for (const c of child) {
+        parent.insertBefore(c, reference);
+      }
+    } else {
+      parent.insertBefore(child, reference);
+    }
   },
 
-  appendToFragment(fragment: DocumentFragment, child: Node): void {
-    fragment.appendChild(child);
+  appendToFragment(fragment: Node[], child: Node): void {
+    fragment.push(child);
   },
 };

@@ -14,8 +14,9 @@
 export type TUIChildren =
   | TUINode
   | string
-  | (TUINode | string)[]
-  | (() => TUINode | string | (TUINode | string)[]);
+  | null
+  | (TUINode | string | null)[]
+  | (() => TUINode | string | null | (TUINode | string | null)[]);
 
 /**
  * Node types:
@@ -26,69 +27,77 @@ export type TUIChildren =
  */
 export type TUINodeType = 'box' | 'text' | 'component' | 'fragment';
 
+/**
+ * Helper type that allows both static values and reactive functions
+ */
+type MaybeFunc<T> = T | (() => T);
+
 export interface TUIStyle {
   // Layout
-  width?: number | string;
-  height?: number | string;
-  minWidth?: number;
-  minHeight?: number;
-  maxWidth?: number;
-  maxHeight?: number;
+  width?: MaybeFunc<number | string | undefined>;
+  height?: MaybeFunc<number | string | undefined>;
+  minWidth?: MaybeFunc<number | undefined>;
+  minHeight?: MaybeFunc<number | undefined>;
+  maxWidth?: MaybeFunc<number | undefined>;
+  maxHeight?: MaybeFunc<number | undefined>;
 
   // Positioning
-  position?: 'relative' | 'absolute';
-  left?: number;
-  top?: number;
-  right?: number;
-  bottom?: number;
-  zIndex?: number;
+  position?: MaybeFunc<'relative' | 'absolute' | undefined>;
+  left?: MaybeFunc<number | undefined>;
+  top?: MaybeFunc<number | undefined>;
+  right?: MaybeFunc<number | undefined>;
+  bottom?: MaybeFunc<number | undefined>;
+  zIndex?: MaybeFunc<number | undefined>;
 
   // Flexbox
-  flex?: number; // Shorthand for flexGrow/flexShrink
-  flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-  flexGrow?: number;
-  flexShrink?: number;
-  flexBasis?: number | string;
-  alignItems?: 'flex-start' | 'center' | 'flex-end' | 'stretch';
-  justifyContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around';
+  flex?: MaybeFunc<number | undefined>; // Shorthand for flexGrow/flexShrink
+  flexDirection?: MaybeFunc<'row' | 'column' | 'row-reverse' | 'column-reverse' | undefined>;
+  flexGrow?: MaybeFunc<number | undefined>;
+  flexShrink?: MaybeFunc<number | undefined>;
+  flexBasis?: MaybeFunc<number | string | undefined>;
+  alignItems?: MaybeFunc<'flex-start' | 'center' | 'flex-end' | 'stretch' | undefined>;
+  alignSelf?: MaybeFunc<'auto' | 'flex-start' | 'center' | 'flex-end' | 'stretch' | undefined>;
+  justifyContent?: MaybeFunc<
+    'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | undefined
+  >;
 
   // Spacing
-  padding?: number;
-  paddingX?: number;
-  paddingY?: number;
-  paddingTop?: number;
-  paddingRight?: number;
-  paddingBottom?: number;
-  paddingLeft?: number;
+  padding?: MaybeFunc<number | undefined>;
+  paddingX?: MaybeFunc<number | undefined>;
+  paddingY?: MaybeFunc<number | undefined>;
+  paddingTop?: MaybeFunc<number | undefined>;
+  paddingRight?: MaybeFunc<number | undefined>;
+  paddingBottom?: MaybeFunc<number | undefined>;
+  paddingLeft?: MaybeFunc<number | undefined>;
 
-  margin?: number;
-  marginX?: number;
-  marginY?: number;
-  marginTop?: number;
-  marginRight?: number;
-  marginBottom?: number;
-  marginLeft?: number;
+  margin?: MaybeFunc<number | undefined>;
+  marginX?: MaybeFunc<number | undefined>;
+  marginY?: MaybeFunc<number | undefined>;
+  marginTop?: MaybeFunc<number | undefined>;
+  marginRight?: MaybeFunc<number | undefined>;
+  marginBottom?: MaybeFunc<number | undefined>;
+  marginLeft?: MaybeFunc<number | undefined>;
 
-  gap?: number; // Gap between children in row/column layout
+  gap?: MaybeFunc<number | undefined>; // Gap between children in row/column layout
 
   // Border
-  borderStyle?: 'single' | 'double' | 'round' | 'bold' | 'none';
-  borderColor?: string;
+  borderStyle?: MaybeFunc<'single' | 'double' | 'round' | 'bold' | 'none' | undefined>;
+  borderColor?: MaybeFunc<string | undefined>;
 
   // Colors
-  color?: string;
-  backgroundColor?: string;
+  color?: MaybeFunc<string | undefined>;
+  backgroundColor?: MaybeFunc<string | undefined>;
 
   // Text
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  strikethrough?: boolean;
-  dim?: boolean;
-  inverse?: boolean; // Swap foreground/background colors
+  bold?: MaybeFunc<boolean | undefined>;
+  italic?: MaybeFunc<boolean | undefined>;
+  underline?: MaybeFunc<boolean | undefined>;
+  strikethrough?: MaybeFunc<boolean | undefined>;
+  dim?: MaybeFunc<boolean | undefined>;
+  inverse?: MaybeFunc<boolean | undefined>; // Swap foreground/background colors
 
   // Overflow
-  overflow?: 'visible' | 'hidden' | 'scroll';
+  overflow?: MaybeFunc<'visible' | 'hidden' | 'scroll' | undefined>;
 }
 
 export interface TUINode {
@@ -170,3 +179,9 @@ export interface MouseClickEvent {
   /** Meta key was held */
   meta?: boolean;
 }
+
+/**
+ * Alias for TUIStyle for backwards compatibility
+ * @deprecated Use TUIStyle instead
+ */
+export type ReactiveStyle = TUIStyle;

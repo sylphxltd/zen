@@ -44,7 +44,7 @@ export function Draggable(props: DraggableProps): TUINode {
     const mouseContext = useMouseContext();
     if (!mouseContext) {
       // Warn in development - MouseProvider is required for Draggable to work
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env['NODE_ENV'] !== 'production') {
       }
       return;
     }

@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "jsxImportSource": "@rapid/web"
   },
   "include": ["src/**/*"],

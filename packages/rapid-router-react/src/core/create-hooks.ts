@@ -5,7 +5,7 @@
  * by abstracting the common subscription pattern.
  */
 
-import { $router, type RouterState } from '@rapid/router-core';
+import { $router, type RouterState, open } from '@rapid/router-core';
 import { subscribe } from '@rapid/signal-core';
 
 /**
@@ -35,8 +35,8 @@ export function createUseRouter(hooks: ReactiveHooks) {
     const [state, setState] = hooks.useState<RouterState>($router.value);
 
     hooks.useEffect(() => {
-      // Subscribe to router changes
-      const unsubscribe = subscribe($router, (newState: RouterState) => {
+      // Subscribe to router changes (subscribe to underlying _state signal)
+      const unsubscribe = subscribe($router._state, (newState: RouterState) => {
         setState(newState);
       });
 
@@ -82,9 +82,9 @@ export function createUseSearchParams(hooks: ReactiveHooks) {
  * Creates useNavigate hook (framework-agnostic)
  */
 export function createUseNavigate() {
-  // Import dynamically to avoid bundling router when not used
+  // Import statically - bundlers will tree-shake if not used
   return function useNavigate() {
-    const { open } = require('@rapid/router-core');
+    // Re-export from router-core
     return open;
   };
 }

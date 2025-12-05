@@ -153,7 +153,8 @@ export function renderNodeToString(node: TUINode | string, parentStyle: TUIStyle
     return '';
   }
 
-  const style = typeof node.style === 'function' ? node.style() : node.style || {};
+  const style =
+    typeof node.style === 'function' ? (node.style as () => TUIStyle)() : node.style || {};
   const mergedStyle = { ...parentStyle, ...style };
 
   // Text node - render children as styled text
@@ -259,7 +260,7 @@ export function processStaticNodes(rootNode: TUINode, isInlineMode: boolean): nu
         let rendered = renderChild(item, index);
         // Execute descriptor if needed (JSX returns descriptors)
         if (isDescriptor(rendered)) {
-          rendered = executeDescriptor(rendered);
+          rendered = executeDescriptor(rendered) as TUINode | string;
         }
         const content = renderNodeToString(rendered as TUINode);
         // Print to stdout directly (goes to scrollback)

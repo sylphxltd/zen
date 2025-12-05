@@ -127,12 +127,12 @@ export function makeLazyProps(props: Record<string, any> | null): Record<string,
   }
 
   // Already a function (lazy) - don't double-wrap
-  if (typeof props.children === 'function') {
+  if (typeof props['children'] === 'function') {
     return props;
   }
 
   // Make children lazy via getter
-  const children = props.children;
+  const children = props['children'];
   return {
     ...props,
     get children() {

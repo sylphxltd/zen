@@ -50,6 +50,7 @@
     "yoga-wasm-web": "^0.3.3"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "bunup": "^0.16.10",
     "typescript": "^5.8.3"
   },

@@ -84,8 +84,8 @@ function detectEmojiWidthRuntime(): EmojiWidthProfile | null {
  * Detect emoji width behavior from environment variables
  */
 function detectEmojiWidthFromProfile(): EmojiWidthProfile {
-  const terminal = process.env.TERM_PROGRAM;
-  const term = process.env.TERM;
+  const terminal = process.env['TERM_PROGRAM'];
+  const term = process.env['TERM'];
 
   // Check known terminals that support VS-16
   if (terminal && TERMINAL_PROFILES.vs16Supported.has(terminal)) {

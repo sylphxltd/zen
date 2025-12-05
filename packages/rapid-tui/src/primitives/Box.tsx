@@ -19,14 +19,19 @@ import type { MouseClickEvent, TUIChildren, TUINode, TUIStyle } from '../core/ty
  *
  * All TUIStyle properties can be passed as top-level props (Ink style)
  * or nested in a `style` object.
+ *
+ * Supports reactive (function) values for style properties.
  */
 export interface BoxProps extends TUIStyle {
   children?: TUIChildren;
-  style?: TUIStyle;
+  /** Style object or function returning style object (for reactivity) */
+  style?: TUIStyle | (() => TUIStyle);
   /** Click handler - called when the box is clicked */
   onClick?: (event: MouseClickEvent) => void;
   /** React key for list rendering */
   key?: string | number;
+  /** Custom properties to attach to the node */
+  props?: Record<string, unknown>;
 }
 
 /**
@@ -89,21 +94,28 @@ const STYLE_PROPS: (keyof TUIStyle)[] = [
 ];
 
 export function Box(props: BoxProps): TUINode {
-  // Merge shorthand props with style object (shorthand takes precedence)
-  const mergedStyle: TUIStyle = { ...(props?.style || {}) };
+  // Handle style as function or object
+  const resolveStyle = (): TUIStyle => {
+    const baseStyle = typeof props?.style === 'function' ? props.style() : props?.style || {};
+    const mergedStyle: TUIStyle = { ...baseStyle };
 
-  for (const prop of STYLE_PROPS) {
-    if (props && prop in props && (props as Record<string, unknown>)[prop] !== undefined) {
-      (mergedStyle as Record<string, unknown>)[prop] = (props as Record<string, unknown>)[prop];
+    for (const prop of STYLE_PROPS) {
+      if (props && prop in props && (props as Record<string, unknown>)[prop] !== undefined) {
+        (mergedStyle as Record<string, unknown>)[prop] = (props as Record<string, unknown>)[prop];
+      }
     }
-  }
+    return mergedStyle;
+  };
+
+  // If style is a function, keep it as a function for reactivity
+  const style = typeof props?.style === 'function' ? resolveStyle : resolveStyle();
 
   const node: TUINode = {
     type: 'box',
     tagName: 'box',
     props: props || {},
     children: [],
-    style: mergedStyle,
+    style: style as TUIStyle,
   };
 
   // Handle children using appendChild for reactivity support

@@ -99,7 +99,7 @@ function makeLazyPropsForDescriptor(
     return props;
   }
 
-  const children = props.children;
+  const children = props['children'];
 
   // Single descriptor - make lazy with memoization
   if (isDescriptor(children)) {

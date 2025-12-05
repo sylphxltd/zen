@@ -46,8 +46,11 @@ export function ScrollBox(props: ScrollBoxProps): TUINode {
       // Account for border (2 lines if borderStyle is set)
       const hasBorder = props.style?.borderStyle && props.style.borderStyle !== 'none';
       const borderHeight = hasBorder ? 2 : 0;
-      const padding = props.style?.padding ?? 0;
-      const paddingY = props.style?.paddingY ?? padding;
+      const rawPadding = props.style?.padding;
+      const padding = typeof rawPadding === 'function' ? (rawPadding() ?? 0) : (rawPadding ?? 0);
+      const rawPaddingY = props.style?.paddingY;
+      const paddingY =
+        typeof rawPaddingY === 'function' ? (rawPaddingY() ?? padding) : (rawPaddingY ?? padding);
       const viewportHeight = getHeight() - borderHeight - 2 * paddingY;
       return Math.max(0, contentHeight - viewportHeight);
     }

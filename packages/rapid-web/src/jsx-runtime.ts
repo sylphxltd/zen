@@ -14,6 +14,8 @@
  * 5. Reorder conditions by frequency
  */
 
+/// <reference path="./jsx-types.ts" />
+
 import { executeDescriptor, isDescriptor, isSignal } from '@rapid/runtime';
 import type { ComponentDescriptor } from '@rapid/runtime';
 import { effect, onCleanup } from '@rapid/signal';
@@ -72,7 +74,7 @@ export function jsx(
       }
 
       // Handle children
-      const children = props?.children;
+      const children = props?.['children'];
       if (children !== undefined) {
         enterHydrateParent(element);
         appendChild(element, children, hydrating);
@@ -82,7 +84,7 @@ export function jsx(
     }
 
     // Mismatch warning in dev only
-    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+    if (typeof process !== 'undefined' && process.env?.['NODE_ENV'] === 'development') {
       const actual = node
         ? node.nodeType === Node.ELEMENT_NODE
           ? (node as Element).tagName.toLowerCase()
@@ -106,7 +108,7 @@ export function jsx(
   }
 
   // Append children
-  const children = props?.children;
+  const children = props?.['children'];
   if (children !== undefined) {
     appendChild(element, children, hydrating);
   }
@@ -302,10 +304,8 @@ function handleReactiveChild(
       }
     } else if (Array.isArray(value) && Array.isArray(previousValue)) {
       // Array of nodes: check if all nodes are the same instances
-      if (
-        value.length === previousValue.length &&
-        value.every((item, i) => item === previousValue[i])
-      ) {
+      const prevArray = previousValue as unknown[];
+      if (value.length === prevArray.length && value.every((item, i) => item === prevArray[i])) {
         return undefined; // Same array content, skip update
       }
     } else if (value === previousValue) {
@@ -412,7 +412,7 @@ function appendChild(parent: Element, child: unknown, hydrating: boolean): void 
 
   // Function - reactive content (from unplugin transformation)
   if (typeof child === 'function') {
-    handleReactiveChild(parent, child, 'reactive', hydrating);
+    handleReactiveChild(parent, child as () => unknown, 'reactive', hydrating);
     return;
   }
 
@@ -421,7 +421,7 @@ function appendChild(parent: Element, child: unknown, hydrating: boolean): void 
     const node = getNextHydrateNode();
     if (
       typeof process !== 'undefined' &&
-      process.env?.NODE_ENV === 'development' &&
+      process.env?.['NODE_ENV'] === 'development' &&
       (!node || node.nodeType !== Node.TEXT_NODE)
     ) {
       const actual = node

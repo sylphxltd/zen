@@ -6,7 +6,8 @@
     "declaration": true,
     "declarationDir": "./dist",
     "jsx": "react-jsx",
-    "jsxImportSource": "@rapid/tui"
+    "jsxImportSource": "@rapid/tui",
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]

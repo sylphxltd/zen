@@ -40,7 +40,7 @@ type ComputedCore<T> = SignalCore<T | null> & {
   _staticDepsCount?: number | undefined; // Consecutive times deps were static (0 = unknown, 1-2 = verifying, 3+ = trusted static)
 };
 
-export type AnySignal = SignalCore<any>;
+export type AnySignal = SignalCore<any> & { value: any };
 export type SignalValue<A extends AnySignal> = A extends SignalCore<infer V> ? V : never;
 
 // ============================================================================
@@ -346,7 +346,7 @@ function cleanUnsubs(unsubs: Unsubscribe[]): void {
 }
 
 // Shared subscription helper for computed & effect
-function attachListener(sources: AnySignal[], callback: any): Unsubscribe[] {
+function attachListener(sources: AnySignalBase[], callback: any): Unsubscribe[] {
   const unsubs: Unsubscribe[] = [];
   const len = sources.length;
 
@@ -501,7 +501,7 @@ export function computed<T>(
 }
 
 export type ReadonlySignal<T> = ComputedCore<T>;
-export type Computed<T> = ComputedCore<T>;
+export type Computed<T> = ComputedCore<T> & { readonly value: T };
 
 // ============================================================================
 // EFFECT (Side Effects with Auto-tracking)
@@ -517,7 +517,7 @@ type EffectCore = {
   _sources: AnySignal[];
   _unsubs?: Unsubscribe[] | undefined;
   _cleanup?: (() => void) | undefined;
-  _callback: () => undefined | (() => void);
+  _callback: () => void | undefined | (() => void);
   _cancelled: boolean;
   _autoTrack: boolean;
   _queued: boolean;
@@ -576,7 +576,7 @@ function runEffect(e: EffectCore): void {
 }
 
 export function effect(
-  callback: () => undefined | (() => void),
+  callback: () => void | undefined | (() => void),
   explicitDeps?: AnySignal[],
 ): Unsubscribe {
   const e: EffectCore = {

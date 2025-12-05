@@ -40,7 +40,7 @@ export function Pressable(props: PressableProps): TUINode {
     const mouseContext = useMouseContext();
     if (!mouseContext) {
       // Warn in development - MouseProvider is required for Pressable to work
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env['NODE_ENV'] !== 'production') {
       }
       return;
     }

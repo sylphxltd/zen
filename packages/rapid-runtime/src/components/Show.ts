@@ -14,11 +14,11 @@ import { effect, untrack } from '@rapid/signal';
 import { disposeNode, onCleanup } from '@rapid/signal';
 import { executeDescriptor, isDescriptor } from '../descriptor.js';
 import { getPlatformOps } from '../platform-ops.js';
-import { type Reactive, resolve } from '../reactive-utils.js';
+import { type MaybeReactive, resolve } from '../reactive-utils.js';
 import { children } from '../utils/children.js';
 
 interface ShowProps<T> {
-  when: Reactive<T>;
+  when: MaybeReactive<T>;
   fallback?: unknown | (() => unknown);
   children: unknown | ((value: T) => unknown);
 }

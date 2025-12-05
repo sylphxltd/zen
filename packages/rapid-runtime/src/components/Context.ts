@@ -52,12 +52,12 @@ export function createContext<T>(defaultValue: T): Context<T> {
   // Create Provider as a proper component function
   // This allows it to be used with JSX: <Context.Provider value={...}>
   // The descriptor pattern will automatically handle lazy children
-  const ProviderComponent = (props: { value: T; children?: any | any[] }) => {
+  const ProviderComponent = (props: { value: T; children: any | any[] }) => {
     return Provider(context, props);
   };
 
   // Set displayName for better debugging
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+  if (typeof process !== 'undefined' && process.env?.['NODE_ENV'] === 'development') {
     ProviderComponent.displayName = 'Context.Provider';
   }
 

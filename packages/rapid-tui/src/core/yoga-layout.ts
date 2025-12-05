@@ -249,7 +249,8 @@ function buildYogaTree(tuiNode: TUINode, yogaNodeMap: Map<TUINode, any>, Yoga: a
   yogaNodeMap.set(tuiNode, yogaNode);
 
   // Apply styles
-  const style = typeof tuiNode.style === 'function' ? tuiNode.style() : tuiNode.style || {};
+  const style =
+    typeof tuiNode.style === 'function' ? (tuiNode.style as () => TUIStyle)() : tuiNode.style || {};
   applyStylesToYogaNode(yogaNode, style, Yoga);
 
   // Calculate total content dimensions for text nodes
@@ -332,7 +333,9 @@ function buildYogaTree(tuiNode: TUINode, yogaNodeMap: Map<TUINode, any>, Yoga: a
 
             // Get fragment's own style if available
             const fragmentStyle =
-              typeof childNode.style === 'function' ? childNode.style() : childNode.style || {};
+              typeof childNode.style === 'function'
+                ? (childNode.style as () => TUIStyle)()
+                : childNode.style || {};
 
             // CRITICAL: Fragment must have proper flexDirection for layout
             // Use fragment's own style if set, otherwise inherit from parent

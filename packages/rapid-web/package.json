@@ -8,22 +8,27 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./jsx-runtime": {
       "react-server": {
+        "development": "./src/jsx-runtime-server.ts",
         "types": "./dist/jsx-runtime-server.d.ts",
         "import": "./dist/jsx-runtime-server.js"
       },
+      "development": "./src/jsx-runtime.ts",
       "types": "./dist/jsx-runtime.d.ts",
       "import": "./dist/jsx-runtime.js"
     },
     "./jsx-dev-runtime": {
       "react-server": {
+        "development": "./src/jsx-runtime-server.ts",
         "types": "./dist/jsx-runtime-server.d.ts",
         "import": "./dist/jsx-runtime-server.js"
       },
+      "development": "./src/jsx-runtime.ts",
       "types": "./dist/jsx-runtime.d.ts",
       "import": "./dist/jsx-runtime.js"
     },
@@ -56,6 +61,7 @@
     "@rapid/signal": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "bunup": "^0.16.10",
     "typescript": "^5.8.3"
   },

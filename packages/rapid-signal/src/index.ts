@@ -39,7 +39,7 @@ import { getOwner, onCleanup } from './lifecycle.js';
  * ```
  */
 export function effect(
-  callback: () => undefined | (() => void),
+  callback: () => void | undefined | (() => void),
   explicitDeps?: AnySignal[],
 ): () => void {
   const dispose = rawEffect(callback, explicitDeps);

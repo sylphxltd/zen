@@ -397,6 +397,16 @@ export interface UseFocusOptions {
    * focused with `focus(id)`.
    */
   id?: string;
+
+  /**
+   * Callback when this component receives focus.
+   */
+  onFocus?: () => void;
+
+  /**
+   * Callback when this component loses focus.
+   */
+  onBlur?: () => void;
 }
 
 /**

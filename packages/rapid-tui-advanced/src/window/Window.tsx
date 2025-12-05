@@ -19,7 +19,8 @@ export interface WindowProps {
 }
 
 export function Window(props: WindowProps) {
-  const { window: win, children } = props;
+  const win: WindowState = props.window;
+  const { children } = props;
 
   const isFocused = computed(() => $focusedWindowId.value === win.id);
 
@@ -29,14 +30,20 @@ export function Window(props: WindowProps) {
   const borderColor = () => (isFocused.value ? 'blue' : 'gray');
 
   // Handle window click to focus
-  useMouseClick((event) => {
+  const windowX = win.x;
+  const windowY = win.y;
+  const windowWidth = win.width;
+  const windowHeight = win.height;
+  const windowId = win.id;
+
+  useMouseClick((clickX, clickY, _button, _modifiers) => {
     if (
-      event.x >= win.x &&
-      event.x < win.x + win.width &&
-      event.y >= win.y &&
-      event.y < win.y + win.height
+      clickX >= windowX &&
+      clickX < windowX + windowWidth &&
+      clickY >= windowY &&
+      clickY < windowY + windowHeight
     ) {
-      focusWindow(win.id);
+      focusWindow(windowId);
     }
   });
 

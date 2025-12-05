@@ -7,17 +7,25 @@
 import { appendChild } from '../core/jsx-runtime.js';
 import type { TUIChildren, TUINode, TUIStyle } from '../core/types.js';
 
+/** Helper type for reactive values */
+type MaybeFunc<T> = T | (() => T);
+
 export interface TextProps {
   children?: TUIChildren;
   style?: TUIStyle;
-  color?: string;
-  backgroundColor?: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  strikethrough?: boolean;
-  dim?: boolean;
-  inverse?: boolean;
+  color?: MaybeFunc<string | undefined>;
+  backgroundColor?: MaybeFunc<string | undefined>;
+  bold?: MaybeFunc<boolean | undefined>;
+  italic?: MaybeFunc<boolean | undefined>;
+  underline?: MaybeFunc<boolean | undefined>;
+  strikethrough?: MaybeFunc<boolean | undefined>;
+  dim?: MaybeFunc<boolean | undefined>;
+  dimColor?: MaybeFunc<boolean | undefined>;
+  inverse?: MaybeFunc<boolean | undefined>;
+  /** Unique key for list rendering */
+  key?: string | number;
+  /** Click handler */
+  onClick?: () => void;
 }
 
 export function Text(props: TextProps): TUINode {

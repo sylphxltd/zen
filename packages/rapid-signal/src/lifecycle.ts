@@ -65,7 +65,7 @@ export function setServerMode(mode: boolean): void {
  * }
  * ```
  */
-export function onMount(callback: () => undefined | CleanupFunction): void {
+export function onMount(callback: () => void | undefined | CleanupFunction): void {
   // Skip in server mode (no DOM)
   if (isServerMode) return;
 
@@ -140,11 +140,11 @@ export function onCleanup(cleanup: CleanupFunction): void {
  * }
  * ```
  */
-export function createEffect(effectFn: () => undefined | CleanupFunction): void {
+export function createEffect(effectFn: () => void | undefined | CleanupFunction): void {
   // Skip in server mode
   if (isServerMode) return;
 
-  let cleanup: CleanupFunction | undefined;
+  let cleanup: CleanupFunction | void | undefined;
 
   // Run effect after mount
   onMount(() => {
@@ -244,14 +244,14 @@ export function getNodeOwner(node: Node): Owner | undefined {
 }
 
 /**
- * Dispose a DOM node and its owner
- * Called when removing nodes from DOM
+ * Dispose a node and its owner
+ * Called when removing nodes from DOM or platform tree
  */
-export function disposeNode(node: Node): void {
-  const owner = nodeOwners.get(node);
+export function disposeNode(node: object): void {
+  const owner = nodeOwners.get(node as Node);
   if (owner) {
     disposeOwner(owner);
-    nodeOwners.delete(node);
+    nodeOwners.delete(node as Node);
   }
 }
 

@@ -187,7 +187,7 @@ export function MouseProvider(props: MouseProviderProps): TUINode {
   ) => {
     if (!enabled.value) return;
 
-    const nodeId = hitNode?.props?.__mouseId as string | undefined;
+    const nodeId = hitNode?.props?.['__mouseId'] as string | undefined;
     let propagationStopped = false;
 
     const createPressEvent = (): PressEvent => ({

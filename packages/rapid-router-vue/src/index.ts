@@ -24,7 +24,7 @@ import { onUnmounted, ref } from 'vue';
 export function useRouter(): RouterState {
   const state = ref<RouterState>($router.value);
 
-  const unsubscribe = subscribe($router, (newState: RouterState) => {
+  const unsubscribe = subscribe($router._state, (newState: RouterState) => {
     state.value = newState;
   });
 

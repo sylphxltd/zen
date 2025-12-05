@@ -273,38 +273,40 @@ export function List<T = unknown>(props: ListProps<T>) {
 
   const itemRenderer = renderItem || defaultRenderItem;
 
+  // Render items function
+  const renderItems = () =>
+    visibleItems.value.map((item, localIndex) => {
+      const globalIndex = scrollOffset.value + localIndex;
+      const isSelected = globalIndex === selectedIndex.value;
+
+      return (
+        <Box key={globalIndex} style={{ flexDirection: 'row', gap: 1 }}>
+          {showIndicator && (
+            <Text style={{ color: isSelected ? 'cyan' : 'transparent' }}>
+              {isSelected ? indicator : ' '}
+            </Text>
+          )}
+          {itemRenderer(item, globalIndex, isSelected)}
+        </Box>
+      );
+    });
+
+  // Render scroll indicator
+  const renderScrollIndicator = () =>
+    limit && items.value.length > limit ? (
+      <Box style={{ marginTop: 1 }}>
+        <Text style={{ dim: true }}>
+          {() =>
+            `${scrollOffset.value + 1}-${Math.min(scrollOffset.value + visibleLimit.value, items.value.length)} of ${items.value.length}`
+          }
+        </Text>
+      </Box>
+    ) : null;
+
   return (
     <Box style={{ flexDirection: 'column' }}>
-      {() =>
-        visibleItems.value.map((item, localIndex) => {
-          const globalIndex = scrollOffset.value + localIndex;
-          const isSelected = globalIndex === selectedIndex.value;
-
-          return (
-            <Box key={globalIndex} style={{ flexDirection: 'row', gap: 1 }}>
-              {showIndicator && (
-                <Text style={{ color: isSelected ? 'cyan' : 'transparent' }}>
-                  {isSelected ? indicator : ' '}
-                </Text>
-              )}
-              {itemRenderer(item, globalIndex, isSelected)}
-            </Box>
-          );
-        })
-      }
-
-      {/* Scroll indicator */}
-      {() =>
-        limit && items.value.length > limit ? (
-          <Box style={{ marginTop: 1 }}>
-            <Text style={{ dim: true }}>
-              {() =>
-                `${scrollOffset.value + 1}-${Math.min(scrollOffset.value + visibleLimit.value, items.value.length)} of ${items.value.length}`
-              }
-            </Text>
-          </Box>
-        ) : null
-      }
+      {renderItems as any}
+      {renderScrollIndicator as any}
     </Box>
   );
 }

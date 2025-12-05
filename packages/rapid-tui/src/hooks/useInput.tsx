@@ -70,7 +70,7 @@ import {
  * Extension: Return `true` to stop propagation (event consumed).
  * Return `false` or `undefined` to allow other handlers to process.
  */
-export type InputHandler = (input: string, key: Key) => boolean | undefined;
+export type InputHandler = (input: string, key: Key) => boolean | undefined | void;
 
 /**
  * Key metadata - Ink-compatible with additional keys
@@ -107,6 +107,8 @@ export interface Key {
   /** Space key was pressed */
   space: boolean;
   // Extensions (not in Ink)
+  /** Alt key was pressed (alias for meta) */
+  alt: boolean;
   /** Home key was pressed */
   home: boolean;
   /** End key was pressed */
@@ -146,6 +148,11 @@ export interface UseInputOptions {
    * useInput(handler, { isActive: () => someCondition });
    */
   isActive?: MaybeReactive<boolean>;
+  /**
+   * Handler priority (higher = called first)
+   * Used to control which handler receives input when multiple are active.
+   */
+  priority?: number;
 }
 
 interface RegisteredHandler {
@@ -448,6 +455,7 @@ export function parseKey(str: string): { key: Key; input: string } {
     meta: parsed.meta || parsed.name === 'escape',
     space: parsed.name === 'space',
     // Extensions
+    alt: parsed.meta, // Alt key same as meta in terminals
     home: parsed.name === 'home',
     end: parsed.name === 'end',
     f1: parsed.name === 'f1',

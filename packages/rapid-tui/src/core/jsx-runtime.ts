@@ -316,9 +316,9 @@ function handleReactiveFunction(parent: TUINode, fn: () => unknown): void {
       );
       if (node) {
         if (Array.isArray(node)) {
-          fragment.children.push(...node);
+          fragment.children.push(...(node as (TUINode | string)[]));
         } else {
-          fragment.children.push(node);
+          fragment.children.push(node as TUINode | string);
         }
       }
       // Mark fragment dirty - its children changed
@@ -345,13 +345,13 @@ function handleReactiveFunction(parent: TUINode, fn: () => unknown): void {
           );
           if (node) {
             if (Array.isArray(node)) {
-              fragment.children.push(...node);
+              fragment.children.push(...(node as (TUINode | string)[]));
             } else {
-              fragment.children.push(node);
+              fragment.children.push(node as TUINode | string);
             }
           }
         } else if (item != null && item !== false) {
-          fragment.children.push(item);
+          fragment.children.push(item as TUINode | string);
         }
       }
       // Layout might change with array content
@@ -440,7 +440,7 @@ export function appendChild(parent: TUINode, child: unknown): void {
 
   // Function: create reactive fragment
   if (typeof child === 'function') {
-    handleReactiveFunction(parent, child);
+    handleReactiveFunction(parent, child as () => unknown);
     return;
   }
 

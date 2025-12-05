@@ -55,7 +55,7 @@ export function RouterLink(props: RouterLinkProps): TUINode {
 
   // Handle keyboard input
   useInput((input, key) => {
-    if (!isFocused.value) return;
+    if (!isFocused.value) return undefined;
 
     // Enter or Space to navigate
     if (key.return || input === ' ') {
@@ -68,6 +68,7 @@ export function RouterLink(props: RouterLinkProps): TUINode {
       // Navigate to route
       open(href);
     }
+    return undefined;
   });
 
   // Compute color based on state

@@ -12,6 +12,8 @@ export type Route = string;
 export type Params<
   P extends Record<string, string | undefined> = Record<string, string | undefined>,
 > = P;
+/** Alias for Params type */
+export type RouteParams = Params;
 /** Search type placeholder (mapping of query params) */
 export type Search<
   S extends Record<string, string | undefined> = Record<string, string | undefined>,

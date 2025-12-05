@@ -155,8 +155,8 @@ export class DirtyTracker {
       this.nodeRegions.set(
         node,
         createRegion(
-          Math.floor(layout.left),
-          Math.floor(layout.top),
+          Math.floor(layout.x),
+          Math.floor(layout.y),
           Math.ceil(layout.width),
           Math.ceil(layout.height),
         ),

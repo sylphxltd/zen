@@ -96,7 +96,8 @@ export function For<T, U = unknown>(props: ForProps<T, U>): unknown {
     const newCache = new Map<unknown, { node: U; index: number; item: T }>();
 
     for (let i = 0; i < array.length; i++) {
-      const item = array[i];
+      // biome-ignore lint/style/noNonNullAssertion: i < array.length guarantees element exists
+      const item = array[i]!;
       const itemKey = keyFn ? keyFn(item, i) : item;
 
       let entry = itemCache.get(itemKey);

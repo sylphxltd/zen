@@ -6,7 +6,7 @@ export {
   FocusProvider,
   useFocusManager,
   useFocus,
-  type FocusManagerValue,
+  type FocusContextValue,
   type FocusableItem,
 } from './focus.js';
 export {
