@@ -9,7 +9,7 @@
  * all platforms without direct DOM dependencies.
  */
 
-export interface PlatformOps<TNode = unknown> {
+export interface PlatformOps<TNode = object> {
   /**
    * Create a reactive container node
    *

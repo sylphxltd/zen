@@ -8,7 +8,7 @@
 
 import { For, Show } from '@rapid/runtime';
 import { computed, signal } from '@rapid/signal';
-import type { TUINode } from '../core/types.js';
+import type { TUIJSXElement, TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { Box } from '../primitives/Box.js';
@@ -80,7 +80,7 @@ function fuzzyMatch(query: string, text: string): boolean {
  * />
  * ```
  */
-export function CommandPalette(props: CommandPaletteProps): TUINode {
+export function CommandPalette(props: CommandPaletteProps): TUIJSXElement {
   const {
     open,
     commands,

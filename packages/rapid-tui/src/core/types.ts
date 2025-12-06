@@ -2,21 +2,67 @@
  * TUI Virtual Node Types
  */
 
+import type { ComponentDescriptor } from '@rapid/runtime';
+
+/**
+ * What a JSX expression can evaluate to.
+ * - TUINode: Direct element node
+ * - TUINode[]: Fragment or multiple elements (from jsxs)
+ * - ComponentDescriptor: Deferred component (from descriptor pattern ADR-011)
+ */
+export type TUIElement = TUINode | TUINode[] | ComponentDescriptor;
+
+/**
+ * Return type for TUI components that use JSX.
+ * Includes TUIElement plus object for control flow components (For, Show, etc.)
+ * Use this as return type for components that contain For/Show/Switch.
+ */
+export type TUIJSXElement = TUIElement | object;
+
+/**
+ * Primitive types that can be rendered as text.
+ */
+export type PrimitiveChild = string | number | boolean | null | undefined;
+
+/**
+ * Reactive child - a function that returns renderable content.
+ * Enables fine-grained reactivity (ADR-014).
+ */
+export type ReactiveChild = () => TUIElement | TUIElement[] | PrimitiveChild;
+
+/**
+ * Platform container - returned by platform-agnostic components (For, Show, etc.)
+ * These return `object` but are valid children at runtime.
+ */
+export type PlatformContainer = object;
+
+/**
+ * Valid child element types.
+ * Includes JSX elements, primitives, reactive functions, and platform containers.
+ * Functions are included here so arrays of functions are valid ChildElement[].
+ * TUIElement[] is included for .map() results and array children.
+ * PlatformContainer (object) is included for For/Show/Switch etc.
+ */
+export type ChildElement =
+  | TUIElement
+  | TUIElement[]
+  | PrimitiveChild
+  | ReactiveChild
+  | PlatformContainer;
+
 /**
  * Children type for TUI components
  *
  * Supports:
- * - TUINode: Single node
- * - string: Text content
- * - (TUINode | string)[]: Array of mixed content
- * - () => ...: Reactive function returning any of the above
+ * - Single element: TUINode, TUINode[], ComponentDescriptor, string, number, null
+ * - Reactive function: () => TUIElement | TUIElement[] | PrimitiveChild
+ * - Platform containers: For, Show, Switch return unknown but are valid
+ * - Array of any above: ChildElement[]
+ *
+ * The reactive function form enables fine-grained reactivity (ADR-014).
+ * When signals change, only the function is re-evaluated, not the entire tree.
  */
-export type TUIChildren =
-  | TUINode
-  | string
-  | null
-  | (TUINode | string | null)[]
-  | (() => TUINode | string | null | (TUINode | string | null)[]);
+export type TUIChildren = ChildElement | ChildElement[];
 
 /**
  * Node types:

@@ -46,7 +46,7 @@ interface ForProps<T, U = unknown> {
  *   {(item, index) => <div>{item.name}</div>}
  * </For>
  */
-export function For<T, U = unknown>(props: ForProps<T, U>): unknown {
+export function For<T, U = unknown>(props: ForProps<T, U>): object {
   const { each, children, fallback, key: keyFn } = props;
 
   const ops = getPlatformOps();

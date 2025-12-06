@@ -12,7 +12,7 @@ import {
   resolve,
   signal,
 } from '@rapid/runtime';
-import type { TUINode } from '../core/types.js';
+import type { TUIJSXElement, TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { Box } from '../primitives/Box.js';
 import { Text } from '../primitives/Text.js';
@@ -35,7 +35,7 @@ export interface ButtonProps {
   autoFocus?: boolean;
 }
 
-export function Button(props: ButtonProps): TUINode {
+export function Button(props: ButtonProps): TUIJSXElement {
   const id = props.id || `button-${createUniqueId()}`;
   const variant = props.variant || 'primary';
   const width = props.width;

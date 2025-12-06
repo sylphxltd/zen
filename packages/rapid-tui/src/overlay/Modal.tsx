@@ -8,7 +8,7 @@
 
 import { type MaybeReactive, Show, resolve } from '@rapid/runtime';
 import { signal } from '@rapid/signal';
-import type { TUIChildren, TUINode } from '../core/types.js';
+import type { TUIChildren, TUIJSXElement, TUINode } from '../core/types.js';
 import { useInput } from '../hooks/useInput.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { Box } from '../primitives/Box.js';
@@ -56,7 +56,7 @@ export interface ModalProps {
  * </Modal>
  * ```
  */
-export function Modal(props: ModalProps): TUINode {
+export function Modal(props: ModalProps): TUIJSXElement {
   const { children, onClose } = props;
 
   // Get terminal size for centering
@@ -133,7 +133,7 @@ export interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-export function ConfirmDialog(props: ConfirmDialogProps): TUINode {
+export function ConfirmDialog(props: ConfirmDialogProps): TUIJSXElement {
   const { open, title = 'Confirm', message, onConfirm, onCancel } = props;
 
   useInput((input, key) => {
@@ -161,7 +161,7 @@ export interface AlertDialogProps {
   onClose: () => void;
 }
 
-export function AlertDialog(props: AlertDialogProps): TUINode {
+export function AlertDialog(props: AlertDialogProps): TUIJSXElement {
   const { open, title = 'Alert', message, onClose } = props;
 
   useInput((_input, key) => {

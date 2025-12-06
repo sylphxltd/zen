@@ -32,7 +32,7 @@ export interface ContextProviderProps<T> {
  * This component properly forwards the lazy children getter to the
  * internal Provider without triggering it prematurely.
  */
-export function ContextProvider<T>(props: ContextProviderProps<T>): unknown {
+export function ContextProvider<T>(props: ContextProviderProps<T>): object {
   const { context, value } = props;
 
   // Forward to the context's Provider

@@ -27,7 +27,7 @@ interface SuspenseProps {
  *   <AsyncComponent />
  * </Suspense>
  */
-export function Suspense(props: SuspenseProps): unknown {
+export function Suspense(props: SuspenseProps): object {
   const c = resolveChildren(() => props.children);
   const f = resolveChildren(() => props.fallback);
 

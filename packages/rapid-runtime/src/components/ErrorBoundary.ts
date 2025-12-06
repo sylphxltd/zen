@@ -33,7 +33,7 @@ interface ErrorBoundaryProps {
  *   <App />
  * </ErrorBoundary>
  */
-export function ErrorBoundary(props: ErrorBoundaryProps): unknown {
+export function ErrorBoundary(props: ErrorBoundaryProps): object {
   const c = resolveChildren(() => props.children);
 
   const ops = getPlatformOps();

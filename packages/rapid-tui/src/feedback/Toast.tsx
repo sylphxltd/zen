@@ -8,7 +8,7 @@
 
 import { For, Show, createUniqueId } from '@rapid/runtime';
 import { effect, onCleanup, signal } from '@rapid/signal';
-import type { TUINode } from '../core/types.js';
+import type { TUIJSXElement, TUINode } from '../core/types.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { Box } from '../primitives/Box.js';
 import { Text } from '../primitives/Text.js';
@@ -166,7 +166,7 @@ function getToastColor(type: ToastType): string {
  * }
  * ```
  */
-export function ToastContainer(props: ToastProps): TUINode {
+export function ToastContainer(props: ToastProps): TUIJSXElement {
   const { position = 'top-right', maxWidth = 40 } = props;
 
   const { width: _termWidth } = useTerminalSize();
@@ -229,7 +229,7 @@ export interface SingleToastProps {
   onDismiss?: () => void;
 }
 
-export function Toast(props: SingleToastProps): TUINode {
+export function Toast(props: SingleToastProps): TUIJSXElement {
   const { type, message, onDismiss } = props;
   const color = getToastColor(type);
   const icon = getToastIcon(type);

@@ -305,8 +305,8 @@ export function List<T = unknown>(props: ListProps<T>) {
 
   return (
     <Box style={{ flexDirection: 'column' }}>
-      {renderItems as any}
-      {renderScrollIndicator as any}
+      {renderItems}
+      {renderScrollIndicator}
     </Box>
   );
 }

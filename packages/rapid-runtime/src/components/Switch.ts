@@ -69,7 +69,7 @@ function isMatchConfig(obj: unknown): obj is MatchConfig<unknown> {
  *   <Match when={route === 'about'}><About /></Match>
  * </Switch>
  */
-export function Switch(props: SwitchProps): unknown {
+export function Switch(props: SwitchProps): object {
   const { fallback, children } = props;
 
   const ops = getPlatformOps();

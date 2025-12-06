@@ -37,7 +37,7 @@ interface ShowProps<T> {
  *   {(u) => <div>Hello {u.name}</div>}
  * </Show>
  */
-export function Show<T>(props: ShowProps<T>): unknown {
+export function Show<T>(props: ShowProps<T>): object {
   // IMPORTANT: Don't destructure props.children here!
   // Descriptor pattern provides lazy getter - only read when needed
   const c = children(() => props.children);

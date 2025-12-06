@@ -6,17 +6,13 @@
  */
 
 import type { ComponentDescriptor } from '@rapid/runtime';
-import type { MouseClickEvent, TUINode, TUIStyle } from './types.js';
+import type { ChildElement, MouseClickEvent, TUIChildren, TUINode, TUIStyle } from './types.js';
 
 // Reactive type - allows both direct values and getters
 type MaybeReactive<T> = T | (() => T);
 
 // TUI Element type - what JSX expressions evaluate to
 export type TUIElement = TUINode | TUINode[] | ComponentDescriptor;
-
-// Child element types - allow reactive functions for fine-grained reactivity
-type ChildElement = TUIElement | string | number | null | undefined;
-type ChildrenType = ChildElement | ChildElement[] | (() => ChildElement | ChildElement[]);
 
 export namespace JSX {
   // Base element props for intrinsic elements
@@ -28,7 +24,7 @@ export namespace JSX {
 
   interface BoxElementProps {
     style?: TUIStyle | MaybeReactive<TUIStyle>;
-    children?: ChildrenType;
+    children?: TUIChildren;
     onClick?: (event: MouseClickEvent) => void;
     props?: Record<string, unknown>;
     key?: string | number;
@@ -36,7 +32,7 @@ export namespace JSX {
 
   interface TextElementProps {
     style?: TUIStyle | MaybeReactive<TUIStyle>;
-    children?: ChildrenType;
+    children?: TUIChildren;
     color?: MaybeReactive<string | undefined>;
     backgroundColor?: MaybeReactive<string | undefined>;
     bold?: MaybeReactive<boolean | undefined>;
